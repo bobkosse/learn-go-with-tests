@@ -25,7 +25,7 @@
 - [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
 - [فارسی](https://go-yaad-begir.gitbook.io/go-ba-test/)
 - [Nederlands](https://bobkosse.gitbook.io/leer-go-met-tests/)
-- 
+
 ## Ondersteun me
 
 Ik ben er trots op deze bron gratis aan te bieden, maar als je me wat waardering wilt geven:
