@@ -1,90 +1,97 @@
-# Learn Go with Tests
+# Leer Go Met Testen
 
-<div style="text-align: center">
-  <img src="red-green-blue-gophers-smaller.png" />
-</div>
+![](red-green-blue-gophers-smaller.png)
 
 [Art by Denise](https://twitter.com/deniseyu21)
 
-## Support me
+## Ondersteun me
 
-I am proud to offer this resource for free, but if you wish to give some appreciation
+Ik ben er trots op dat ik deze bron gratis kan aanbieden, maar als je wilt kun je je waardering laten zien via de onderstaande links:
 
-- [Tweet me @quii](https://twitter.com/quii)
-- <a rel="me" href="https://mastodon.cloud/@quii">Mastodon</a>
-- [Buy me a coffee](https://www.buymeacoffee.com/quii)
-- [Sponsor me on GitHub](https://github.com/sponsors/quii)
+* [Tweet me @quii](https://twitter.com/quii)
+* [Mastodon](https://mastodon.cloud/@quii)
+* [Buy me a coffee](https://www.buymeacoffee.com/quii)
+* [Sponsor me on GitHub](https://github.com/sponsors/quii)
 
-## Learn test-driven development with Go
+## Leer test-driven development met Go
 
-* Explore the Go language by writing tests
-* **Get a grounding with TDD**. Go is a good language for learning TDD because it is a simple language to learn and testing is built-in
-* Be confident that you'll be able to start writing robust, well-tested systems in Go
+* Ontdek de programmeertaal Go door testen te schrijven
+* **Raak bekend met TDD.** Go is een erg goede taal om TDD te leren omdat de taal zelf eenvoudig te leren is en testen ingebouwd is in de taal.
+* Wordt zelfverzekerd dat je in staat bent rubuuste en goed geteste systemen kunt bouwen in Go
 
-Translations:
+Vertalingen:
 
-- [中文](https://studygolang.gitbook.io/learn-go-with-tests)
-- [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
-- [日本語](https://andmorefine.gitbook.io/learn-go-with-tests/)
-- [Français](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests)
-- [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
-- [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
+* [中文](https://studygolang.gitbook.io/learn-go-with-tests)
+* [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
+* [日本語](https://andmorefine.gitbook.io/learn-go-with-tests/)
+* [Français](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests)
+* [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
+* [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
+* [Dutch](https://bobkosse.gitbook.io/leer-go-met-tests/)
 
-## Background
+## Achtergrond
 
-I have some experience introducing Go to development teams and have tried different approaches as to how to grow a team from some people curious about Go into highly effective writers of Go systems.
+Ik heb enige ervaring met het introduceren van Go bij ontwikkelteams en heb verschillende benaderingen geprobeerd om een team te laten groeien van mensen die nieuwsgierig waren naar Go tot mensen die zeer effectieve schrijvers van Go-systemen zijn.
 
-### What didn't work
+### Wat niet werkte
 
-#### Read _the_ book
+_**Het**_**&#x20;boek lezen**
 
-An approach we tried was to take [the blue book](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) and every week discuss the next chapter along with the exercises.
+Een aanpak die we probeerden was om [het blauwe boek](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) te pakken en elke week het volgende hoofdstuk te bespreken, samen met de oefeningen.
 
-I love this book but it requires a high level of commitment. The book is very detailed in explaining concepts, which is obviously great but it means that the progress is slow and steady - this is not for everyone.
+Ik ben dol op dit boek, maar het vereist een hoge mate van toewijding. Het boek legt concepten zeer gedetailleerd uit, wat natuurlijk geweldig is, maar het betekent wel dat de voortgang langzaam en gestaag verloopt, dit is niet voor iedereen weggelegd.
 
-I found that whilst a small number of people would read chapter X and do the exercises, many people didn't.
+Ik ontdekte dat een kleine groep mensen hoofdstuk X zou lezen en de oefeningen zou maken, maar dat veel mensen dat niet deden.
 
-#### Solve some problems
+**Programmeer uitdagingen oplossen**
 
-Katas are fun but they are usually limited in their scope for learning a language; you're unlikely to use goroutines to solve a kata.
+Kata's zijn leuk, maar je leert er meestal maar beperkt een taal mee. Je zult waarschijnlijk geen goroutines gebruiken om een kata op te lossen.
 
-Another problem is when you have varying levels of enthusiasm. Some people just learn way more of the language than others and when demonstrating what they have done end up confusing people with features the others are not familiar with.
+Een ander probleem is wanneer je enthousiasme varieert. Sommige mensen leren gewoon veel meer van de taal dan anderen, en als ze laten zien wat ze hebben gedaan, raken ze in de war met functies die de anderen niet kennen.
 
-This ends up making the learning feel quite _unstructured_ and _ad hoc_.
+Dit zorgt ervoor dat het leren nogal _ongestructureerd_ en _ad hoc_ aanvoelt.
 
-### What did work
+### Wat wel werkte
 
-By far the most effective way was by slowly introducing the fundamentals of the language by reading through [go by example](https://gobyexample.com/), exploring them with examples and discussing them as a group. This was a more interactive approach than "read chapter x for homework".
+Veruit de meest effectieve manier was om de basisbeginselen van de taal langzaam te introduceren door [go by example](https://gobyexample.com/) te lezen, ze te verkennen met voorbeelden en ze in groepsverband te bespreken. Dit was een interactievere aanpak dan "lees hoofdstuk x als huiswerk".
 
-Over time the team gained a solid foundation of the _grammar_ of the language so we could then start to build systems.
+Na verloop van tijd had het team een solide basis van de _grammatica_ van de taal ontwikkeld, zodat we konden beginnen met het bouwen van systemen.
 
-This to me seems analogous to practicing scales when trying to learn guitar.
+Voor mij is dit vergelijkbaar met het oefenen van toonladders wanneer je gitaar probeert te leren spelen.
 
-It doesn't matter how artistic you think you are, you are unlikely to write good music without understanding the fundamentals and practicing the mechanics.
+Het maakt niet uit hoe artistiek je denkt dat je bent, je zult waarschijnlijk geen goede muziek kunnen schrijven als je de basis niet begrijpt en de mechaniek niet oefent.
 
-### What works for me
+### Wat voor mij werkte
 
-When _I_ learn a new programming language I usually start by messing around in a REPL but eventually, I need more structure.
+Als _ik_ een nieuwe programmeertaal leer, begin ik meestal met wat rommelen in een REPL, maar uiteindelijk heb ik meer structuur nodig.
 
-What I like to do is explore concepts and then solidify the ideas with tests. Tests verify the code I write is correct and documents the feature I have learned.
+Wat ik graag doe, is concepten verkennen en de ideeën vervolgens met tests onderbouwen. Tests verifiëren of de code die ik schrijf correct is, en documenteren de functionaliteit die ik heb geleerd.
 
-Taking my experience of learning with a group and my own personal way I am going to try and create something that hopefully proves useful to other teams. Learning the fundamentals by writing small tests so that you can then take your existing software design skills and ship some great systems.
+Gebruikmakend van mijn ervaring met leren in een groep en mijn eigen persoonlijke aanpak, ga ik proberen iets te creëren dat hopelijk nuttig is voor andere teams. Leer de basisprincipes door kleine tests te schrijven, zodat je vervolgens je bestaande softwareontwerpvaardigheden kunt gebruiken om geweldige systemen te ontwikkelen.
 
-## Who this is for
+## Voor wie is dit boek
 
-* People who are interested in picking up Go
-* People who already know some Go, but want to explore testing more
+* Voor mensen die geïnteresseerd zijn om met Go aan de slag te gaan
+* Mensen die al bekend zijn met Go, maar testen met TDD verder willen ontdekken
 
-## What you'll need
+## Wat je nodig hebt
 
-* A computer!
-* [Installed Go](https://golang.org/)
-* A text editor
-* Some experience with programming. Understanding of concepts like `if`, variables, functions etc.
-* Comfortable using the terminal
+* Een computer!
+* [Go geïnstalleerd](https://golang.org/)
+* Een tekst editor
+* Enige ervaring met programmeren. Begrip van concepten zoals 'if', variabelen, functies, etc.
+* Je moet je comfortable voelen de terminal te gebruiken
 
 ## Feedback
 
-* Add issues/submit PRs [here](https://github.com/quii/learn-go-with-tests) or [tweet me @quii](https://twitter.com/quii)
+* Problemen melden/PRs's indienen [hier](https://github.com/quii/learn-go-with-tests) of [tweet me @quii](https://twitter.com/quii)
+
+### Over deze vertaling
+
+Deze vertaling is gemaakt door [Bob Kosse](https://bobkosse.nl/). Ook deze vertaling wordt, net als het origineel, kosteloos vrijgegeven. Ik hoop hiermee de programmeertaal Go ook in Nederland toegankelijker te maken voor een breder publiek.
+
+Ik heb dit boek vertaald naar het Nederlands, maar enkele begrippen zijn bewust Engelstalig gehouden. Go gebruikt, net als veel andere programmeertalen, veel Engelse benamingen. Deze zijn in takt gelaten. Ook speciefieke woorden waarvan in de markt vaak de Engelse variant wordt gebruikt, heb ik ook in het Engels gehouden.
+
+Heb je vragen over deze vertaling? Neem van vooral contact met mij op: [LinkedIn](https://linkedin.com/in/bobkosse) [GitHub](https://github.com/bobkosse)
 
 [MIT license](https://github.com/quii/learn-go-with-tests/blob/main/LICENSE.md)
