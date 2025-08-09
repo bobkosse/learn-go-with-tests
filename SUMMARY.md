@@ -2,53 +2,53 @@
 
 * [Leer Go Met Testen](gb-readme.md)
 
-## Go fundamentals
+## Basisbeginselen Go
 
-* [Go Installeren](install-go.md)
-* [Hello, World](hello-world.md)
-* [Integers](integers.md)
-* [Iteration](iteration.md)
-* [Arrays and slices](arrays-and-slices.md)
-* [Structs, methods & interfaces](structs-methods-and-interfaces.md)
-* [Pointers & errors](pointers-and-errors.md)
-* [Maps](maps.md)
-* [Dependency Injection](dependency-injection.md)
-* [Mocking](mocking.md)
-* [Concurrency](concurrency.md)
-* [Select](select.md)
-* [Reflection](reflection.md)
-* [Sync](sync.md)
-* [Context](context.md)
-* [Intro to property based tests](roman-numerals.md)
-* [Maths](math.md)
-* [Reading files](reading-files.md)
-* [Templating](html-templates.md)
-* [Generics](generics.md)
-* [Revisiting arrays and slices with generics](revisiting-arrays-and-slices-with-generics.md)
+* [Go Installeren](basisbeginselen-go/install-go.md)
+* [Hello, World](basisbeginselen-go/hello-world.md)
+* [Integers](basisbeginselen-go/integers.md)
+* [Iteration](basisbeginselen-go/iteration.md)
+* [Arrays and slices](basisbeginselen-go/arrays-and-slices.md)
+* [Structs, methods & interfaces](basisbeginselen-go/structs-methods-and-interfaces.md)
+* [Pointers & errors](basisbeginselen-go/pointers-and-errors.md)
+* [Maps](basisbeginselen-go/maps.md)
+* [Dependency Injection](basisbeginselen-go/dependency-injection.md)
+* [Mocking](basisbeginselen-go/mocking.md)
+* [Concurrency](basisbeginselen-go/concurrency.md)
+* [Select](basisbeginselen-go/select.md)
+* [Reflection](basisbeginselen-go/reflection.md)
+* [Sync](basisbeginselen-go/sync.md)
+* [Context](basisbeginselen-go/context.md)
+* [Intro to property based tests](basisbeginselen-go/roman-numerals.md)
+* [Maths](basisbeginselen-go/math.md)
+* [Reading files](basisbeginselen-go/reading-files.md)
+* [Templating](basisbeginselen-go/html-templates.md)
+* [Generics](basisbeginselen-go/generics.md)
+* [Revisiting arrays and slices with generics](basisbeginselen-go/revisiting-arrays-and-slices-with-generics.md)
 
-## Testing fundamentals
+## Basisbeginselen Testen
 
-* [Introduction to acceptance tests](intro-to-acceptance-tests.md)
-* [Scaling acceptance tests](scaling-acceptance-tests.md)
-* [Working without mocks](working-without-mocks.md)
-* [Refactoring Checklist](refactoring-checklist.md)
+* [Introduction to acceptance tests](basisbeginselen-testen/intro-to-acceptance-tests.md)
+* [Scaling acceptance tests](basisbeginselen-testen/scaling-acceptance-tests.md)
+* [Working without mocks](basisbeginselen-testen/working-without-mocks.md)
+* [Refactoring Checklist](basisbeginselen-testen/refactoring-checklist.md)
 
-## Build an application
+## Bouw een applicatie
 
-* [Intro](app-intro.md)
-* [HTTP server](http-server.md)
-* [JSON, routing and embedding](json.md)
-* [IO and sorting](io.md)
-* [Command line & package structure](command-line.md)
-* [Time](time.md)
-* [WebSockets](websockets.md)
+* [Intro](bouw-een-applicatie/app-intro.md)
+* [HTTP server](bouw-een-applicatie/http-server.md)
+* [JSON, routing and embedding](bouw-een-applicatie/json.md)
+* [IO and sorting](bouw-een-applicatie/io.md)
+* [Command line & package structure](bouw-een-applicatie/command-line.md)
+* [Time](bouw-een-applicatie/time.md)
+* [WebSockets](bouw-een-applicatie/websockets.md)
 
-## Questions and answers
+## Vragen en antwoorden
 
-* [OS Exec](os-exec.md)
-* [Error types](error-types.md)
-* [Context-aware Reader](context-aware-reader.md)
-* [Revisiting HTTP Handlers](http-handlers-revisited.md)
+* [OS Exec](vragen-en-antwoorden/os-exec.md)
+* [Error types](vragen-en-antwoorden/error-types.md)
+* [Context-aware Reader](vragen-en-antwoorden/context-aware-reader.md)
+* [Revisiting HTTP Handlers](vragen-en-antwoorden/http-handlers-revisited.md)
 
 ## Meta
 

@@ -1,12 +1,12 @@
-# HTTP Handlers Revisited
+# Revisiting HTTP Handlers
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)**
+[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)
 
-This book already has a chapter on [testing a HTTP handler](http-server.md) but this will feature a broader discussion on designing them, so they are simple to test.
+This book already has a chapter on [testing a HTTP handler](../bouw-een-applicatie/http-server.md) but this will feature a broader discussion on designing them, so they are simple to test.
 
-We'll take a look at a real example and how we can improve how it's designed by applying principles such as single responsibility principle and separation of concerns. These principles can be realised by using [interfaces](structs-methods-and-interfaces.md) and [dependency injection](dependency-injection.md). By doing this we'll show how testing handlers is actually quite trivial.
+We'll take a look at a real example and how we can improve how it's designed by applying principles such as single responsibility principle and separation of concerns. These principles can be realised by using [interfaces](../basisbeginselen-go/structs-methods-and-interfaces.md) and [dependency injection](../basisbeginselen-go/dependency-injection.md). By doing this we'll show how testing handlers is actually quite trivial.
 
-![Common question in Go community illustrated](amazing-art.png)
+![Common question in Go community illustrated](../amazing-art.png)
 
 Testing HTTP handlers seems to be a recurring question in the Go community, and I think it points to a wider problem of people misunderstanding how to design them.
 
@@ -120,10 +120,10 @@ I'm not saying every HTTP handler _ever_ should have roughly this shape, but 99 
 
 When you separate these concerns:
 
- - Testing handlers becomes a breeze and is focused a small number of concerns.
- - Importantly testing `ImportantBusinessLogic` no longer has to concern itself with `HTTP`, you can test the business logic cleanly.
- - You can use `ImportantBusinessLogic` in other contexts without having to modify it.
- - If `ImportantBusinessLogic` changes what it does, so long as the interface remains the same you don't have to change your handlers.
+* Testing handlers becomes a breeze and is focused a small number of concerns.
+* Importantly testing `ImportantBusinessLogic` no longer has to concern itself with `HTTP`, you can test the business logic cleanly.
+* You can use `ImportantBusinessLogic` in other contexts without having to modify it.
+* If `ImportantBusinessLogic` changes what it does, so long as the interface remains the same you don't have to change your handlers.
 
 ## Go's Handlers
 
@@ -143,8 +143,8 @@ It's just a function, _and we know how to test functions_.
 
 It fits in nicely with the commentary above:
 
-- It takes a [`http.Request`](https://golang.org/pkg/net/http/#Request) which is just a bundle of data for us to inspect, parse and validate.
-- > [A `http.ResponseWriter` interface is used by an HTTP handler to construct an HTTP response.](https://golang.org/pkg/net/http/#ResponseWriter)
+* It takes a [`http.Request`](https://golang.org/pkg/net/http/#Request) which is just a bundle of data for us to inspect, parse and validate.
+* > [A `http.ResponseWriter` interface is used by an HTTP handler to construct an HTTP response.](https://golang.org/pkg/net/http/#ResponseWriter)
 
 ### Super basic example test
 
@@ -241,7 +241,7 @@ Our `RegisterUser` method matches the shape of `http.HandlerFunc` so we're good 
 
 Interfaces are a fantastic way to ensure our `HTTP` concerns are decoupled from any specific implementation; we can just call the method on the dependency, and we don't have to care _how_ a user gets registered.
 
-If you wish to explore this approach in more detail following TDD read the [Dependency Injection](dependency-injection.md) chapter and the [HTTP Server chapter of the "Build an application" section](http-server.md).
+If you wish to explore this approach in more detail following TDD read the [Dependency Injection](../basisbeginselen-go/dependency-injection.md) chapter and the [HTTP Server chapter of the "Build an application" section](../bouw-een-applicatie/http-server.md).
 
 Now that we've decoupled ourselves from any specific implementation detail around registration writing the code for our handler is straightforward and follows the responsibilities described earlier.
 

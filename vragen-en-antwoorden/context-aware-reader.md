@@ -1,6 +1,6 @@
-# Context-aware readers
+# Context-aware Reader
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/context-aware-reader)**
+[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/context-aware-reader)
 
 This chapter demonstrates how to test-drive a context aware `io.Reader` as written by Mat Ryer and David Hernandez in [The Pace Dev Blog](https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer).
 
@@ -20,7 +20,7 @@ By using `io.Reader` you can gain a lot of re-use from the standard library, it'
 
 ### Context aware?
 
-[In a previous chapter](context.md) we discussed how we can use `context` to provide cancellation. This is especially useful if you're performing tasks which may be computationally expensive and you want to be able to stop them.
+[In a previous chapter](../basisbeginselen-go/context.md) we discussed how we can use `context` to provide cancellation. This is especially useful if you're performing tasks which may be computationally expensive and you want to be able to stop them.
 
 When you're using an `io.Reader` you have no guarantees over speed, it could take 1 nanosecond or hundreds of hours. You might find it useful to be able to cancel these kind of tasks in your own application and that's what Mat and David wrote about.
 
@@ -46,9 +46,9 @@ The `Reader`'s `Read` method will read the contents it has into a `[]byte` that 
 
 So rather than reading everything, we could:
 
- - Supply a fixed-size byte array that doesn't fit all the contents
- - Send a cancel signal
- - Try and read again and this should return an error with 0 bytes read
+* Supply a fixed-size byte array that doesn't fit all the contents
+* Send a cancel signal
+* Try and read again and this should return an error with 0 bytes read
 
 For now, let's just write a "happy path" test where there is no cancellation, just so we can get familiar with the problem without having to write any production code yet.
 
@@ -84,9 +84,9 @@ func assertBufferHas(t testing.TB, buf []byte, want string) {
 }
 ```
 
-- Make an `io.Reader` from a string with some data
-- A byte array to read into which is smaller than the contents of the reader
-- Call read, check the contents, repeat.
+* Make an `io.Reader` from a string with some data
+* A byte array to read into which is smaller than the contents of the reader
+* Call read, check the contents, repeat.
 
 From this we can imagine sending some kind of cancel signal before the second read to change behaviour.
 
@@ -127,6 +127,7 @@ t.Run("behaves like a normal reader", func(t *testing.T) {
 ```
 ./cancel_readers_test.go:12:10: undefined: NewCancellableReader
 ```
+
 ## Write the minimal amount of code for the test to run and check the failing test output
 
 We'll need to define this function and it should return an `io.Reader`
@@ -195,9 +196,10 @@ t.Run("stops reading when cancelled", func(t *testing.T) {
 ```
 
 We can more or less copy the first test but now we're:
-- Creating a `context.Context` with cancellation so we can `cancel` after the first read
-- For our code to work we'll need to pass `ctx` to our function
-- We then assert that post-`cancel` nothing was read
+
+* Creating a `context.Context` with cancellation so we can `cancel` after the first read
+* For our code to work we'll need to pass `ctx` to our function
+* We then assert that post-`cancel` nothing was read
 
 ## Try to run the test
 
@@ -292,9 +294,9 @@ All tests should now pass. You'll notice how we return the error from the `conte
 
 ## Wrapping up
 
-- Small interfaces are good and are easily composed
-- When you're trying to augment one thing (e.g `io.Reader`) with another you usually want to reach for the [delegation pattern](https://en.wikipedia.org/wiki/Delegation_pattern)
+* Small interfaces are good and are easily composed
+* When you're trying to augment one thing (e.g `io.Reader`) with another you usually want to reach for the [delegation pattern](https://en.wikipedia.org/wiki/Delegation_pattern)
 
 > In software engineering, the delegation pattern is an object-oriented design pattern that allows object composition to achieve the same code reuse as inheritance.
 
-- An easy way to start this kind of work is to wrap your delegate and write a test that asserts it behaves how the delegate normally does before you start composing other parts to change behaviour. This will help you to keep things working correctly as you code toward your goal
+* An easy way to start this kind of work is to wrap your delegate and write a test that asserts it behaves how the delegate normally does before you start composing other parts to change behaviour. This will help you to keep things working correctly as you code toward your goal

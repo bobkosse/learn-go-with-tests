@@ -1,6 +1,6 @@
 # OS Exec
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/os-exec)**
+[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/os-exec)
 
 [keith6014](https://www.reddit.com/user/keith6014) asks on [reddit](https://www.reddit.com/r/golang/comments/aaz8ji/testdata_and_function_setup_help/)
 
@@ -8,14 +8,14 @@
 
 > In order to test GetData(), I have some testdata which I created.
 
-> In my _test.go I have a TestGetData which calls GetData() but that will use os.exec, instead I would like for it to use my testdata.
+> In my \_test.go I have a TestGetData which calls GetData() but that will use os.exec, instead I would like for it to use my testdata.
 
 > What is a good way to achieve this? When calling GetData should I have a "test" flag mode so it will read a file ie GetData(mode string)?
 
 A few things
 
-- When something is difficult to test, it's often due to the separation of concerns not being quite right
-- Don't add "test modes" into your code, instead use [Dependency Injection](./dependency-injection.md) so that you can model your dependencies and separate concerns.
+* When something is difficult to test, it's often due to the separation of concerns not being quite right
+* Don't add "test modes" into your code, instead use [Dependency Injection](../basisbeginselen-go/dependency-injection.md) so that you can model your dependencies and separate concerns.
 
 I have taken the liberty of guessing what the code might look like
 
@@ -40,10 +40,10 @@ func GetData() string {
 }
 ```
 
-- It uses `exec.Command` which allows you to execute an external command to the process
-- We capture the output in `cmd.StdoutPipe` which returns us a `io.ReadCloser` (this will become important)
-- The rest of the code is more or less copy and pasted from the [excellent documentation](https://golang.org/pkg/os/exec/#example_Cmd_StdoutPipe).
-    - We capture any output from stdout into an `io.ReadCloser` and then we `Start` the command and then wait for all the data to be read by calling `Wait`. In between those two calls we decode the data into our `Payload` struct.
+* It uses `exec.Command` which allows you to execute an external command to the process
+* We capture the output in `cmd.StdoutPipe` which returns us a `io.ReadCloser` (this will become important)
+* The rest of the code is more or less copy and pasted from the [excellent documentation](https://golang.org/pkg/os/exec/#example_Cmd_StdoutPipe).
+  * We capture any output from stdout into an `io.ReadCloser` and then we `Start` the command and then wait for all the data to be read by calling `Wait`. In between those two calls we decode the data into our `Payload` struct.
 
 Here is what is contained inside `msg.xml`
 
