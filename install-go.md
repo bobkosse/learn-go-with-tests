@@ -1,20 +1,20 @@
-# Install Go, set up environment for productivity
+# Go Installaren
 
-The official installation instructions for Go are available [here](https://golang.org/doc/install).
+De officiële installatie instructies voor Go zij [hier](https://golang.org/doc/install) te vinden.
 
-## Go Environment
+## Go Omgeving
 
 ### Go Modules
 
-Go 1.11 introduced [Modules](https://go.dev/wiki/Modules). This approach is the default build mode since Go 1.16, therefore the use of `GOPATH` is not recommended.
+Go 1.11 introduceerde [Modules](https://go.dev/wiki/Modules). Deze aanpak is de standaard bouw methode sinds Go 1.16, daardoor wordt het gebruik van  `GOPATH` afgeraden vanaf Go 1.16.
 
-Modules aim to solve problems related to dependency management, version selection and reproducible builds; they also enable users to run Go code outside of `GOPATH`.
+Modules zijn bedoeld om problemen op te lossen die te maken hebben met afhankelijkheidsbeheer, versies-electie en reproduceerbare builds. Daarnaast maken ze het voor gebruikers mogelijk om Go-code buiten `GOPATH` uit te voeren.
 
-Using Modules is pretty straightforward. Select any directory outside `GOPATH` as the root of your project, and create a new module with the `go mod init` command.
+Het gebruik van Modules is behoorlijk recht-toe-recht-aan. Selecteer een directory buiten `GOPATH` als basis voor je project en maak een nieuwe module met het commando `go mod init`.
 
-A `go.mod` file will be generated, containing the module path, a Go version, and its dependency requirements, which are the other modules needed for a successful build.
+Een bestand met de naam `go.mod` wordt aangemaakt. Dit bestand bevat het path van de module, de Go versie en de vereiste afhankelijkheden. De vereiste afhankelijkheden zijn de andere modules die nodig zijn voor een succesvolle bouw van het project.
 
-If no `<modulepath>` is specified, `go mod init` will try to guess the module path from the directory structure. It can also be overridden by supplying an argument.
+Als er geen `<modulepath>` is gespecificeerd, zal `go mod init` proberen het module path te achterhalen vanuit de directory structuur. Dit kan ook overruled worden door een argument aan het commando toe te voegen.
 
 ```sh
 mkdir my-project
@@ -22,7 +22,7 @@ cd my-project
 go mod init <modulepath>
 ```
 
-A `go.mod` file could look like this:
+Een `go.mod` bestand zou er zo uit moeten zien:
 
 ```
 module cmd
@@ -31,7 +31,7 @@ go 1.16
 
 ```
 
-The built-in documentation provides an overview of all available `go mod` commands.
+De ingebouwde documentatie geeft een overzicht van alle beschikbare `go mod` commando's.
 
 ```sh
 go help mod
@@ -40,36 +40,36 @@ go help mod init
 
 ## Go Linting
 
-An improvement over the default linter can be configured using [GolangCI-Lint](https://golangci-lint.run).
+Een verbetering van de standaard linter kan worden geconfigureerd met [GolangCI-Lint](https://golangci-lint.run).
 
-This can be installed as follows:
+Deze kan als volgt worden geïnstalleerd:
 
 ```sh
 brew install golangci-lint
 ```
 
-## Refactoring and your tooling
+## Refactoring en jouw tools
 
-A big emphasis of this book is the importance of refactoring.
+In dit boek wordt de nadruk gelegd op het belang van refactoring.
 
-Your tools can help you do bigger refactoring with confidence.
+De juiste tools kunnen je helpen het grotere refactor werk met zelfverzekerdheid te doen.
 
-You should be familiar enough with your editor to perform the following with a simple key combination:
+Je moet voldoende bekend zijn met je editor om het volgende met een eenvoudige toetsencombinatie te kunnen doen:
 
-- **Extract/Inline variable**. Taking magic values and giving them a name lets you simplify your code quickly.
-- **Extract method/function**. It is vital to be able to take a section of code and extract functions/methods
-- **Rename**. You should be able to rename symbols across files confidently.
-- **go fmt**. Go has an opinioned formatter called `go fmt`. Your editor should run this on every file saved.
-- **Run tests**. You should be able to do any of the above and then quickly re-run your tests to ensure your refactoring hasn't broken anything.
+* **Extract/Inline variabele**. Door magische waarden een naam te geven, kun je je code snel vereenvoudigen.
+* **Extract methoden/functies**. Het is van groot belang om een deel van de code te kunnen nemen en daar functies/methoden uit te halen
+* **Hernoemen**. Je zou symbolen in verschillende bestanden met vertrouwen moeten kunnen hernoemen.
+* **go fmt**. Go heeft een eigenzinnige formatter genaamd `go fmt`. Je editor zou dit op elk opgeslagen bestand moeten uitvoeren.
+* **Tests uitvoeren**. Je zou een van de bovenstaande handelingen moeten kunnen uitvoeren en daarna snel je tests opnieuw moeten uitvoeren om er zeker van te zijn dat je refactoring niets kapot heeft gemaakt.
 
-In addition, to help you work with your code, you should be able to:
+Om je te helpen met je code, moet je daarnaast het volgende kunnen:
 
-- **View function signature**. You should never be unsure how to call a function in Go. Your IDE should describe a function in terms of its documentation, its parameters and what it returns.
-- **View function definition**. If it's still unclear what a function does, you should be able to jump to the source code and try and figure it out yourself.
-- **Find usages of a symbol**. Understanding a function's context can help you make decisions when refactoring.
+* **Bekijken function signature**. Je hoeft nooit te twijfelen hoe je een functie in Go aanroept. Je IDE moet een functie beschrijven in termen van de documentatie, de parameters en wat deze retourneert.
+* **Toon function definition**. Als het nog steeds niet duidelijk is wat een functie doet, kun je het beste naar de broncode gaan en proberen het zelf uit te zoeken.
+* **Vind toepassingen van functionaliteit.** Inzicht in de context van een functie kan je helpen bij het nemen van beslissingen bij het refactoren.
 
-Mastering your tools will help you concentrate on the code and reduce context switching.
+Wanneer je je tools beheerst, kun je je beter concentreren op de code en hoeft je minder vaak van context te wisselen.
 
-## Wrapping up
+## Samenvattend
 
-At this point, you should have Go installed, an editor available, and some basic tooling in place. Go has a very large ecosystem of third-party products. We have identified a few useful components here. For a more complete list, see [https://awesome-go.com](https://awesome-go.com).
+Op dit punt zou Go geïnstalleerd moeten zijn, zou er een editor beschikbaar moeten zijn en zou er wat basistooling aanwezig moeten zijn. Go heeft een zeer uitgebreid ecosysteem van producten van derden. We hebben hier een paar nuttige componenten geïdentificeerd. Voor een completere lijst verwijs ik je naar: [https://awesome-go.com](https://awesome-go.com).

@@ -4,7 +4,7 @@
 
 ## Go fundamentals
 
-* [Install Go](install-go.md)
+* [Go Installaren](install-go.md)
 * [Hello, World](hello-world.md)
 * [Integers](integers.md)
 * [Iteration](iteration.md)
