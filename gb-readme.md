@@ -27,7 +27,7 @@ Vertalingen:
 * [Français](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests)
 * [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
 * [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
-* [Dutch](https://bobkosse.gitbook.io/leer-go-met-tests/)
+* [Nederlands](https://bobkosse.gitbook.io/leer-go-met-tests/)
 
 ## Achtergrond
 
