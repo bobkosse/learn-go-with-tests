@@ -17,9 +17,16 @@ Ik ben er trots op dat ik deze bron gratis kan aanbieden, maar als je wilt kun j
 
 * Ontdek de programmeertaal Go door testen te schrijven
 * **Raak bekend met TDD.** Go is een erg goede taal om TDD te leren omdat de taal zelf eenvoudig te leren is en testen ingebouwd is in de taal.
-* Wordt zelfverzekerd dat je in staat bent rubuuste en goed geteste systemen kunt bouwen in Go
+* Wordt zelfverzekerd dat je in staat bent robuuste en goed geteste systemen kunt bouwen in Go
 
-Vertalingen:
+## Over dit boek
+
+Dit geweldige boek is geschreven door Chris James, alias Quii op internet (zie sectie [Ondersteun me](gb-readme.md#ondersteun-me)). Het originele boek van Chris is te lezen in het Engels via:\
+
+
+[Learn Go with Tests (Engels)](https://quii.gitbook.io/learn-go-with-tests)
+
+Overige vertalingen:
 
 * [中文](https://studygolang.gitbook.io/learn-go-with-tests)
 * [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
@@ -27,7 +34,7 @@ Vertalingen:
 * [Français](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests)
 * [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
 * [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
-* [Nederlands](https://bobkosse.gitbook.io/leer-go-met-tests/)
+* [Nederlands (huidige versie)](https://bobkosse.gitbook.io/leer-go-met-tests/)
 
 ## Achtergrond
 
