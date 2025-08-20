@@ -1,12 +1,12 @@
 # Integers
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/integers)**
+[**Je kunt alle code van dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/integers)
 
-Integers work as you would expect. Let's write an `Add` function to try things out. Create a test file called `adder_test.go` and write this code.
+Integers werken zoals je zou verwachten. Laten we een `Add` functie schrijven om wat dingen te proberen. Maak eerst een bestand aan met de naam `adder_test.go` en schrijf de code voor de test.
 
-**Note:** Go source files can only have one `package` per directory. Make sure that your files are organised into their own packages. [Here is a good explanation on this.](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
+**Note:** Go bronbestanden kunnen slechts één `package` per directory hebben. Verzeker je zelf ervan dat je bestanden zijn georganiseerd binnen hun eigen packages. [Hier is een goede uitleg hoe je dat doet](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project).
 
-Your project directory might look something like this:
+Je project directory zou er nu zo uit moeten zien:
 
 ```
 learnGoWithTests
@@ -22,7 +22,7 @@ learnGoWithTests
     |- README.md
 ```
 
-## Write the test first
+## Schrijf eerst je test
 
 ```go
 package integers
@@ -39,21 +39,23 @@ func TestAdder(t *testing.T) {
 }
 ```
 
-You will notice that we're using `%d` as our format strings rather than `%q`. That's because we want it to print an integer rather than a string.
+Het valt je misschien op dat we nu `%d` gebruiken als format strings, in plaats van `%q`. Dat komt omdat we een integer waarde willen printen in plaats van een string.
 
-Also note that we are no longer using the main package, instead we've defined a package named `integers`, as the name suggests this will group functions for working with integers such as `Add`.
+Merk ook op dat we niet langer de main package gebruiken. In plaats daarvan definieren we een package met de naam `integers`. Zoals de naam al doet vermoeden, dit groepeert functies (zoals onze `Add` functie) om met integers te werken samen.
 
-## Try and run the test
+## Probeer en voer de test uit
 
-Run the test `go test`
+Voer de test uit met het commando: `go test`
 
-Inspect the compilation error
+Inspecteer de compilatie fout:
 
 `./adder_test.go:6:9: undefined: Add`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-Write enough code to satisfy the compiler _and that's all_ - remember we want to check that our tests fail for the correct reason.
+Schrijf voldoende code om de compiler te laten werken, _en niet meer!_ Onthoud dat we willen controleren of onze tests falen om de juiste reden!
+
+Maak een nieuw bestand aan in de integers directory met de naam `integers.go` en voer de volgende code in:
 
 ```go
 package integers
@@ -63,17 +65,17 @@ func Add(x, y int) int {
 }
 ```
 
-Remember, when you have more than one argument of the same type \(in our case two integers\) rather than having `(x int, y int)` you can shorten it to `(x, y int)`.
+Onthoud, wanneer je meer dan 1 argument hebt van hetzelfde type (in ons geval 2 integers) kun je, in plaats van `(x int, y int)` dit korter schrijven als `(x, y int)`.
 
-Now run the tests, and we should be happy that the test is correctly reporting what is wrong.
+Voer de test opnieuw uit en we zouden moeten zien dat de test goed draait en netjes aangeeft wat er fout is.
 
 `adder_test.go:10: expected '4' but got '0'`
 
-If you have noticed we learnt about _named return value_ in the [last](hello-world.md#one...last...refactor?) section but aren't using the same here. It should generally be used when the meaning of the result isn't clear from context, in our case it's pretty much clear that `Add` function will add the parameters. You can refer [this](https://go.dev/wiki/CodeReviewComments#named-result-parameters) wiki for more details.
+Misschien heb je gemerkt dat we in de [vorige](hello-world.md#een...laatste...refactor) sectie over _named return value_ hebben geleerd, maar dat je die hier niet gebruikt. Named return values zouden over het algemeen gebruikt moeten worden wanneer de betekenis van het resultaat niet duidelijk is uit de context. In ons geval is het vrijwel duidelijk dat de functie `Add` de opgegeven parameters zal optellen. Raadpleeg [deze](https://go.dev/wiki/CodeReviewComments#named-result-parameters) wiki voor meer informatie.
 
-## Write enough code to make it pass
+## Schrijf genoeg code om te test te laten slagen
 
-In the strictest sense of TDD we should now write the _minimal amount of code to make the test pass_. A pedantic programmer may do this
+Volgens de meest strikte definitie van TDD moeten nu de _minimale hoeveelheid code schrijven om te test te laten slagen_. Een programmeur die zich heel strikt aan de regels wil houden zou nu iets kunnen schrijven als:
 
 ```go
 func Add(x, y int) int {
@@ -81,13 +83,13 @@ func Add(x, y int) int {
 }
 ```
 
-Ah hah! Foiled again, TDD is a sham right?
+Augh, is TDD dan toch niet zo'n goed idee?
 
-We could write another test, with some different numbers to force that test to fail but that feels like [a game of cat and mouse](https://en.m.wikipedia.org/wiki/Cat_and_mouse).
+We kunnen nu een andere test schrijven, met andere getallen, om de test weer te laten falen maar dat voelt toch wel als [een spelletje kat en muis](https://en.m.wikipedia.org/wiki/Cat_and_mouse).
 
-Once we're more familiar with Go's syntax I will introduce a technique called _"Property Based Testing"_, which would stop annoying developers and help you find bugs.
+Zodra we wat bekender zijn met de syntax van Go, zal ik een techniek genaamd "_Property Based Testing_" introduceren, wat vervelende ontwikkelaars tegenhoud en je helpt om fouten te vinden.
 
-For now, let's fix it properly
+Voor nu, laten we de `Add` functie op de juiste manier schrijven:
 
 ```go
 func Add(x, y int) int {
@@ -95,17 +97,17 @@ func Add(x, y int) int {
 }
 ```
 
-If you re-run the tests they should pass.
+Wanneer je de test nu opnieuw uitvoert, zou deze moeten slagen.
 
 ## Refactor
 
-There's not a lot in the _actual_ code we can really improve on here.
+Er is niet veel in de code dat we echt kunnen verbeteren.
 
-We explored earlier how by naming the return argument it appears in the documentation but also in most developer's text editors.
+We hebben eerder besproken hoe het return-argument wordt weergegeven in de documentatie, maar ook in de meeste teksteditors voor ontwikkelaars.
 
-This is great because it aids the usability of code you are writing. It is preferable that a user can understand the usage of your code by just looking at the type signature and documentation.
+Dit is geweldig, omdat het de bruikbaarheid van de code die je schrijft ten goede komt. Het is wenselijk dat een gebruiker het gebruik van je code kan begrijpen door alleen naar de typesignatuur en documentatie te kijken.
 
-You can add documentation to functions with comments, and these will appear in Go Doc just like when you look at the standard library's documentation.
+Je kunt documentatie aan functies toevoegen met opmerkingen. Deze worden dan in Go Doc weergegeven, net zoals je de documentatie van de standaardbibliotheek bekijkt.
 
 ```go
 // Add takes two integers and returns the sum of them.
@@ -114,15 +116,15 @@ func Add(x, y int) int {
 }
 ```
 
-### Testable Examples
+### Testbare voorbeelden
 
-If you really want to go the extra mile you can make [Testable Examples](https://blog.golang.org/examples). You will find many examples in the standard library documentation.
+Wanneer je echt de extra stap wilt zetten, kun je [Testable Examples](https://blog.golang.org/examples) toevoegen. Hiervan staan veel voorbeelden in de documentatie van de standard library.
 
-Often code examples that can be found outside the codebase, such as a readme file, become out of date and incorrect compared to the actual code because they don't get checked.
+Vaak raken codevoorbeelden die buiten de codebase te vinden zijn, zoals een readme-bestand, verouderd en onjuist in vergelijking met de daadwerkelijke code, omdat ze niet consequent worden gecontroleerd.
 
-Example functions are compiled whenever tests are executed. Because such examples are validated by the Go compiler, you can be confident your documentation's examples always reflect current code behavior.
+Voorbeeldfuncties worden gecompileerd wanneer tests worden uitgevoerd. Omdat dergelijke voorbeelden worden gevalideerd door de Go-compiler, kun je erop vertrouwen dat de voorbeelden in de documentatie altijd het huidige codegedrag weerspiegelen.
 
-Example functions begin with `Example` (much like test functions begin with `Test`), and reside in a package's `_test.go` files. Add the following `ExampleAdd` function to the `adder_test.go` file.
+Voorbeeldfuncties beginnen met `Example` (vergelijkbaar met testfuncties die met `Test` beginnen), en staan opgelagen in de `_test.go` bestanden van de package. Voeg de volgende `ExampleAdd` functie toe aan het `adder_test.go` bestand.
 
 ```go
 func ExampleAdd() {
@@ -132,11 +134,11 @@ func ExampleAdd() {
 }
 ```
 
-(If your editor doesn't automatically import packages for you, the compilation step will fail because you will be missing `import "fmt"` in `adder_test.go`. It is strongly recommended you research how to have these kind of errors fixed for you automatically in whatever editor you are using.)
+(Als je editor de pakketten niet automatisch voor je importeert, mislukt de compilatiestap omdat `import "fmt"` ontbreekt in `adder_test.go`. Het is ten zeerste aan te raden om uit te zoeken hoe je dit soort fouten automatisch kunt laten oplossen in de editor die je gebruikt.)
 
-Adding this code will cause the example to appear in your documentation, making your code even more accessible. If ever your code changes so that the example is no longer valid, your build will fail.
+Door deze code toe te voegen, verschijnt het voorbeeld in je documentatie, waardoor je code nog toegankelijker wordt. Als je code ooit verandert, waardoor het voorbeeld niet meer geldig is, mislukt je build.
 
-Running the package's test suite, we can see the example `ExampleAdd` function is executed with no further arrangement from us:
+Wanneer we de testsuite van het pakket uitvoeren, zien we dat de voorbeeldfunctie `ExampleAdd` wordt uitgevoerd zonder verdere acties van onze kant:
 
 ```bash
 $ go test -v
@@ -146,19 +148,19 @@ $ go test -v
 --- PASS: ExampleAdd (0.00s)
 ```
 
-Notice the special format of the comment, `// Output: 6`. While the example will always be compiled, adding this comment means the example will also be executed. Go ahead and temporarily remove the comment `// Output: 6`, then run `go test`, and you will see `ExampleAdd` is no longer executed.
+Let op de speciale opmaak van de opmerking, `// Output: 6`. Hoewel het voorbeeld altijd gecompileerd zal worden, betekent het toevoegen van deze opmerking dat het voorbeeld ook uitgevoerd zal worden. Verwijder de opmerking tijdelijk `// Output: 6`, voer vervolgens go test uit en je zult zien dat ExampleAdd niet langer wordt uitgevoerd.
 
-Examples without output comments are useful for demonstrating code that cannot run as unit tests, such as that which accesses the network, while guaranteeing the example at least compiles.
+Voorbeelden zonder uitvoercommentaar zijn handig voor het demonstreren van code die niet als unit test kan worden uitgevoerd, zoals code die toegang nodig heeft tot het netwerk, terwijl toch de garantie wordt geboden dat het voorbeeld op zijn minst compileert.
 
-To view example documentation, let's take a quick look at `pkgsite`. Navigate to your project's directory, then run `pkgsite -open .`, which should open a web browser for you, pointing to `http://localhost:8080`. Inside here you'll see a list of all of Go's Standard Library packages, plus Third Party packages you have installed, under which you should see your example documentation for `github.com/quii/learn-go-with-tests`. Follow that link, and then look under `Integers`, then under `func Add`, then expand `Example` and you should see the example you added for `sum := Add(1, 5)`.
+Om voorbeelddocumentatie te bekijken, bekijken we `pkgsite` even snel. Navigeer naar de map van je project en voer `pkgsite -open` uit. Dit opent een webbrowser die verwijst naar `http://localhost:8080`. Hierin zie je een lijst met alle pakketten van de standaardbibliotheek van Go, plus pakketten van derden die je hebt geïnstalleerd. Daaronder zou je de voorbeelddocumentatie voor `github.com/quii/learn-go-with-tests` moeten vinden. Volg die link en kijk vervolgens onder `Integers`, vervolgens onder `func Add` en vouw `Example` uit. Je zou nu het voorbeeld moeten zien dat je hebt toegevoegd voor `sum := Add(1, 5)`.
 
-If you publish your code with examples to a public URL, you can share the documentation of your code at [pkg.go.dev](https://pkg.go.dev/). For example, [here](https://pkg.go.dev/github.com/quii/learn-go-with-tests/integers/v2) is the finalised API for this chapter. This web interface allows you to search for documentation of standard library packages and third-party packages.
+Als je je code met voorbeelden publiceert op een openbare URL, kun je de documentatie van jouw code delen op [pkg.go.dev](https://pkg.go.dev/). [Hier](https://pkg.go.dev/github.com/quii/learn-go-with-tests/integers/v2) is bijvoorbeeld de definitieve API voor dit hoofdstuk. Met deze web interface kun je zoeken naar documentatie van standaard bibliotheek pakketten en pakketten van derden.
 
-## Wrapping up
+## Samenvattend
 
-What we have covered:
+Wat we hebben besproken:
 
-*   More practice of the TDD workflow
-*   Integers, addition
-*   Writing better documentation so users of our code can understand its usage quickly
-*   Examples of how to use our code, which are checked as part of our tests
+* Meer geoefend met de TDD werkwijze
+* Integers, optellen
+* Het schrijven van betere documentatie, zodat gebruikers van onze code het gebruik ervan snel kunnen begrijpen
+* Voorbeelden van hoe je de code kunt gebruiken, die word gecontroleerd als onderdeel van de tests
