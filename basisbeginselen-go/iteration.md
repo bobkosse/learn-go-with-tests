@@ -1,14 +1,14 @@
-# Iteration
+# Iteratie
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/for)**
+[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/for)
 
-To do stuff repeatedly in Go, you'll need `for`. In Go there are no `while`, `do`, `until` keywords, you can only use `for`. Which is a good thing!
+Om dingen herhaaldelijk te doen in Go, heb je `for` nodig. In Go zijn er geen `while`, `do` en `until` trefwoorden, je kunt alleen for gebruiken. En dat is maar goed ook!
 
-Let's write a test for a function that repeats a character 5 times.
+Laten we een test schrijven voor een functie die een teken 5 keer herhaalt.
 
-There's nothing new so far, so try and write it yourself for practice.
+Er is nog niets nieuws, dus probeer het zelf te schrijven om te oefenen. Let op dat je een nieuwe map en package aanmaakt. Lees de [deze sectie](integers.md#schrijf-eerst-je-test) nog eens door om te terug te lezen hoe je dat doet.
 
-## Write the test first
+## Schrijf eerst de test
 
 ```go
 package iteration
@@ -25,15 +25,17 @@ func TestRepeat(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## Probeer en voer de test uit
 
 `./repeat_test.go:6:14: undefined: Repeat`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-_Keep the discipline!_ You don't need to know anything new right now to make the test fail properly.
+_Behoud de discipline!_ Je hoeft niets nieuws te weten om de op de juiste manier te laten falen.
 
-All you need to do right now is enough to make it compile so you can check your test is written well.
+Alles wat je op dit moment moet doen is&#x20;
+
+Het enige dat je nu hoeft te doen, is de test te laten compileren, zodat je kunt controleren of de test goed is geschreven.
 
 ```go
 package iteration
@@ -43,13 +45,13 @@ func Repeat(character string) string {
 }
 ```
 
-Isn't it nice to know you already know enough Go to write tests for some basic problems? This means you can now play with the production code as much as you like and know it's behaving as you'd hope.
+Is het niet fijn om te weten dat je al genoeg Go-kennis hebt om tests te schrijven voor een aantal basisproblemen? Dit betekent dat je nu zoveel met de productiecode kunt spelen als je wilt en weet dat deze zich gedraagt zoals je hoopt.
 
 `repeat_test.go:10: expected 'aaaaa' but got ''`
 
-## Write enough code to make it pass
+## Schrijf genoeg code om te test te laten slagen
 
-The `for` syntax is very unremarkable and follows most C-like languages.
+De `for` syntaxis is zeer onopvallend en volgt die van de meeste C-achtige talen.
 
 ```go
 func Repeat(character string) string {
@@ -61,21 +63,21 @@ func Repeat(character string) string {
 }
 ```
 
-Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces `{ }` are always required. You might wonder what is happening in the row
+In tegenstelling tot andere talen zoals C, Java of JavaScript staan er geen haakjes rond de drie componenten van de for-instructie en zijn de accolades `{ }` altijd vereist. Je vraagt je misschien af wat er in deze regel gebeurt,
 
 ```go
 	var repeated string
 ```
 
-as we've been using `:=` so far to declare and initializing variables. However, `:=` is simply [short hand for both steps](https://gobyexample.com/variables). Here we are declaring a `string` variable only. Hence, the explicit version. We can also use `var` to declare functions, as we'll see later on.
+omdat we tot nu toe `:=` hebben gebruikt om variabelen te declareren en te initialiseren. `:=` is echter gewoon een [afkorting voor beide stappen](https://gobyexample.com/variables). Hier declareren we alleen een `string` variabele. Vandaar de expliciete versie. We kunnen `var` ook gebruiken om functies te declareren, zoals we later zullen zien.
 
-Run the test and it should pass.
+Voer de test uit en deze zou moeten slagen.
 
-Additional variants of the for loop are described [here](https://gobyexample.com/for).
+Aanvullende varianten van de for-lus worden [hier](https://gobyexample.com/for) beschreven.
 
 ## Refactor
 
-Now it's time to refactor and introduce another construct `+=` assignment operator.
+Nu is het tijd om te refactoren en een andere constructie te introduceren: `+=` toewijzingsoperator.
 
 ```go
 const repeatCount = 5
@@ -89,11 +91,11 @@ func Repeat(character string) string {
 }
 ```
 
-`+=` called _"the Add AND assignment operator"_, adds the right operand to the left operand and assigns the result to left operand. It works with other types like integers.
+`+=`, ook wel "_de Add AND assignment operator_" genoemd, voegt de rechter operand toe aan de linker operand en wijst het resultaat toe aan de linker operand. Het werkt ook met andere typen, zoals gehele getallen.
 
 ### Benchmarking
 
-Writing [benchmarks](https://golang.org/pkg/testing/#hdr-Benchmarks) in Go is another first-class feature of the language and it is very similar to writing tests.
+Het schrijven van [benchmarks](https://golang.org/pkg/testing/#hdr-Benchmarks) in Go is een andere geweldige functie van de taal en lijkt erg op het schrijven van tests.
 
 ```go
 func BenchmarkRepeat(b *testing.B) {
@@ -103,17 +105,19 @@ func BenchmarkRepeat(b *testing.B) {
 }
 ```
 
-You'll see the code is very similar to a test.
+Je ziet dat de code erg overeen komt met een test.
 
-The `testing.B` gives you access to the loop function. `Loop()` returns true as long as the benchmark should continue running. 
+Met `testing.B` krijg je toegang tot de lusfunctie. `Loop()` retourneert true zolang de benchmark moet blijven draaien.
 
-When the benchmark code is executed, it measures how long it takes. After `Loop()` returns false, `b.N` contains the total number of iterations that ran.
+Wanneer de benchmarkcode wordt uitgevoerd, meet deze hoe lang het duurt. Nadat `Loop()` false retourneert, bevat `b.N` het totale aantal iteraties dat is uitgevoerd.
 
-The number of times the code is run shouldn't matter to you, the framework will determine what is a "good" value for that to let you have some decent results.
+Het maakt voor jou niet uit hoe vaak de code wordt uitgevoerd. Het framework bepaalt zelf wat een 'goede' waarde is, zodat je nuttige resultaten krijgt.
+
+Om de benchmarks uit te voeren, voer je `go test -bench=.` uit. (of als je Windows PowerShell gebruikt, voer je `go test -bench="."` uit.)
 
 To run the benchmarks do `go test -bench=.` (or if you're in Windows Powershell `go test -bench="."`)
 
-```text
+```
 goos: darwin
 goarch: amd64
 pkg: github.com/quii/learn-go-with-tests/for/v4
@@ -121,11 +125,11 @@ pkg: github.com/quii/learn-go-with-tests/for/v4
 PASS
 ```
 
-What `136 ns/op` means is our function takes on average 136 nanoseconds to run \(on my computer\). Which is pretty ok! To test this it ran it 10000000 times.
+Wat `136 ns/op` betekent, is dat onze functie gemiddeld 136 nanoseconden nodig heeft om te draaien (op mijn computer). Dat is best oké! Om dit te testen, draaide hij de functie 10000000 keer.
 
-**Note:** By default benchmarks are run sequentially.
+**Noot:** Benchmarks worden standaard sequentieel uitgevoerd.
 
-Only the body of the loop is timed; it automatically excludes setup and cleanup code from benchmark timing. A typical benchmark is structured like:
+Alleen de body van de lus wordt getimed; setup- en opschoon-code wordt automatisch uitgesloten van benchmark timing. Een typische benchmark is als volgt opgebouwd:
 
 ```go
 func Benchmark(b *testing.B) {
@@ -137,10 +141,9 @@ func Benchmark(b *testing.B) {
 }
 ```
 
-Strings in Go are immutable, meaning every concatenation, such as in our `Repeat` function, involves copying memory to accommodate the new string. This impacts performance, particularly during heavy string concatenation.
+Strings in Go zijn niet-muteerbaar, wat betekent dat elke samenvoeging, zoals in onze `Repeat`-functie, geheugenkopieerbewerkingen vereist om de nieuwe string te kunnen verwerken. Dit heeft invloed op de prestaties, met name bij intensieve samenvoeging van strings.
 
-The standard library provides the `strings.Builder`[stringsBuilder] type which minimizes memory copying.
-It implements a `WriteString` method which we can use to concatenate strings:
+De standaardbibliotheek biedt het type `strings.Builder` [stringsBuilder](https://pkg.go.dev/strings#Builder), dat kopiëren van geheugen minimaliseert. Het implementeert een `WriteString`-methode die we kunnen gebruiken om strings samen te voegen:
 
 ```go
 const repeatCount = 5
@@ -154,12 +157,11 @@ func Repeat(character string) string {
 }
 ```
 
-**Note**: We have to call the `String` method to retrieve the final result.
+**Noot**: We moeten de `String` methode aanroepen om het laatste resultaat op te halen.
 
-We can use `BenchmarkRepeat` to confirm that `strings.Builder` significantly improves performance.
-Run `go test -bench=. -benchmem`:
+We kunnen `BenchmarkRepeat` gebruiken om te bevestigen dat `strings.Builder` de prestaties aanzienlijk verbetert. Voer `go test -bench=. -benchmem` uit:
 
-```text
+```
 goos: darwin
 goarch: amd64
 pkg: github.com/quii/learn-go-with-tests/for/v4
@@ -167,21 +169,19 @@ pkg: github.com/quii/learn-go-with-tests/for/v4
 PASS
 ```
 
-The `-benchmem` flag reports information about memory allocations:
+De `-benchmem` flag rapporteert informatie over het toekennen van geheugen:
 
-* `B/op`: the number of bytes allocated per iteration
-* `allocs/op`: the number of memory allocations per iteration
+* `B/op`: het aantal bytes dat is toegekend per iteratie
+* `allocs/op`: het aantal geheugen toekenningen per iteratie
 
-## Practice exercises
+## Oefeningen
 
-* Change the test so a caller can specify how many times the character is repeated and then fix the code
-* Write `ExampleRepeat` to document your function
-* Have a look through the [strings](https://golang.org/pkg/strings) package. Find functions you think could be useful and experiment with them by writing tests like we have here. Investing time learning the standard library will really pay off over time.
+* Verander de test zodat bij de aanroep kan worden aangeven hoe vaak het teken wordt herhaald en vervolgens de code kan corrigeren
+* Schrijf `ExampleRepeat` om de functie te documenteren
+* Bekijk de [strings](https://golang.org/pkg/strings) package. Zoek functies waarvan je denkt dat ze nuttig kunnen zijn en experimenteer ermee door tests te schrijven zoals we hier hebben gedaan. Tijd investeren in het leren van de standaardbibliotheek zal zich op den duur zeker terugbetalen.
 
-## Wrapping up
+## Samenvattend
 
-* More TDD practice
-* Learned `for`
-* Learned how to write benchmarks
-
-[stringsBuilder]: https://pkg.go.dev/strings#Builder
+* Meer TDD oefeningen
+* De `for` loop geleerd&#x20;
+* Geleerd hoe je benchmarks kunt schrijven
