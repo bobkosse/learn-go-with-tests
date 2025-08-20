@@ -176,8 +176,8 @@ De `-benchmem` flag rapporteert informatie over het toekennen van geheugen:
 
 ## Oefeningen
 
-* Verander de test zodat bij de aanroep kan worden aangeven hoe vaak het teken wordt herhaald en vervolgens de code kan corrigeren
-* Schrijf `ExampleRepeat` om de functie te documenteren
+* Verander de test zodat bij de aanroep kan worden aangeven hoe vaak het teken wordt herhaald. Pas vervolgens de code aan zodat de test slaagt.
+* Schrijf `ExampleRepeat` om de functie te documenteren.
 * Bekijk de [strings](https://golang.org/pkg/strings) package. Zoek functies waarvan je denkt dat ze nuttig kunnen zijn en experimenteer ermee door tests te schrijven zoals we hier hebben gedaan. Tijd investeren in het leren van de standaardbibliotheek zal zich op den duur zeker terugbetalen.
 
 ## Samenvattend
