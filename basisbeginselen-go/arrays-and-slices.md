@@ -1,19 +1,16 @@
-# Arrays and slices
+# Arrays en slices
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
+[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
 
-Arrays allow you to store multiple elements of the same type in a variable in
-a particular order.
+Met arrays kun je meerdere elementen van hetzelfde type in een variabele in een bepaalde volgorde opslaan.
 
-When you have arrays, it is very common to have to iterate over them. So let's
-use [our new-found knowledge of `for`](iteration.md) to make a `Sum` function. `Sum` will
-take an array of numbers and return the total.
+Wanneer je arrays hebt, is het heel gebruikelijk om eroverheen te itereren. Laten we daarom onze [nieuwe kennis van `for`](iteration.md) gebruiken om een ​​`Sum`-functie te maken. `Sum` neemt een array met getallen en retourneert het totaal.
 
-Let's use our TDD skills
+Natuurlijk gebruiken we onze TDD vaardigheden!
 
-## Write the test first
+## Schrijf eerst de test
 
-Create a new folder to work in. Create a new file called `sum_test.go` and insert the following:
+Maak een nieuwe map aan om in te werken. Maak daarin een nieuw bestand aan met de naam `sum_test.go` en zet daarin de volgende codesum.:
 
 ```go
 package main
@@ -33,31 +30,24 @@ func TestSum(t *testing.T) {
 }
 ```
 
-Arrays have a _fixed capacity_ which you define when you declare the variable.
-We can initialize an array in two ways:
+Arrays hebben _vaste capaciteit_ welke je definieert bij het declareren van de variabele. We kunnen een array op twee manieren initialiseren:
 
-* \[N\]type{value1, value2, ..., valueN} e.g. `numbers := [5]int{1, 2, 3, 4, 5}`
-* \[...\]type{value1, value2, ..., valueN} e.g. `numbers := [...]int{1, 2, 3, 4, 5}`
+* \[N]type{value1, value2, ..., valueN} bijv. `numbers := [5]int{1, 2, 3, 4, 5}`
+* \[...]type{value1, value2, ..., valueN} bijv. `numbers := [...]int{1, 2, 3, 4, 5}`
 
-It is sometimes useful to also print the inputs to the function in the error message.
-Here, we are using the `%v` placeholder to print the "default" format, which works well for arrays.
+Soms is het nuttig om ook de invoer van de functie in de foutmelding weer te geven. Hier gebruiken we de tijdelijke aanduiding `%v` om de "standaard"-indeling weer te geven, wat goed werkt voor arrays.
 
-[Read more about the format strings](https://golang.org/pkg/fmt/)
+[Lees meer over het formatteren van string waarden](https://golang.org/pkg/fmt/)
 
-## Try to run the test
+## Probeer de test uit te voeren
 
-If you had initialized go mod with `go mod init main` you will be presented with an error
-`_testmain.go:13:2: cannot import "main"`. This is because according to common practice,
-package main will only contain integration of other packages and not unit-testable code and
-hence Go will not allow you to import a package with name `main`.
+Als je go mod hebt geïnitialiseerd met `go mod init main`, krijg je de foutmelding `_testmain.go:13:2: cannot import "main"`. Dit komt doordat pakket main volgens de gangbare werkwijze alleen de integratie van andere pakketten bevat en geen unit-testbare code. Daarom staat Go het importeren van een pakket met de naam main niet toe.
 
-To fix this, you can rename the main module in `go.mod` to any other name.
+Om dit probleem op te lossen, kun je de hoofdmodule in `go.mod` een andere naam geven.
 
-Once the above error is fixed, if you run `go test` the compiler will fail with the familiar
-`./sum_test.go:10:15: undefined: Sum` error. Now we can proceed with writing the actual method
-to be tested.
+Zodra bovenstaande fout is verholpen, zal de compiler bij het uitvoeren van `go test` de bekende `./sum_test.go:10:15: undefined: Sum`-fout laten zien. Nu kunnen we verdergaan met het schrijven van de daadwerkelijk te testen methode.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
 
 In `sum.go`
 
@@ -69,11 +59,11 @@ func Sum(numbers [5]int) int {
 }
 ```
 
-Your test should now fail with _a clear error message_
+Je test zou nu moeten mislukken met een _duidelijke foutmelding_
 
 `sum_test.go:13: got 0 want 15 given, [1 2 3 4 5]`
 
-## Write enough code to make it pass
+## Schrijf voldoende code om de test te laten slagen
 
 ```go
 func Sum(numbers [5]int) int {
@@ -85,13 +75,11 @@ func Sum(numbers [5]int) int {
 }
 ```
 
-To get the value out of an array at a particular index, just use `array[index]`
-syntax. In this case, we are using `for` to iterate 5 times to work through the
-array and add each item onto `sum`.
+Om de waarde uit een array op een bepaalde index te halen, gebruik je de syntaxis `array[index]`. In dit geval gebruiken we `for` om vijf keer te itereren om de array te doorlopen en elk item aan `sum` toe te voegen.
 
 ## Refactor
 
-Let's introduce [`range`](https://gobyexample.com/range) to help clean up our code
+Een mooi moment om [`range`](https://gobyexample.com/range) te introduceren om de code op te schonen
 
 ```go
 func Sum(numbers [5]int) int {
@@ -103,31 +91,23 @@ func Sum(numbers [5]int) int {
 }
 ```
 
-`range` lets you iterate over an array. On each iteration, `range` returns two values - the index and the value.
-We are choosing to ignore the index value by using `_` [blank identifier](https://golang.org/doc/effective_go.html#blank).
+`range` laat je over een array ittereren. Bij iedereen iteratie geeft  `range` twee resultaten terug: de index en de waarde. We kiezen er hier voor om de index waarde te negeren door gebruik te maken van `_`, diut wordt een [blank identifier](https://golang.org/doc/effective_go.html#blank) genoemd.
 
-### Arrays and their type
+### Arrays en hun type
 
-An interesting property of arrays is that the size is encoded in its type. If you try
-to pass an `[4]int` into a function that expects `[5]int`, it won't compile.
-They are different types so it's just the same as trying to pass a `string` into
-a function that wants an `int`.
+Een interessante eigenschap van arrays is dat de grootte in het type is gecodeerd. Als je een `[4]int` probeert door te geven aan een functie die een `[5]int` verwacht, zal de code niet compileren. Het zijn verschillende typen, dus het is precies hetzelfde als een `string` proberen door te geven aan een functie die een `int` wil ontvangen.
 
-You may be thinking it's quite cumbersome that arrays have a fixed length, and most
-of the time you probably won't be using them!
+Misschien vind je het nogal omslachtig dat arrays een vaste lengte hebben, en in de meeste gevallen zul je ze daarom waarschijnlijk niet gebruiken!
 
-Go has _slices_ which do not encode the size of the collection and instead can
-have any size.
+Go heeft _slices_ die de grootte van de verzameling niet coderen, maar in plaats daarvan elke gewenste grootte kunnen hebben.
 
-The next requirement will be to sum collections of varying sizes.
+De volgende opdracht om te bouwen is het optellen van verzamelingen van verschillende lengtes.
 
-## Write the test first
+## Schrijf eerst de test
 
-We will now use the [slice type][slice] which allows us to have collections of
-any size. The syntax is very similar to arrays, you just omit the size when
-declaring them
+We gebruiken nu het [slice-type](https://golang.org/doc/effective_go.html#slices), waarmee we verzamelingen van elke grootte kunnen hebben. De syntaxis is vergelijkbaar met die van arrays; je laat alleen de grootte weg bij het declareren.
 
-`mySlice := []int{1,2,3}` rather than `myArray := [3]int{1,2,3}`
+`mySlice := []int{1,2,3}` in plaats van `myArray := [3]int{1,2,3}`
 
 ```go
 func TestSum(t *testing.T) {
@@ -157,22 +137,20 @@ func TestSum(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## Voer de test uit
 
-This does not compile
+Deze zal niet compileren
 
 `./sum_test.go:22:13: cannot use numbers (type []int) as type [5]int in argument to Sum`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
 
-The problem here is we can either
+Het probleem hier is dat we ofwel
 
-* Break the existing API by changing the argument to `Sum` to be a slice rather
-  than an array. When we do this, we will potentially ruin
-  someone's day because our _other_ test will no longer compile!
-* Create a new function
+* We breken de bestaande API door het argument `Sum` te wijzigen naar een slice in plaats van een array. Als we dit doen, verpesten we mogelijk iemands dag, omdat onze andere test niet meer compileert!
+* Een nieuwe functie maken die hetzelfde doet
 
-In our case, no one else is using our function, so rather than having two functions to maintain, let's have just one.
+In ons geval gebruikt niemand anders onze functie. In plaats van twee functies te onderhouden, houden we er maar één.
 
 ```go
 func Sum(numbers []int) int {
@@ -184,16 +162,15 @@ func Sum(numbers []int) int {
 }
 ```
 
-If you try to run the tests they will still not compile, you will have to change the first test to pass in a slice rather than an array.
+Als je de tests probeert uit te voeren, worden ze nog steeds niet gecompileerd. Je moet ook de eerste test wijzigen, zodat deze een slice bevat in plaats van een array.
 
-## Write enough code to make it pass
+## Schrijf voldoende code om de test te laten slagen
 
-It turns out that fixing the compiler problems were all we need to do here and the tests pass!
+Het blijkt dat het oplossen van de compilerproblemen het enige was wat we hoeven te doen, om de tests de laten slagen!
 
 ## Refactor
 
-We already refactored `Sum` - all we did was replace arrays with slices, so no extra changes are required.
-Remember that we must not neglect our test code in the refactoring stage - we can further improve our `Sum` tests.
+We hebben `Sum` al gerefactored. We hebben alleen arrays vervangen door slices, dus er zijn geen extra wijzigingen nodig. Vergeet niet dat we onze testcode niet mogen verwaarlozen tijdens de refactoringfase. Ook de code voor de tests willen we zo goed en efficiënt mogelijk maken. We kunnen onze `Sum`-tests verder verbeteren.
 
 ```go
 func TestSum(t *testing.T) {
@@ -223,21 +200,13 @@ func TestSum(t *testing.T) {
 }
 ```
 
-It is important to question the value of your tests. It should not be a goal to
-have as many tests as possible, but rather to have as much _confidence_ as
-possible in your code base. Having too many tests can turn in to a real problem
-and it just adds more overhead in maintenance. **Every test has a cost**.
+Het is belangrijk om de waarde van je tests in twijfel te trekken. Het doel moet niet zijn om zoveel mogelijk tests te hebben, maar om zoveel mogelijk vertrouwen in je codebase te hebben. Te veel tests kunnen een echt probleem vormen en zorgen alleen maar voor meer overhead in onderhoud. **Elke test brengt kosten met zich mee.**
 
-In our case, you can see that having two tests for this function is redundant.
-If it works for a slice of one size it's very likely it'll work for a slice of
-any size \(within reason\).
+In ons geval zie je dat het overbodig is om twee tests voor deze functie te hebben. Als het werkt voor een slice van één grootte, is de kans groot dat het ook werkt voor een slice van elke grootte (binnen redelijke grenzen).
 
-Go's built-in testing toolkit features a [coverage tool](https://blog.golang.org/cover).
-Whilst striving for 100% coverage should not be your end goal, the coverage tool can help
-identify areas of your code not covered by tests. If you have been strict with TDD,
-it's quite likely you'll have close to 100% coverage anyway.
+De ingebouwde testtoolkit van Go bevat een [coverage tool](https://blog.golang.org/cover). Hoewel het streven naar 100% dekking niet je einddoel zou moeten zijn, kan de coverage tool je helpen bij het identificeren van delen van je code die niet door tests worden gedekt. ​​Als je strikt de TDD werkwijze hebt gevolgd, is de kans groot dat je toch bijna 100% dekking hebt.
 
-Try running
+Voer het onderstaande commando uit
 
 `go test -cover`
 
@@ -248,23 +217,21 @@ PASS
 coverage: 100.0% of statements
 ```
 
-Now delete one of the tests and check the coverage again.
+Verwijder nu een van de tests en controleer opnieuw de coverage.
 
-Now that we are happy we have a well-tested function you should commit your
-great work before taking on the next challenge.
+Nu we tevreden zijn dat we een goed geteste functie hebben, is het belangrijk je code weer vast te leggen in versiebeheer, voordat je doorgaat naar de volgende uitdaging.
 
-We need a new function called `SumAll` which will take a varying number of
-slices, returning a new slice containing the totals for each slice passed in.
+We hebben een nieuwe functie nodig met de naam `SumAll` die een wisselend aantal slices accepteert en een nieuwe slice retourneert met de totalen van elke doorgegeven slice.
 
-For example
+Bijvoorbeeld:
 
-`SumAll([]int{1,2}, []int{0,9})` would return `[]int{3, 9}`
+`SumAll([]int{1,2}, []int{0,9})` moet `[]int{3, 9}`teruggeven
 
-or
+of
 
-`SumAll([]int{1,1,1})` would return `[]int{3}`
+`SumAll([]int{1,1,1})` moet `[]int{3}` teruggeven
 
-## Write the test first
+## Schrijf eerst de test en voer die uit
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -278,15 +245,15 @@ func TestSumAll(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## Voer de test uit
 
 `./sum_test.go:23:9: undefined: SumAll`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
 
-We need to define `SumAll` according to what our test wants.
+We moeten `SumAll` definiëren op basis van wat onze test wil.
 
-Go can let you write [_variadic functions_](https://gobyexample.com/variadic-functions) that can take a variable number of arguments.
+Met Go kun je [variadic functies](https://gobyexample.com/variadic-functions) schrijven die een variabel aantal argumenten kunnen aannemen.
 
 ```go
 func SumAll(numbersToSum ...[]int) []int {
@@ -294,14 +261,11 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 ```
 
-This is valid, but our tests still won't compile!
+Dit is geldig, maar onze tests compileren nog steeds niet!
 
 `./sum_test.go:26:9: invalid operation: got != want (slice can only be compared to nil)`
 
-Go does not let you use equality operators with slices. You _could_ write
-a function to iterate over each `got` and `want` slice and check their values
-but for convenience sake, we can use [`reflect.DeepEqual`][deepEqual] which is
-useful for seeing if _any_ two variables are the same.
+Go staat het gebruik van vergelijkingsoperatoren met slices niet toe. Je zou een functie kunnen schrijven om over elke `got`- en `want`-slice te itereren en hun waarden te controleren, maar voor het gemak kunnen we [reflect.DeepEqual](https://golang.org/pkg/reflect/#DeepEqual) gebruiken, wat handig is om te zien of twee variabelen hetzelfde zijn.
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -315,11 +279,9 @@ func TestSumAll(t *testing.T) {
 }
 ```
 
-\(make sure you `import reflect` in the top of your file to have access to `DeepEqual`\)
+(zorg ervoor dat je `import reflect` bovenin je bestand toevoegd om toegang te krijgen tot `DeepEqual`)
 
-It's important to note that `reflect.DeepEqual` is not "type safe" - the code
-will compile even if you did something a bit silly. To see this in action,
-temporarily change the test to:
+Het is belangrijk om te weten dat `reflect.DeepEqual` niet "typesafe" is. De code compileert zelfs als je iets onbenulligs hebt gedaan. Om dit in de praktijk te zien, wijzig je de test tijdelijk in:
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -333,21 +295,17 @@ func TestSumAll(t *testing.T) {
 }
 ```
 
-What we have done here is try to compare a `slice` with a `string`. This makes
-no sense, but the test compiles! So while using `reflect.DeepEqual` is
-a convenient way of comparing slices \(and other things\) you must be careful
-when using it.
+Wat we hier hebben gedaan, is proberen een `slice` te vergelijken met een `string`. Dit slaat nergens op, maar de test compileert wel! Dus hoewel `reflect.DeepEqual` een handige manier is om slices (en andere dingen) te vergelijken, moet je voorzichtig zijn bij het gebruik ervan.
 
-(From Go 1.21, [slices](https://pkg.go.dev/slices#pkg-overview) standard package is available, which has [slices.Equal](https://pkg.go.dev/slices#Equal) function to do a simple shallow compare on slices, where you don't need to worry about the types like the above case. Note that this function expects the elements to be [comparable](https://pkg.go.dev/builtin#comparable). So, it can't be applied to slices with non-comparable elements like 2D slices.)  
+(Vanaf Go 1.21 is het [Slices](https://pkg.go.dev/slices#pkg-overview)-standaardpakket beschikbaar, met de [slices.Equal](https://pkg.go.dev/slices#Equal)-functie om een ​​eenvoudige, oppervlakkige vergelijking uit te voeren op slices, waarbij je je geen zorgen hoeft te maken over de typen zoals in het bovenstaande geval. Houd er rekening mee dat deze functie verwacht dat de elementen [vergelijkbaar](https://pkg.go.dev/slices#Equal) zijn. Deze functie kan dus niet worden toegepast op slices met niet-vergelijkbare elementen, zoals 2D-slices.)
 
-Change the test back again and run it. You should have test output like the following
+Verander de test naar de originele staat en voer deze uit. Je zou een resultaat moeten zien dat er als volgt uitziet:
 
 `sum_test.go:30: got [] want [3 9]`
 
-## Write enough code to make it pass
+## Schrijf voldoende code om de test te laten slagen
 
-What we need to do is iterate over the varargs, calculate the sum using our
-existing `Sum` function, then add it to the slice we will return
+Wat we moeten doen is itereren over de `varargs`, de som berekenen met behulp van onze bestaande `Sum`-functie en deze vervolgens toevoegen aan de slice die we zullen retourneren
 
 ```go
 func SumAll(numbersToSum ...[]int) []int {
@@ -362,23 +320,19 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 ```
 
-Lots of new things to learn!
+Dat zijn veel nieuwe dingen om te leren!
 
-There's a new way to create a slice. `make` allows you to create a slice with
-a starting capacity of the `len` of the `numbersToSum` we need to work through. The length of a slice is the number of elements it holds `len(mySlice)`, while the capacity is the number of elements it can hold in the underlying array `cap(mySlice)`, e.g., `make([]int, 0, 5)` creates a slice with length 0 and capacity 5.
+Er is een nieuwe manier om een ​​slice te maken. Met `make` kun je een slice maken met een startcapaciteit van de lengte ( `len` ) van de `numbersToSum` die we moeten doorlopen. De lengte van een slice is het aantal elementen dat de slice bevat: `len(mySlice)`, terwijl de capaciteit het aantal elementen is dat het kan bevatten in de onderliggende array `cap(mySlice)`. Bijvoorbeeld: `make([]int, 0, 5)` maakt een slice met lengte 0 en capaciteit 5.
 
-You can index slices like arrays with `mySlice[N]` to get the value out or
-assign it a new value with `=`
+Je kunt slices indexeren als arrays met `mySlice[N]` om de waarde eruit te halen of er een nieuwe waarde aan toe te wijzen met `=`
 
-The tests should now pass.
+De tests zouden nu moeten slagen.
 
 ## Refactor
 
-As mentioned, slices have a capacity. If you have a slice with a capacity of
-2 and try to do `mySlice[10] = 1` you will get a _runtime_ error.
+Zoals vermeld, hebben slices een capaciteit. Als je een slice hebt met een capaciteit van 2 en je probeert `mySlice[10] = 1` uit te voeren, krijg je een _runtime_-fout.
 
-However, you can use the `append` function which takes a slice and a new value,
-then returns a new slice with all the items in it.
+Je kunt echter de `append`-functie gebruiken, die een segment en een nieuwe waarde als invoer neemt en vervolgens een nieuw segment retourneert met alle items erin. De code is te verbeteren naar:
 
 ```go
 func SumAll(numbersToSum ...[]int) []int {
@@ -391,14 +345,11 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 ```
 
-In this implementation, we are worrying less about capacity. We start with an
-empty slice `sums` and append to it the result of `Sum` as we work through the varargs.
+In deze implementatie maken we ons minder zorgen over capaciteit. We beginnen met een lege slice, `sums`, en voegen daar het resultaat van `Sum` aan toe terwijl we de varargs doorlopen.
 
-Our next requirement is to change `SumAll` to `SumAllTails`, where it will
-calculate the totals of the "tails" of each slice. The tail of a collection is
-all items in the collection except the first one \(the "head"\).
+Onze volgende opdracht is om `SumAll` te wijzigen in `SumAllTails`, zodat het de totalen van de "tails" van elke slice berekent. De tail van een collectie bestaat uit alle items in de collectie, behalve de eerste (de "head").
 
-## Write the test first
+## Schrijf de eerste test
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -411,17 +362,19 @@ func TestSumAllTails(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## Voer de test uit
 
 `./sum_test.go:26:9: undefined: SumAllTails`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
 
-Rename the function to `SumAllTails` and re-run the test
+De opdracht was de bestaande functie te wijzigen. Hernoem daarom de functie `SumAll` naar `SumAllTails` en voer de test opnieuw uit.&#x20;
 
-`sum_test.go:30: got [3 9] want [2 9]`
+`sum_test.go:30: got [3 9] want [2 9]`&#x20;
 
-## Write enough code to make it pass
+**Let op:** Pas ook de aanroep van de `TestSumAll` functie aan!
+
+## Schrijf voldoende code om de test te laten slagen
 
 ```go
 func SumAllTails(numbersToSum ...[]int) []int {
@@ -435,21 +388,15 @@ func SumAllTails(numbersToSum ...[]int) []int {
 }
 ```
 
-Slices can be sliced! The syntax is `slice[low:high]`. If you omit the value on
-one of the sides of the `:` it captures everything to that side of it. In our
-case, we are saying "take from 1 to the end" with `numbers[1:]`. You may wish to
-spend some time writing other tests around slices and experiment with the
-slice operator to get more familiar with it.
+Slices kunnen worden gesliced! De syntaxis is `slice[laag:hoog]`. Als je de waarde aan een van de zijkanten van de `:` weglaat, wordt alles aan die kant vastgelegd. In ons geval zeggen we "neem van 1 tot het einde" met `numbers[1:]`. Je kunt wat tijd besteden aan het schrijven van andere tests rond slices en experimenteren met de slice-operator om er meer vertrouwd mee te raken.
 
 ## Refactor
 
-Not a lot to refactor this time.
+Deze keer valt er niet veel te refactoren.
 
-What do you think would happen if you passed in an empty slice into our
-function? What is the "tail" of an empty slice? What happens when you tell Go to
-capture all elements from `myEmptySlice[1:]`?
+Wat denk je dat er zou gebeuren als je een lege slice aan onze functie zou toevoegen? Wat is de "staart" van een lege slice? Wat gebeurt er als je Go opdracht geeft om alle elementen uit `myEmptySlice[1:]` vast te leggen?
 
-## Write the test first
+## Schrijf eerst de test
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -475,19 +422,19 @@ func TestSumAllTails(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## Voer de test uit
 
-```text
+```
 panic: runtime error: slice bounds out of range [recovered]
     panic: runtime error: slice bounds out of range
 ```
 
-Oh no! It's important to note that while the test _has compiled_, it _has a runtime error_.  
+O nee! Het is belangrijk om op te merken dat de test weliswaar is _gecompileerd_, maar dat er een _runtime-fout_ is opgetreden.
 
-Compile time errors are our friend because they help us write software that works,  
-runtime errors are our enemies because they affect our users.
+Fouten tijdens het compileren zijn onze vriend, omdat ze ons helpen werkende software te schrijven.\
+Rundtime-fouten zijn onze vijanden, omdat ze onze gebruikers beïnvloeden.
 
-## Write enough code to make it pass
+## Schrijf voldoiende code om de test te laten slagen
 
 ```go
 func SumAllTails(numbersToSum ...[]int) []int {
@@ -507,7 +454,7 @@ func SumAllTails(numbersToSum ...[]int) []int {
 
 ## Refactor
 
-Our tests have some repeated code around the assertions again, so let's extract those into a function.
+Onze tests bevatten opnieuw herhaalde code rondom de beweringen. Die gaan we in een functie extraheren.
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -534,53 +481,36 @@ func TestSumAllTails(t *testing.T) {
 }
 ```
 
-We could've created a new function `checkSums` like we normally do, but in this case, we're showing a new technique, assigning a function to a variable. It might look strange but, it's no different to assigning a variable to a `string`, or an `int`, functions in effect are values too. 
+We hadden een nieuwe functie `checkSums` kunnen maken zoals we normaal doen, maar in dit geval laten we een nieuwe techniek zien: het toewijzen van een functie aan een variabele. Het ziet er misschien vreemd uit, maar het is niet anders dan het toewijzen van een variabele aan een `string` of een `int`. Functies zijn in feite ook waarden.
 
-It's not shown here, but this technique can be useful when you want to bind a function to other local variables in "scope" (e.g between some `{}`). It also allows you to reduce the surface area of your API. 
+Het wordt hier niet getoond, maar deze techniek kan handig zijn wanneer je een functie wilt binden aan andere lokale variabelen in de "scope" (bijvoorbeeld tussen enkele `{}`). Hiermee kun je ook het oppervlak van je API verkleinen.
 
-By defining this function inside the test, it cannot be used by other functions in this package. Hiding variables and functions that don't need to be exported is an important design consideration.
+Door deze functie binnen de test te definiëren, kan deze niet door andere functies in dit pakket worden gebruikt. Het verbergen van variabelen en functies die niet geëxporteerd hoeven te worden, is een belangrijke ontwerpoverweging.
 
-A handy side-effect of this is this adds a little type-safety to our code. If
-a developer mistakenly adds a new test with `checkSums(t, got, "dave")` the compiler
-will stop them in their tracks.
+Een handig neveneffect hiervan is dat het een beetje typesafety aan onze code toevoegt. Als een ontwikkelaar per ongeluk een nieuwe test toevoegt met `checkSums(t, got, "dave")`, zal de compiler hem onmiddellijk stoppen.
 
 ```bash
 $ go test
 ./sum_test.go:52:21: cannot use "dave" (type string) as type []int in argument to checkSums
 ```
 
-## Wrapping up
+## Samenvattend
 
-We have covered
+We hebben het gehad over:
 
 * Arrays
 * Slices
-  * The various ways to make them
-  * How they have a _fixed_ capacity but you can create new slices from old ones
-    using `append`
-  * How to slice, slices!
-* `len` to get the length of an array or slice
+  * De verschillende manieren om ze aan te maken
+  * Hoe ze een _vaste capaciteit_ hebben, maar je kunt nieuwe slices maken van oude slices met behulp van  `append`
+  * Hoe je slices kunt slicen!
+* `len` om de lengte van een array of slice te krijgen
 * Test coverage tool
-* `reflect.DeepEqual` and why it's useful but can reduce the type-safety of your code
+* `reflect.DeepEqual` en waarom het nuttig is, maar de typeveiligheid van je code kan verminderen
 
-We've used slices and arrays with integers but they work with any other type
-too, including arrays/slices themselves. So you can declare a variable of
-`[][]string` if you need to.
+We hebben slices en arrays met gehele getallen gebruikt, maar ze werken ook met elk ander type, inclusief arrays/slices zelf. Je kunt dus een variabele van `[][]string` declareren als dat nodig is.
 
-[Check out the Go blog post on slices][blog-slice] for an in-depth look into
-slices. Try writing more tests to solidify what you learn from reading it.
+[Bekijk de Go-blogpost ](https://blog.golang.org/go-slices-usage-and-internals)over slices voor een diepere uitleg over slices. Probeer meer tests te schrijven om te ontdekken wat je ervan hebt geleerd.
 
-Another handy way to experiment with Go other than writing tests is the Go
-playground. You can try most things out and you can easily share your code if
-you need to ask questions. [I have made a go playground with a slice in it for you to experiment with.](https://play.golang.org/p/ICCWcRGIO68)
+Een andere handige manier om met Go te experimenteren, naast het schrijven van tests, is de Go Playground. Je kunt er de meeste dingen uitproberen en je kunt je code gemakkelijk delen als je vragen hebt. [Ik heb een Go Playground gemaakt met een stukje erin, zodat je ermee kunt experimenteren.](https://play.golang.org/p/ICCWcRGIO68)
 
-[Here is an example](https://play.golang.org/p/bTrRmYfNYCp) of slicing an array
-and how changing the slice affects the original array; but a "copy" of the slice
-will not affect the original array.
-[Another example](https://play.golang.org/p/Poth8JS28sc) of why it's a good idea
-to make a copy of a slice after slicing a very large slice.
-
-[for]: ../iteration.md#
-[blog-slice]: https://blog.golang.org/go-slices-usage-and-internals
-[deepEqual]: https://golang.org/pkg/reflect/#DeepEqual
-[slice]: https://golang.org/doc/effective_go.html#slices
+[Hier is een voorbeeld](https://play.golang.org/p/bTrRmYfNYCp) van het slicen van een array en hoe het wijzigen van de slice de originele array beïnvloedt; een "kopie" van de slice heeft echter geen invloed op de originele array. [Nog een voorbeeld ](https://play.golang.org/p/Poth8JS28sc)van waarom het een goed idee is om een ​​kopie van een slice te maken nadat je een zeer grote slice hebt gesliced.

@@ -8,7 +8,7 @@
 * [Hello, World](basisbeginselen-go/hello-world.md)
 * [Integers](basisbeginselen-go/integers.md)
 * [Iteratie](basisbeginselen-go/iteration.md)
-* [Arrays and slices](basisbeginselen-go/arrays-and-slices.md)
+* [Arrays en slices](basisbeginselen-go/arrays-and-slices.md)
 * [Structs, methods & interfaces](basisbeginselen-go/structs-methods-and-interfaces.md)
 * [Pointers & errors](basisbeginselen-go/pointers-and-errors.md)
 * [Maps](basisbeginselen-go/maps.md)
