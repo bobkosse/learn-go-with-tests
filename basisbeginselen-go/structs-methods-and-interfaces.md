@@ -1,12 +1,12 @@
 # Structs, methods & interfaces
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/structs)**
+[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
 
-Suppose that we need some geometry code to calculate the perimeter of a rectangle given a height and width. We can write a `Perimeter(width float64, height float64)` function, where `float64` is for floating-point numbers like `123.45`.
+Stel dat we wat geometrische code nodig hebben om de omtrek van een rechthoek te berekenen op basis van een hoogte en breedte. We kunnen een functie `Perimeter(breedte float64, hoogte float64)` schrijven, waarbij `float64` voor kommagetallen zoals `123,45` bedoeld is.
 
-The TDD cycle should be pretty familiar to you by now.
+De TDD cyclus zal je inmiddels bekend zijn.
 
-## Write the test first
+## Schrijf eerst de test
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -19,13 +19,15 @@ func TestPerimeter(t *testing.T) {
 }
 ```
 
-Notice the new format string? The `f` is for our `float64` and the `.2` means print 2 decimal places.
+Zie je de nieuwe formatstring? De `f` staat voor onze `float64` en de `.2` betekent dat er 2 decimalen worden afgedrukt.
 
-## Try to run the test
+Let ook op dat decimale getallen in programmeertalen met een _decimale punt_ geschreven worden. Waar in het Nederlands vaak komma's gebruikt worden, is dat in programmeertalen dus de Engelse notatie.
+
+## Probeer de test uit te voeren
 
 `./shapes_test.go:6:9: undefined: Perimeter`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Scrhijf de minimale hoeveelheid code om de test uit te laten voeren en een nette foutmelding te krijgen
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -33,9 +35,9 @@ func Perimeter(width float64, height float64) float64 {
 }
 ```
 
-Results in `shapes_test.go:10: got 0.00 want 40.00`.
+Dit resulteert in: `shapes_test.go:10: got 0.00 want 40.00`.
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -43,11 +45,11 @@ func Perimeter(width float64, height float64) float64 {
 }
 ```
 
-So far, so easy. Now let's create a function called `Area(width, height float64)` which returns the area of a rectangle.
+Tot zover is het nog vrij eenvoudig. Laten we nu een functie genaamd `Area(breedte, hoogte, float64)` maken die de oppervlakte van een rechthoek retourneert.
 
-Try to do it yourself, following the TDD cycle.
+Probeer dit eerst eens zelf te doen door de TDD cyclus te volgen.
 
-You should end up with tests like this
+Je zou uit moeten komen op tests die hierop lijken:
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -69,7 +71,7 @@ func TestArea(t *testing.T) {
 }
 ```
 
-And code like this
+En code zoals de onderstaande
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -83,13 +85,13 @@ func Area(width float64, height float64) float64 {
 
 ## Refactor
 
-Our code does the job, but it doesn't contain anything explicit about rectangles. An unwary developer might try to supply the width and height of a triangle to these functions without realising they will return the wrong answer.
+Onze code doet wat het moet doen, maar bevat geen expliciete informatie over rechthoeken. Een onoplettende ontwikkelaar zou kunnen proberen de breedte en hoogte van een driehoek aan deze functies te verstrekken zonder te beseffen dat ze het verkeerde antwoord zullen retourneren.
 
-We could just give the functions more specific names like `RectangleArea`. A neater solution is to define our own _type_ called `Rectangle` which encapsulates this concept for us.
+We zouden de functies specifiekere namen kunnen geven, zoals `RectangleArea`. Een nettere oplossing is om ons eigen type te definiëren, genaamd `Rectangle`, dat dit concept voor ons omvat.
 
-We can create a simple type using a **struct**. [A struct](https://golang.org/ref/spec#Struct_types) is just a named collection of fields where you can store data.
+We kunnen een eenvoudig type maken met behulp van een **struct**. [Een struct](https://golang.org/ref/spec#Struct_types) is gewoon een benoemde verzameling velden waarin je gegevens kunt opslaan.
 
-Declare a struct in your `shapes.go` file like this
+Declareer een struct in je `shapes.go` bestand zoals hieronder
 
 ```go
 type Rectangle struct {
@@ -98,7 +100,7 @@ type Rectangle struct {
 }
 ```
 
-Now let's refactor the tests to use `Rectangle` instead of plain `float64`s.
+Laten we de tests nu refactoren zodat `Rectangle` wordt gebruikt in plaats van gewone `float64`'s.
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -122,17 +124,17 @@ func TestArea(t *testing.T) {
 }
 ```
 
-Remember to run your tests before attempting to fix. The tests should show a helpful error like
+Vergeet niet om je tests uit te voeren voordat je probeert het probleem te verhelpen. De tests zouden een nuttige foutmelding moeten laten zien, zoals:
 
-```text
+```
 ./shapes_test.go:7:18: not enough arguments in call to Perimeter
     have (Rectangle)
     want (float64, float64)
 ```
 
-You can access the fields of a struct with the syntax of `myStruct.field`.
+Je kunt de velden van een struct benaderen met de syntaxis `myStruct.field`.
 
-Change the two functions to fix the test.
+Verander de twee functies zodat de test werkt.
 
 ```go
 func Perimeter(rectangle Rectangle) float64 {
@@ -144,11 +146,11 @@ func Area(rectangle Rectangle) float64 {
 }
 ```
 
-I hope you'll agree that passing a `Rectangle` to a function conveys our intent more clearly, but there are more benefits of using structs that we will cover later.
+Ik hoop dat je het ermee eens bent dat het doorgeven van een `Rectangle` aan een functie onze bedoeling duidelijker overbrengt. Er zijn echter nog meer voordelen aan het gebruik van structs die we later zullen bespreken.
 
-Our next requirement is to write an `Area` function for circles.
+Onze volgende vereiste is het schrijven van een `Area` functie voor cirkels.
 
-## Write the test first
+## Schrijf eerst de test
 
 ```go
 func TestArea(t *testing.T) {
@@ -176,17 +178,15 @@ func TestArea(t *testing.T) {
 }
 ```
 
-As you can see, the `f` has been replaced by `g`, with good reason.
-Use of `g` will print a more precise decimal number in the error message \([fmt options](https://golang.org/pkg/fmt/)\).
-For example, using a radius of 1.5 in a circle area calculation, `f` would show `7.068583` whereas `g` would show `7.0685834705770345`.
+Zoals je ziet, is de `f` vervangen door `g`, en dat is niet voor niets. Het gebruik van `g` zorgt ervoor dat er een nauwkeuriger decimaal getal in de foutmelding wordt weergegeven ([fmt-opties](https://golang.org/pkg/fmt/)). Bijvoorbeeld, bij een straal van 1,5 in een cirkeloppervlakteberekening, zou `f` `7,068583` opleveren, terwijl `g` een waarde van `7,0685834705770345` zou opleveren.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 `./shapes_test.go:28:13: undefined: Circle`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test uit te kunnen voeren en een waardevol testresultaat te krijgen
 
-We need to define our `Circle` type.
+We moeten het `Circle` type definiëren.
 
 ```go
 type Circle struct {
@@ -194,36 +194,35 @@ type Circle struct {
 }
 ```
 
-Now try to run the tests again
+Probeer de test nu opnieuw uit te voeren
 
 `./shapes_test.go:29:14: cannot use circle (type Circle) as type Rectangle in argument to Area`
 
-Some programming languages allow you to do something like this:
+Sommige programmeertalen bieden de mogelijkheid om zoiets te doen:
 
 ```go
 func Area(circle Circle) float64       {}
 func Area(rectangle Rectangle) float64 {}
 ```
 
-But you cannot in Go
+Maar dat werkt niet binnen Go
 
 `./shapes.go:20:32: Area redeclared in this block`
 
-We have two choices:
+We hebben hier twee keuzes:
 
-* You can have functions with the same name declared in different _packages_. So we could create our `Area(Circle)` in a new package, but that feels overkill here.
-* We can define [_methods_](https://golang.org/ref/spec#Method_declarations) on our newly defined types instead.
+* Je kunt functies met dezelfde naam in verschillende _pakketten_ laten declareren. We zouden onze `Area(Circle)` dus in een nieuw pakket kunnen aanmaken, maar dat voelt hier overdreven.
+* In plaats daarvan kunnen we [methods](https://golang.org/ref/spec#Method_declarations) definiëren voor onze nieuw gedefinieerde typen.
 
-### What are methods?
+### Wat zijn methods?
 
-So far we have only been writing _functions_ but we have been using some methods. When we call `t.Errorf` we are calling the method `Errorf` on the instance of our `t` \(`testing.T`\).
+Tot nu toe hebben we alleen _functies_ geschreven, maar we hebben ook enkele _methods_ gebruikt. Wanneer we `t.Errorf` aanroepen, roepen we de _method_ `Errorf` aan op de instantie van onze `t` (`testing.T`).
 
-A method is a function with a receiver.
-A method declaration binds an identifier, the method name, to a method, and associates the method with the receiver's base type.
+Een _method_ is een functie met een ontvanger. Een _method_-declaratie koppelt een identificatie, de _method_-naam, aan een _method_ en koppelt de methode aan het basistype van de ontvanger.
 
-Methods are very similar to functions but they are called by invoking them on an instance of a particular type. Where you can just call functions wherever you like, such as `Area(rectangle)` you can only call methods on "things".
+_Methods_ lijken erg op functies, maar ze worden aangeroepen door ze aan te roepen op een instantie van een bepaald type. Waar je functies gewoon kunt aanroepen waar je maar wilt, zoals `Area(rectangle)`, kun je _methods_ alleen aanroepen op "dingen".
 
-An example will help so let's change our tests first to call methods instead and then fix the code.
+Een voorbeeld kan helpen, dus laten we eerst onze tests aanpassen en _methods_ aanroepen. Daarna gaan we de code aanpassen.
 
 ```go
 func TestArea(t *testing.T) {
@@ -251,20 +250,20 @@ func TestArea(t *testing.T) {
 }
 ```
 
-If we try to run the tests, we get
+Als we proberen deze tests uit te voeren krijgen we
 
-```text
+```
 ./shapes_test.go:19:19: rectangle.Area undefined (type Rectangle has no field or method Area)
 ./shapes_test.go:29:16: circle.Area undefined (type Circle has no field or method Area)
 ```
 
 > type Circle has no field or method Area
 
-I would like to reiterate how great the compiler is here. It is so important to take the time to slowly read the error messages you get, it will help you in the long run.
+Ik wil nogmaals benadrukken hoe geweldig de compiler hier is. Het is zo belangrijk om de tijd te nemen om de foutmeldingen die je krijgt rustig door te lezen, het zal je op de lange termijn helpen.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test uit te voeren en waardevolle foutmelding te zien
 
-Let's add some methods to our types
+Laten we enkele methoden aan onze typen toevoegen
 
 ```go
 type Rectangle struct {
@@ -285,21 +284,21 @@ func (c Circle) Area() float64 {
 }
 ```
 
-The syntax for declaring methods is almost the same as functions and that's because they're so similar. The only difference is the syntax of the method receiver `func (receiverName ReceiverType) MethodName(args)`.
+De syntaxis voor het declareren van methoden is vrijwel gelijk aan die van functies, omdat ze zo op elkaar lijken. Het enige verschil is de syntaxis van de methode-ontvanger. `func (receiverName ReceiverType) MethodName(args)`.
 
-When your method is called on a variable of that type, you get your reference to its data via the `receiverName` variable. In many other programming languages this is done implicitly and you access the receiver via `this`.
+Wanneer je methode wordt aangeroepen voor een variabele van dat type, krijg je de referentie naar de gegevens via de variabele `receiverName`. In veel andere programmeertalen gebeurt dit impliciet en krijg je toegang tot de ontvanger via het `this`-sleutelwoord.
 
-It is a convention in Go to have the receiver variable be the first letter of the type.
+In Go is het gebruikelijk dat de ontvangende variabele de eerste letter van het type is.
 
 ```
 r Rectangle
 ```
 
-If you try to re-run the tests they should now compile and give you some failing output.
+Als je de tests opnieuw wilt uitvoeren, worden ze nu gecompileerd en krijg je een mislukte uitvoer.
 
-## Write enough code to make it pass
+## Schrijf voldoende code om de test te laten slagen
 
-Now let's make our rectangle tests pass by fixing our new method
+Laten we nu onze rechthoektests laten slagen door onze nieuwe methode te repareren
 
 ```go
 func (r Rectangle) Area() float64 {
@@ -307,9 +306,9 @@ func (r Rectangle) Area() float64 {
 }
 ```
 
-If you re-run the tests the rectangle tests should be passing but circle should still be failing.
+Als je de tests opnieuw uitvoert, zouden de rechthoek-tests moeten slagen, maar de cirkel-tests zouden nog steeds moeten mislukken.
 
-To make circle's `Area` function pass we will borrow the `Pi` constant from the `math` package \(remember to import it\).
+Om de `Aria` functie van de cirkel te laten slagen, lenen we de `Pi`-constante uit het `math` pakket (vergeet niet deze te importeren).
 
 ```go
 func (c Circle) Area() float64 {
@@ -319,17 +318,17 @@ func (c Circle) Area() float64 {
 
 ## Refactor
 
-There is some duplication in our tests.
+Er is enige overlapping in onze testen.
 
-All we want to do is take a collection of _shapes_, call the `Area()` method on them and then check the result.
+Het enige wat we willen doen is een verzameling _shapes_ nemen, de `Area()`-methode erop aanroepen en vervolgens het resultaat controleren.
 
-We want to be able to write some kind of `checkArea` function that we can pass both `Rectangle`s and `Circle`s to, but fail to compile if we try to pass in something that isn't a shape.
+We willen een soort `checkArea`-functie schrijven waaraan we zowel `Rectangle`s als `Circle`s kunnen doorgeven, maar die niet kan worden gecompileerd als we iets anders dan een vorm proberen door te geven.
 
-With Go, we can codify this intent with **interfaces**.
+Met Go kunnen we deze intentie vastleggen met **interfaces**.
 
-[Interfaces](https://golang.org/ref/spec#Interface_types) are a very powerful concept in statically typed languages like Go because they allow you to make functions that can be used with different types and create highly-decoupled code whilst still maintaining type-safety.
+[Interfaces](https://golang.org/ref/spec#Interface_types) vormen een zeer krachtig concept in statisch getypeerde talen zoals Go, omdat je hiermee functies kunt maken die met verschillende typen kunnen worden gebruikt. Ook kun je hiermee sterk ontkoppelde code creëren, terwijl de typeveiligheid behouden blijft.
 
-Let's introduce this by refactoring our tests.
+Laten we dit introduceren door onze tests te refactoren.
 
 ```go
 func TestArea(t *testing.T) {
@@ -355,9 +354,9 @@ func TestArea(t *testing.T) {
 }
 ```
 
-We are creating a helper function like we have in other exercises but this time we are asking for a `Shape` to be passed in. If we try to call this with something that isn't a shape, then it will not compile.
+We maken een hulpfunctie zoals we die in andere oefeningen hebben gedaan, maar deze keer vragen we om een ​​vorm (`Shape`) mee te geven. Als we deze functie proberen aan te roepen met iets dat geen vorm is, zal deze niet compileren.
 
-How does something become a shape? We just tell Go what a `Shape` is using an interface declaration
+Hoe wordt iets een vorm? We vertellen Go gewoon wat een `Shape` is met behulp van een interfacedeclaratie.
 
 ```go
 type Shape interface {
@@ -365,34 +364,34 @@ type Shape interface {
 }
 ```
 
-We're creating a new `type` just like we did with `Rectangle` and `Circle` but this time it is an `interface` rather than a `struct`.
+We maken een nieuw `type`, net zoals we dat met `Rectangle` en `Circle` deden, maar dit keer is het een `interface` in plaats van een `struct`.
 
-Once you add this to the code, the tests will pass.
+Zodra je dit aan de code toevoegt, zullen de tests slagen.
 
-### Wait, what?
+### Wacht, wat?
 
-This is quite different to interfaces in most other programming languages. Normally you have to write code to say `My type Foo implements interface Bar`.
+Dit verschilt aanzienlijk van interfaces in de meeste andere programmeertalen. Normaal gesproken moet je code schrijven om bijvoorbeeld te zeggen: `Mijn type Foo implementeert interface Bar`.
 
-But in our case
+Maar in ons geval
 
-* `Rectangle` has a method called `Area` that returns a `float64` so it satisfies the `Shape` interface
-* `Circle` has a method called `Area` that returns a `float64` so it satisfies the `Shape` interface
-* `string` does not have such a method, so it doesn't satisfy the interface
-* etc.
+* `Rectangle` heeft een methode genaamd `Area` die een `float64` retourneert, zodat deze voldoet aan de `Shape`-interface
+* `Circle` heeft een method genaamd `Area` die een `float64` retourneert en voldoet dus aan de `Shape`-interface.
+* `String` heeft geen dergelijke methode en voldoet dus niet aan de interface.
+* Enz.
 
-In Go **interface resolution is implicit**. If the type you pass in matches what the interface is asking for, it will compile.
+In de Go-**interface is resolutie impliciet**. Als het type dat je opgeeft overeenkomt met wat de interface vraagt, wordt het gecompileerd.
 
 ### Decoupling
 
-Notice how our helper does not need to concern itself with whether the shape is a `Rectangle` or a `Circle` or a `Triangle`. By declaring an interface, the helper is _decoupled_ from the concrete types and only has the method it needs to do its job.
+Merk op hoe onze helper zich niet hoeft te bekommeren om de vraag of de vorm een ​​`Rectangle`, `Circle` of `Triangle` is. Door een interface te declareren, wordt de helper losgekoppeld (decoupled) van de concrete typen en beschikt hij alleen over de methode die hij nodig heeft om zijn werk te doen.
 
-This kind of approach of using interfaces to declare **only what you need** is very important in software design and will be covered in more detail in later sections.
+Deze aanpak, waarbij interfaces **alleen datgene aangeven wat je nodig hebt**, is erg belangrijk bij softwareontwerp. In latere secties wordt hier dieper op ingegaan.
 
 ## Further refactoring
 
-Now that you have some understanding of structs we can introduce "table driven tests".
+Nu je enige kennis hebt van structs, kunnen we "table driven tests" introduceren.
 
-[Table driven tests](https://go.dev/wiki/TableDrivenTests) are useful when you want to build a list of test cases that can be tested in the same manner.
+[Table driven tests](https://go.dev/wiki/TableDrivenTests) zijn handig als je een lijst met testcases wilt samenstellen die op dezelfde manier kunnen worden getest.
 
 ```go
 func TestArea(t *testing.T) {
@@ -415,20 +414,19 @@ func TestArea(t *testing.T) {
 }
 ```
 
-The only new syntax here is creating an "anonymous struct", `areaTests`. We are declaring a slice of structs by using `[]struct` with two fields, the `shape` and the `want`. Then we fill the slice with cases.
+De enige nieuwe syntaxis hier is het aanmaken van een "anonieme struct", `areaTests`. We declareren een deel van de structs met behulp van `[]struct` met twee velden: de `shape` en de `want`. Vervolgens vullen we het deel met cases.
 
-We then iterate over them just like we do any other slice, using the struct fields to run our tests.
+Vervolgens itereren we eroverheen, net zoals we met elke andere slice doen, waarbij we de struct-velden gebruiken om onze tests uit te voeren.
 
-You can see how it would be very easy for a developer to introduce a new shape, implement `Area` and then add it to the test cases. In addition, if a bug is found with `Area` it is very easy to add a new test case to exercise it before fixing it.
+Je ziet hoe eenvoudig het voor een ontwikkelaar is om een ​​nieuwe shape te introduceren, `Area` te implementeren en deze vervolgens aan de testcases toe te voegen. Bovendien is het, als er een bug in `Area` wordt gevonden, heel eenvoudig om een ​​nieuwe testcase toe te voegen om de bug te testen voordat deze wordt opgelost.
 
-Table driven tests can be a great item in your toolbox, but be sure that you have a need for the extra noise in the tests.
-They are a great fit when you wish to test various implementations of an interface, or if the data being passed in to a function has lots of different requirements that need testing.
+Table driven tests kunnen een waardevolle toevoeging zijn aan je gereedschapskist, maar zorg ervoor dat je noodzaak voor de extra ruis in de tests echt nodig hebt. Ze zijn zeer geschikt wanneer je verschillende implementaties van een interface wilt testen, of als de data die aan een functie wordt doorgegeven veel verschillende vereisten heeft die getest moeten worden.
 
-Let's demonstrate all this by adding another shape and testing it; a triangle.
+Laten we dit allemaal demonstreren door een andere vorm toe te voegen en te testen: een driehoek.
 
-## Write the test first
+## Schrijf eerst de test
 
-Adding a new test for our new shape is very easy. Just add `{Triangle{12, 6}, 36.0},` to our list.
+Het toevoegen van een nieuwe test voor onze nieuwe vorm is heel eenvoudig. Voeg gewoon `{Triangle{12, 6}, 36.0}` toe aan onze lijst.
 
 ```go
 func TestArea(t *testing.T) {
@@ -452,15 +450,15 @@ func TestArea(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Voer de test uit
 
-Remember, keep trying to run the test and let the compiler guide you toward a solution.
+Vergeet niet dat je de test moet blijven proberen en dat de compiler je naar een oplossing moet leiden.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid om de test uit te voeren en waardevoille foutmelding te zien
 
 `./shapes_test.go:25:4: undefined: Triangle`
 
-We have not defined `Triangle` yet
+We hebben `Triangle` nog niet gedefinieerd
 
 ```go
 type Triangle struct {
@@ -469,14 +467,14 @@ type Triangle struct {
 }
 ```
 
-Try again
+Probeer het opnieuw
 
-```text
+```
 ./shapes_test.go:25:8: cannot use Triangle literal (type Triangle) as type Shape in field value:
     Triangle does not implement Shape (missing Area method)
 ```
 
-It's telling us we cannot use a `Triangle` as a shape because it does not have an `Area()` method, so add an empty implementation to get the test working
+Het vertelt ons dat we een Triangle niet als vorm kunnen gebruiken omdat deze geen `Area()`-methode heeft, dus voeg een lege implementatie toe om de test werkend te krijgen
 
 ```go
 func (t Triangle) Area() float64 {
@@ -484,11 +482,11 @@ func (t Triangle) Area() float64 {
 }
 ```
 
-Finally the code compiles and we get our error
+Uiteindelijk compileert de code en krijgen we onze foutmelding te zien
 
 `shapes_test.go:31: got 0.00 want 36.00`
 
-## Write enough code to make it pass
+## Schrijf voldoende code om de test te laten slagen
 
 ```go
 func (t Triangle) Area() float64 {
@@ -496,13 +494,13 @@ func (t Triangle) Area() float64 {
 }
 ```
 
-And our tests pass!
+En onze tests slagen!
 
 ## Refactor
 
-Again, the implementation is fine but our tests could do with some improvement.
+En opnieuw is de implementatie prima, maar onze tests zouden nog wel wat verbetering kunnen gebruiken.
 
-When you scan this
+Wanneer je dit ziet:
 
 ```
 {Rectangle{12, 6}, 72.0},
@@ -510,11 +508,11 @@ When you scan this
 {Triangle{12, 6}, 36.0},
 ```
 
-It's not immediately clear what all the numbers represent and you should be aiming for your tests to be easily understood.
+is het niet meteen duidelijk wat alle getallen voorstellen. Zorg er daarom voor dat je tests gemakkelijk te begrijpen zijn.
 
-So far you've only been shown syntax for creating instances of structs `MyStruct{val1, val2}` but you can optionally name the fields.
+Tot nu toe hebben we alleen de syntaxis getoond voor het maken van instanties van de structs `MyStruct{val1, val2}`, maar je kunt de velden optioneel een naam geven.
 
-Let's see what it looks like
+Laten we eens kijken hoe dat eruit ziet
 
 ```
         {shape: Rectangle{Width: 12, Height: 6}, want: 72.0},
@@ -522,40 +520,37 @@ Let's see what it looks like
         {shape: Triangle{Base: 12, Height: 6}, want: 36.0},
 ```
 
-In [Test-Driven Development by Example](https://g.co/kgs/yCzDLF) Kent Beck refactors some tests to a point and asserts:
+In [Test-Driven Development by Example](https://app.gitbook.com/u/0vinjXPm7bXI716vVEHCE1JF7q02), refactort Kent Beck enkele tests tot een bepaald punt en beweert:
 
-> The test speaks to us more clearly, as if it were an assertion of truth, **not a sequence of operations**
+> De test spreekt ons duidelijker aan, alsof het een bewering van de waarheid is, **en geen reeks handelingen**.
 
-\(emphasis in the quote is mine\)
+(de nadruk in het citaat is van mij)
 
-Now our tests - rather, the list of test cases - make assertions of truth about shapes and their areas.
+Onze tests (of beter gezegd de lijst met testcases) doen nu uitspraken over de waarheid van vormen en hun oppervlakken.
 
-## Make sure your test output is helpful
+## Wees er zeker van dat je test uitkomsten behulpzaam zijn.
 
-Remember earlier when we were implementing `Triangle` and we had the failing test? It printed `shapes_test.go:31: got 0.00 want 36.00`.
+Weet je nog toen we `Triangle` implementeerden en de test mislukte? Het gaf `shapes_test.go:31: got 0.00 want 36.00`.
 
-We knew this was in relation to `Triangle` because we were just working with it.
-But what if a bug slipped in to the system in one of 20 cases in the table?
-How would a developer know which case failed?
-This is not a great experience for the developer, they will have to manually look through the cases to find out which case actually failed.
+We wisten dat dit betrekking had op `Triangle`, omdat we er net mee werkten. Maar wat als er in een van de twintig cases in de tabel een bug in het systeem sluipt? Hoe weet een ontwikkelaar dan welke case mislukt is? Dit is niet prettig voor de ontwikkelaar; hij of zij moet handmatig alle cases doornemen om te achterhalen welke case daadwerkelijk mislukt is.
 
-We can change our error message into `%#v got %g want %g`. The `%#v` format string will print out our struct with the values in its field, so the developer can see at a glance the properties that are being tested.
+We kunnen onze foutmelding wijzigen in `%#v got %g want %g`. De `%#v`-opmaakstring print onze struct met de waarden in het veld, zodat de ontwikkelaar in één oogopslag kan zien welke eigenschappen worden getest.
 
-To increase the readability of our test cases further, we can rename the `want` field into something more descriptive like `hasArea`.
+Om de leesbaarheid van onze testcases verder te vergroten, kunnen we het `want`-veld hernoemen naar iets meer beschrijvend, zoals `hasArea`.
 
-One final tip with table driven tests is to use `t.Run` and to name the test cases.
+Een laatste tip voor table driven tests is om `t.Run` te gebruiken en de testcases een naam te geven.
 
-By wrapping each case in a `t.Run` you will have clearer test output on failures as it will print the name of the case
+Door elk geval in een `t.Run` te wikkelen, krijg je een duidelijker testresultaat bij fouten, omdat de naam van het geval wordt afgedrukt.
 
-```text
+```
 --- FAIL: TestArea (0.00s)
     --- FAIL: TestArea/Rectangle (0.00s)
         shapes_test.go:33: main.Rectangle{Width:12, Height:6} got 72.00 want 72.10
 ```
 
-And you can run specific tests within your table with `go test -run TestArea/Rectangle`.
+En je kunt specifieke tests binnen de tabel uitvoeren met `go test -run TestArea/Rectangle`.
 
-Here is our final test code which captures this
+Hier is onze laatste testcode die dit vastlegt
 
 ```go
 func TestArea(t *testing.T) {
@@ -584,17 +579,17 @@ func TestArea(t *testing.T) {
 }
 ```
 
-## Wrapping up
+## Samenvattend
 
-This was more TDD practice, iterating over our solutions to basic mathematic problems and learning new language features motivated by our tests.
+Dit was meer een TDD-oefening, waarbij we door onze oplossingen voor eenvoudige wiskundige problemen heen itereerden en nieuwe taalkenmerken leerden, gemotiveerd door onze tests.
 
-* Declaring structs to create your own data types which lets you bundle related data together and make the intent of your code clearer
-* Declaring interfaces so you can define functions that can be used by different types \([parametric polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism)\)
-* Adding methods so you can add functionality to your data types and so you can implement interfaces
-* Table driven tests to make your assertions clearer and your test suites easier to extend & maintain
+* Het declareren van structs om je eigen gegevenstypen te creëren waarmee je gerelateerde gegevens kunt bundelen en de bedoeling van je code duidelijker kunt maken
+* Interfaces declareren zodat je functies kunt definiëren die door verschillende typen kunnen worden gebruikt ([parametrisch polymorfisme](https://en.wikipedia.org/wiki/Parametric_polymorphism))
+* Methoden toevoegen zodat je functionaliteit aan je gegevenstypen kunt toevoegen en interfaces kunt implementeren
+* Table driven tests om je beweringen duidelijker te maken en je testsuites eenvoudiger uit te breiden en te onderhouden
 
-This was an important chapter because we are now starting to define our own types. In statically typed languages like Go, being able to design your own types is essential for building software that is easy to understand, to piece together and to test.
+Dit was een belangrijk hoofdstuk, omdat we nu beginnen met het definiëren van onze eigen typen. In static typed talen zoals Go is het kunnen ontwerpen van je eigen typen essentieel voor het bouwen van software die gemakkelijk te begrijpen, samen te stellen en te testen is.
 
-Interfaces are a great tool for hiding complexity away from other parts of the system. In our case our test helper _code_ did not need to know the exact shape it was asserting on, only how to "ask" for its area.
+Interfaces zijn een geweldig hulpmiddel om complexiteit te verbergen voor andere delen van het systeem. In ons geval hoefde onze testhelpe&#x72;_&#x63;ode_ niet te weten op welke vorm hij precies een claim legde, alleen hoe hij om de oppervlakte ervan moest "vragen".
 
-As you become more familiar with Go you will start to see the real strength of interfaces and the standard library. You'll learn about interfaces defined in the standard library that are used _everywhere_ and by implementing them against your own types, you can very quickly re-use a lot of great functionality.
+Naarmate je meer vertrouwd raakt met Go, zul je de echte kracht van interfaces en de standaardbibliotheek gaan zien. Je leert over interfaces die in de standaardbibliotheek zijn gedefinieerd en overal worden gebruikt. Door ze te implementeren op je eigen typen, kun je heel snel veel geweldige functionaliteit hergebruiken.
