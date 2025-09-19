@@ -1,12 +1,12 @@
 # Structs, methods & interfaces
 
-[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
+[**Je kunt hier alle code voor dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
 
 Stel dat we wat geometrische code nodig hebben om de omtrek van een rechthoek te berekenen op basis van een hoogte en breedte. We kunnen een functie `Perimeter(breedte float64, hoogte float64)` schrijven, waarbij `float64` voor kommagetallen zoals `123,45` bedoeld is.
 
 De TDD cyclus zal je inmiddels bekend zijn.
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -27,7 +27,7 @@ Let ook op dat decimale getallen in programmeertalen met een _decimale punt_ ges
 
 `./shapes_test.go:6:9: undefined: Perimeter`
 
-## Scrhijf de minimale hoeveelheid code om de test uit te laten voeren en een nette foutmelding te krijgen
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -150,7 +150,7 @@ Ik hoop dat je het ermee eens bent dat het doorgeven van een `Rectangle` aan een
 
 Onze volgende vereiste is het schrijven van een `Area` functie voor cirkels.
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 ```go
 func TestArea(t *testing.T) {
@@ -184,7 +184,7 @@ Zoals je ziet, is de `f` vervangen door `g`, en dat is niet voor niets. Het gebr
 
 `./shapes_test.go:28:13: undefined: Circle`
 
-## Schrijf de minimale hoeveelheid code om de test uit te kunnen voeren en een waardevol testresultaat te krijgen
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 We moeten het `Circle` type definiëren.
 
@@ -261,7 +261,7 @@ Als we proberen deze tests uit te voeren krijgen we
 
 Ik wil nogmaals benadrukken hoe geweldig de compiler hier is. Het is zo belangrijk om de tijd te nemen om de foutmeldingen die je krijgt rustig door te lezen, het zal je op de lange termijn helpen.
 
-## Schrijf de minimale hoeveelheid code om de test uit te voeren en waardevolle foutmelding te zien
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 Laten we enkele methoden aan onze typen toevoegen
 
@@ -296,7 +296,7 @@ r Rectangle
 
 Als je de tests opnieuw wilt uitvoeren, worden ze nu gecompileerd en krijg je een mislukte uitvoer.
 
-## Schrijf voldoende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 Laten we nu onze rechthoektests laten slagen door onze nieuwe methode te repareren
 
@@ -424,7 +424,7 @@ Table driven tests kunnen een waardevolle toevoeging zijn aan je gereedschapskis
 
 Laten we dit allemaal demonstreren door een andere vorm toe te voegen en te testen: een driehoek.
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 Het toevoegen van een nieuwe test voor onze nieuwe vorm is heel eenvoudig. Voeg gewoon `{Triangle{12, 6}, 36.0}` toe aan onze lijst.
 
@@ -454,7 +454,7 @@ func TestArea(t *testing.T) {
 
 Vergeet niet dat je de test moet blijven proberen en dat de compiler je naar een oplossing moet leiden.
 
-## Schrijf de minimale hoeveelheid om de test uit te voeren en waardevoille foutmelding te zien
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 `./shapes_test.go:25:4: undefined: Triangle`
 
@@ -486,7 +486,7 @@ Uiteindelijk compileert de code en krijgen we onze foutmelding te zien
 
 `shapes_test.go:31: got 0.00 want 36.00`
 
-## Schrijf voldoende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (t Triangle) Area() float64 {
