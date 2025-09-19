@@ -1,6 +1,6 @@
 # Iteratie
 
-[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/for)
+[**Je kunt hier alle code voor dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/for)
 
 Om dingen herhaaldelijk te doen in Go, heb je `for` nodig. In Go zijn er geen `while`, `do` en `until` trefwoorden, je kunt alleen for gebruiken. En dat is maar goed ook!
 
@@ -8,7 +8,7 @@ Laten we een test schrijven voor een functie die een teken 5 keer herhaalt.
 
 Er is nog niets nieuws, dus probeer het zelf te schrijven om te oefenen. Let op dat je een nieuwe map en package aanmaakt. Lees de [deze sectie](integers.md#schrijf-eerst-je-test) nog eens door om te terug te lezen hoe je dat doet.
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 ```go
 package iteration
