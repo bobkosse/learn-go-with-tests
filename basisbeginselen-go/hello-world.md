@@ -153,7 +153,7 @@ Go's tweede tool voor het bekijken van documentatie is de pkgsite-opdracht, die 
 
 Het overgrote deel van de standaardbibliotheek beschikt over uitstekende documentatie met voorbeelden. Het is de moeite waard om naar [http://localhost:8080/testing](http://localhost:8080/testing) te gaan om te zien wat er beschikbaar is.
 
-### Hello, JIJ
+### Hallo, Jij
 
 Nu we een test hebben, kunnen we veilig itereren op onze software.
 
