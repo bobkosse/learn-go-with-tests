@@ -1,16 +1,16 @@
 # Pointers & errors
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/pointers)**
+[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
 
-We learned about structs in the last section which let us capture a number of values related around a concept.
+In de vorige sectie hebben we geleerd over structuren. Hiermee kunnen we een aantal waarden vastleggen die verband houden met een concept of onderwerp.
 
-At some point you may wish to use structs to manage state, exposing methods to let users change the state in a way that you can control.
+Op een gegeven moment wil je wellicht structuren gebruiken om de status te beheren. Je wilt dan methoden beschikbaar stellen waarmee gebruikers de status op een door jou gecontroleerde manier kunnen wijzigen.
 
-**Fintech loves Go** and uhhh bitcoins? So let's show what an amazing banking system we can make.
+**Fintech is dol op Go** en eh, bitcoins? Laten we eens kijken wat voor een geweldig banksysteem we kunnen maken.
 
-Let's make a `Wallet` struct which lets us deposit `Bitcoin`.
+Laten we een `Wallet`-structuur maken waarmee we `Bitcoin` kunnen storten.
 
-## Write the test first
+## Schrijf eerst je test
 
 ```go
 func TestWallet(t *testing.T) {
@@ -28,30 +28,30 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-In the [previous example](./structs-methods-and-interfaces.md) we accessed fields directly with the field name, however in our _very secure wallet_ we don't want to expose our inner state to the rest of the world. We want to control access via methods.
+In het [vorige voorbeeld](../bouw-een-applicatie/app-intro.md) hadden we rechtstreeks toegang tot velden met de veldnaam, maar in onze zeer veilige wallet willen we onze interne status niet blootstellen aan de rest van de wereld. We willen de toegang beheren via methoden.
 
-## Try to run the test
+## Voer de test uit
 
 `./wallet_test.go:7:12: undefined: Wallet`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-The compiler doesn't know what a `Wallet` is so let's tell it.
+De compiler weet niet wat een `Wallet` is, dus laten we het hem vertellen.
 
 ```go
 type Wallet struct{}
 ```
 
-Now we've made our wallet, try and run the test again
+Nu we onze `Wallet` hebben gemaakt, proberen we de test opnieuw uit te voeren
 
 ```
 ./wallet_test.go:9:8: wallet.Deposit undefined (type Wallet has no field or method Deposit)
 ./wallet_test.go:11:15: wallet.Balance undefined (type Wallet has no field or method Balance)
 ```
 
-We need to define these methods.
+We moeten deze methoden definiëren.
 
-Remember to only do enough to make the tests run. We need to make sure our test fails correctly with a clear error message.
+Vergeet niet om alleen voldoende te doen om de tests uit te voeren. We moeten ervoor zorgen dat onze test correct mislukt met een duidelijke foutmelding.
 
 ```go
 func (w Wallet) Deposit(amount int) {
@@ -63,15 +63,15 @@ func (w Wallet) Balance() int {
 }
 ```
 
-If this syntax is unfamiliar go back and read the structs section.
+Als deze syntaxis onbekend is, lees dan de sectie '[structs](structs-methods-and-interfaces.md)'.
 
-The tests should now compile and run
+De tests zouden nu moeten compileren en draaien.
 
 `wallet_test.go:15: got 0 want 10`
 
-## Write enough code to make it pass
+## Schrijf genoeg code om test te laten slagen
 
-We will need some kind of _balance_ variable in our struct to store the state
+We hebben een soort _balan&#x73;_&#x76;ariabele nodig in onze structuur om de status op te slaan
 
 ```go
 type Wallet struct {
@@ -79,11 +79,11 @@ type Wallet struct {
 }
 ```
 
-In Go if a symbol (variables, types, functions et al) starts with a lowercase symbol then it is private _outside the package it's defined in_.
+Als een symbool in Go (variabelen, typen, functies en dergelijke) begint met een kleine letter, dan is het privé en alleen toegankelijk voor het pakket waarin het is gedefinieerd.
 
-In our case we want our methods to be able to manipulate this value, but no one else.
+In ons geval willen we dat onze methoden deze waarde kunnen manipuleren, maar niemand anders.
 
-Remember we can access the internal `balance` field in the struct using the "receiver" variable.
+Vergeet niet dat we toegang hebben tot het interne `balance`veld in de struct via de variabele "receiver".
 
 ```go
 func (w Wallet) Deposit(amount int) {
@@ -95,22 +95,21 @@ func (w Wallet) Balance() int {
 }
 ```
 
-With our career in fintech secured, run the test suite and bask in the passing test
+Nu we onze carrière in fintech hebben veiliggesteld, voeren we de testsuite uit en genieten we van de geslaagde test
 
 `wallet_test.go:15: got 0 want 10`
 
-### That's not quite right
+### Dat klopt niet helemaal
 
-Well this is confusing, our code looks like it should work.
-We add the new amount onto our balance and then the balance method should return the current state of it.
+Dit is verwarrend, maar onze code lijkt te werken. We tellen het nieuwe bedrag op bij ons saldo en de balance-methode zou de huidige status ervan moeten retourneren.
 
-In Go, **when you call a function or a method the arguments are** _**copied**_.
+**Wanneer je in Go een functie of methode aanroept, worden de argumenten&#x20;**_**gekopieerd**_**.**
 
-When calling `func (w Wallet) Deposit(amount int)` the `w` is a copy of whatever we called the method from.
+Wanneer je `func(w Wallet) Deposit(amount int)` aanroept, is de `w` een kopie van de methode waarmee we de methode hebben aangeroepen.
 
-Without getting too computer-sciency, when you create a value - like a wallet, it is stored somewhere in memory. You can find out what the _address_ of that bit of memory with `&myVal`.
+Zonder al te veel in de computerwetenschap te duiken: wanneer je een waarde creëert (zoals een wallet) wordt deze ergens in het geheugen opgeslagen. Je kunt het _adres_ van dat stukje geheugen achterhalen met `&myVal`.
 
-Experiment by adding some prints to your code
+Experimenteer door enkele afdrukken aan je code toe te voegen
 
 ```go
 func TestWallet(t *testing.T) {
@@ -138,20 +137,18 @@ func (w Wallet) Deposit(amount int) {
 }
 ```
 
-The `%p` placeholder prints memory addresses in base 16 notation with leading `0x`s and the `\n` escape character prints a new line.
-Note that we get the pointer (memory address) of something by placing an `&` character at the beginning of the symbol.
+De tijdelijke aanduiding `%p` geeft geheugenadressen weer in basis 16-notatie met voorafgaande `0x`s. Het escape-teken `\n` geeft een nieuwe regel weer. Merk op dat we de pointer (het geheugenadres) van iets verkrijgen door een `&`-teken aan het begin van het symbool te plaatsen.
 
-Now re-run the test
+Voer nu de test opnieuw uit
 
-```text
+```
 address of balance in Deposit is 0xc420012268
 address of balance in test is 0xc420012260
 ```
 
-You can see that the addresses of the two balances are different. So when we change the value of the balance inside the code, we are working on a copy of what came from the test. Therefore the balance in the test is unchanged.
+Je ziet dat de adressen van de twee balansen verschillend zijn. Wanneer we de waarde van de balans in de code wijzigen, werken we dus met een kopie van wat er uit de test komt. De balans in de test blijft dus ongewijzigd.
 
-We can fix this with _pointers_. [Pointers](https://gobyexample.com/pointers) let us _point_ to some values and then let us change them.
-So rather than taking a copy of the whole Wallet, we instead take a pointer to that wallet so that we can change the original values within it.
+We kunnen dit oplossen met _pointers_. [Pointers](https://gobyexample.com/pointers) laten ons naar bepaalde waarden verwijzen en deze vervolgens wijzigen. Dus in plaats van een kopie van de hele wallet te maken, gebruiken we een pointer naar die wallet, zodat we de oorspronkelijke waarden erin kunnen wijzigen.
 
 ```go
 func (w *Wallet) Deposit(amount int) {
@@ -163,11 +160,11 @@ func (w *Wallet) Balance() int {
 }
 ```
 
-The difference is the receiver type is `*Wallet` rather than `Wallet` which you can read as "a pointer to a wallet".
+Het verschil is dat het type ontvanger `*Wallet` is in plaats van `Wallet`, wat je kunt lezen als "een verwijzing naar een wallet".
 
-Try and re-run the tests and they should pass.
+Probeer de tests opnieuw uit te voeren. Ze zouden moeten slagen.
 
-Now you might wonder, why did they pass? We didn't dereference the pointer in the function, like so:
+Nu vraag je je misschien af: waarom zijn ze geslaagd? We hebben de pointer in de functie niet gederefereerd, zoals hier:
 
 ```go
 func (w *Wallet) Balance() int {
@@ -175,20 +172,19 @@ func (w *Wallet) Balance() int {
 }
 ```
 
-and seemingly addressed the object directly. In fact, the code above using `(*w)` is absolutely valid. However, the makers of Go deemed this notation cumbersome, so the language permits us to write `w.balance`, without an explicit dereference.
-These pointers to structs even have their own name: _struct pointers_ and they are [automatically dereferenced](https://golang.org/ref/spec#Method_values).
+en schijnbaar rechtstreeks naar het object verwezen. Sterker nog, de bovenstaande code met `(*w)` is absoluut geldig. De makers van Go vonden deze notatie echter omslachtig, dus de taal staat ons toe om `w.balance` te schrijven, zonder expliciete naar deze pointer te gaan. Deze verwijzingen naar structs hebben zelfs een eigen naam: _struct pointers_, en Go volgt deze [automatisch voor je](https://golang.org/ref/spec#Method_values).
 
-Technically you do not need to change `Balance` to use a pointer receiver as taking a copy of the balance is fine. However, by convention you should keep your method receiver types the same for consistency.
+Technisch gezien hoef je `Balance` niet te wijzigen om een ​​pointer-ontvanger te gebruiken, aangezien een kopie van de balans prima is. Uit gewoonte is het echter verstandig om de ontvangertypen van je methoden hetzelfde te houden voor consistentie.
 
 ## Refactor
 
-We said we were making a Bitcoin wallet but we have not mentioned them so far. We've been using `int` because they're a good type for counting things!
+We zeiden dat we een Bitcoin-wallet zouden maken, maar we hebben ze tot nu toe niet genoemd. We gebruiken int omdat ze een goed type zijn om dingen te tellen!
 
-It seems a bit overkill to create a `struct` for this. `int` is fine in terms of the way it works but it's not descriptive.
+Het lijkt me wat overdreven om hiervoor een `struct` te maken. `int` werkt prima, maar is niet beschrijvend.
 
-Go lets you create new types from existing ones.
+Met Go kun je nieuwe typen maken op basis van bestaande typen.
 
-The syntax is `type MyName OriginalType`
+De syntax is `type MyName OriginalType`
 
 ```go
 type Bitcoin int
@@ -223,11 +219,11 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-To make `Bitcoin` you just use the syntax `Bitcoin(999)`.
+Om `Bitcoin` te maken, gebruik je gewoon de syntaxis `Bitcoin(999)`.
 
-By doing this we're making a new type and we can declare _methods_ on them. This can be very useful when you want to add some domain specific functionality on top of existing types.
+Door dit te doen, maken we een nieuw type aan en kunnen we er _methods_ voor declareren. Dit kan erg handig zijn wanneer je domeinspecifieke functionaliteit wilt toevoegen aan bestaande typen.
 
-Let's implement [Stringer](https://golang.org/pkg/fmt/#Stringer) on Bitcoin
+Laten we [Stringer](https://golang.org/pkg/fmt/#Stringer) op Bitcoin implementeren
 
 ```go
 type Stringer interface {
@@ -235,7 +231,7 @@ type Stringer interface {
 }
 ```
 
-This interface is defined in the `fmt` package and lets you define how your type is printed when used with the `%s` format string in prints.
+Deze interface is gedefinieerd in het `fmt`-pakket en laat je definiëren hoe je type wordt afgedrukt wanneer je de opmaakreeks `%s` gebruikt.
 
 ```go
 func (b Bitcoin) String() string {
@@ -243,9 +239,9 @@ func (b Bitcoin) String() string {
 }
 ```
 
-As you can see, the syntax for creating a method on a type declaration is the same as it is on a struct.
+Zoals je ziet, is de syntaxis voor het maken van een methode op een typedeclaratie hetzelfde als op een struct.
 
-Next we need to update our test format strings so they will use `String()` instead.
+Vervolgens moeten we de opmaakstrings van onze test bijwerken, zodat ze `String()` gebruiken.
 
 ```go
 	if got != want {
@@ -253,17 +249,17 @@ Next we need to update our test format strings so they will use `String()` inste
 	}
 ```
 
-To see this in action, deliberately break the test so we can see it
+Om dit in actie te zien, moeten we de test opzettelijk fout laten gaan
 
 `wallet_test.go:18: got 10 BTC want 20 BTC`
 
-This makes it clearer what's going on in our test.
+Hierdoor wordt duidelijker wat er gebeurt tijdens onze test.
 
-The next requirement is for a `Withdraw` function.
+De volgende vereiste is een `Withdraw`-functie.
 
-## Write the test first
+## Schrijf eerst je test
 
-Pretty much the opposite of `Deposit()`
+Eigenlijk het tegenovergestelde van `Deposit()`
 
 ```go
 func TestWallet(t *testing.T) {
@@ -298,11 +294,11 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Voer de test uit
 
 `./wallet_test.go:26:9: wallet.Withdraw undefined (type Wallet has no field or method Withdraw)`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) {
@@ -312,7 +308,7 @@ func (w *Wallet) Withdraw(amount Bitcoin) {
 
 `wallet_test.go:33: got 20 BTC want 10 BTC`
 
-## Write enough code to make it pass
+## Schrijf genoeg code om test te laten slagen
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) {
@@ -322,7 +318,7 @@ func (w *Wallet) Withdraw(amount Bitcoin) {
 
 ## Refactor
 
-There's some duplication in our tests, lets refactor that out.
+Er zit wat duplicatie in onze tests. Laten we dat eens aanpassen.
 
 ```go
 func TestWallet(t *testing.T) {
@@ -351,15 +347,15 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-What should happen if you try to `Withdraw` more than is left in the account? For now, our requirement is to assume there is not an overdraft facility.
+Wat moet er gebeuren als je probeert meer op te nemen dan er op de rekening staat? Voorlopig gaan we ervan uit dat er geen sprake is van een roodstand.
 
-How do we signal a problem when using `Withdraw`?
+Hoe signaleren we een probleem bij het gebruik van `Withdraw`?
 
-In Go, if you want to indicate an error it is idiomatic for your function to return an `err` for the caller to check and act on.
+Als je in Go een fout wilt aangeven, is het standard dat je functie een `err` retourneert, zodat de aanroepende functie deze kan controleren en er actie op kan ondernemen.
 
-Let's try this out in a test.
+Laten we dit proberen in een test.
 
-## Write the test first
+## Schrijf eerst je test
 
 ```go
 t.Run("withdraw insufficient funds", func(t *testing.T) {
@@ -375,21 +371,21 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 })
 ```
 
-We want `Withdraw` to return an error _if_ you try to take out more than you have and the balance should stay the same.
+We willen dat `Withdraw` een foutmelding geeft als je meer probeert op te nemen dan je hebt, terwijl het saldo hetzelfde moet blijven.
 
-We then check an error has returned by failing the test if it is `nil`.
+Vervolgens controleren we of er een fout is geretourneerd door de test te laten mislukken als deze `nil` is.
 
-`nil` is synonymous with `null` from other programming languages. Errors can be `nil` because the return type of `Withdraw` will be `error`, which is an interface. If you see a function that takes arguments or returns values that are interfaces, they can be nillable.
+`nil` is synoniem met `null` uit andere programmeertalen. Fouten kunnen `nil` zijn omdat het retourtype van `Withdraw` `error` is, wat een interface is. Als je een functie ziet die argumenten accepteert of waarden retourneert die interfaces zijn, kunnen deze nillable zijn.
 
-Like `null` if you try to access a value that is `nil` it will throw a **runtime panic**. This is bad! You should make sure that you check for nils.
+Net als bij `null` zal een **runtime-panic** optreden als je probeert toegang te krijgen tot een waarde die `nil` is. Dit is niet goed! Controleer daarom altijd op nils.
 
-## Try and run the test
+## Probeer en voer de test uit
 
 `./wallet_test.go:31:25: wallet.Withdraw(Bitcoin(100)) used as value`
 
-The wording is perhaps a little unclear, but our previous intent with `Withdraw` was just to call it, it will never return a value. To make this compile we will need to change it so it has a return type.
+De formulering is misschien wat onduidelijk, maar onze eerdere bedoeling met `Withdraw` was om het gewoon aan te roepen: het retourneert nooit een waarde. Om dit te laten compileren, moeten we het aanpassen zodat het een retourtype heeft.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -398,9 +394,9 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-Again, it is very important to just write enough code to satisfy the compiler. We correct our `Withdraw` method to return `error` and for now we have to return _something_ so let's just return `nil`.
+Nogmaals, het is erg belangrijk om net genoeg code te schrijven om de compiler tevreden te stellen. We corrigeren onze `Withdraw`-methode om een ​​`error` te retourneren en voor nu moeten we _iets_ retourneren, dus laten we gewoon `nil` retourneren.
 
-## Write enough code to make it pass
+## Schrijf genoeg code om test te laten slagen
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -414,13 +410,13 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-Remember to import `errors` into your code.
+Vergeet niet om de `errors` package in je code te importeren.
 
-`errors.New` creates a new `error` with a message of your choosing.
+`errors.New` creëert een nieuwe `error` met een bericht naar keuze.
 
 ## Refactor
 
-Let's make a quick test helper for our error check to improve the test's readability
+Laten we een snelle testhulp maken voor onze foutcontrole om de leesbaarheid van de test te verbeteren
 
 ```go
 assertError := func(t testing.TB, err error) {
@@ -444,13 +440,13 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 })
 ```
 
-Hopefully when returning an error of "oh no" you were thinking that we _might_ iterate on that because it doesn't seem that useful to return.
+Ik hoop dat je, toen je de foutmelding "oh nee" terugkreeg, dacht dat we daarop konden itereren, omdat het niet zo nuttig lijkt om terug te keren.
 
-Assuming that the error ultimately gets returned to the user, let's update our test to assert on some kind of error message rather than just the existence of an error.
+Ervan uitgaande dat de fout uiteindelijk aan de gebruiker wordt gemeld, passen we onze test aan zodat deze een foutmelding weergeeft in plaats van alleen het bestaan ​​van een fout.
 
-## Write the test first
+## Schrijf eerst je test
 
-Update our helper for a `string` to compare against.
+Werk onze helper bij met een `string` waarmee we kunnen vergelijken.
 
 ```go
 assertError := func(t testing.TB, got error, want string) {
@@ -466,9 +462,9 @@ assertError := func(t testing.TB, got error, want string) {
 }
 ```
 
-As you can see `Error`s can be converted to a string with the `.Error()` method, which we do in order to compare it with the string we want. We are also making sure that the error is not `nil` to ensure we don't call `.Error()` on `nil`.
+Zoals je ziet, kunnen `errors` worden omgezet naar een string met de `.Error()`-methode. Dit doen we om de fout te vergelijken met de gewenste string. We zorgen er ook voor dat de fout niet `nil` is, zodat we `.Error()` niet aanroepen op `nil`.
 
-And then update the caller
+En dan passen we de aanroeper aan
 
 ```go
 t.Run("withdraw insufficient funds", func(t *testing.T) {
@@ -481,13 +477,13 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 })
 ```
 
-We've introduced `t.Fatal` which will stop the test if it is called. This is because we don't want to make any more assertions on the error returned if there isn't one around. Without this the test would carry on to the next step and panic because of a nil pointer.
+We hebben `t.Fatal` geïntroduceerd, dat de test stopt als deze wordt aangeroepen. Dit doen we omdat we geen verdere beweringen willen doen over de geretourneerde fout als er geen is. Zonder deze bewering zou de test doorgaan naar de volgende stap en in paniek raken vanwege een nil-pointer.
 
-## Try to run the test
+## Probeer en voer de test uit
 
 `wallet_test.go:61: got err 'oh no' want 'cannot withdraw, insufficient funds'`
 
-## Write enough code to make it pass
+## Schrijf genoeg code om test te laten slagen
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -503,11 +499,11 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 
 ## Refactor
 
-We have duplication of the error message in both the test code and the `Withdraw` code.
+De foutmelding komt zowel in de testcode als in de `Withdraw`-code voor.
 
-It would be really annoying for the test to fail if someone wanted to re-word the error and it's just too much detail for our test. We don't _really_ care what the exact wording is, just that some kind of meaningful error around withdrawing is returned given a certain condition.
+Het zou echt vervelend zijn als de test mislukt als iemand de fout opnieuw zou willen formuleren, en het is gewoon te gedetailleerd voor onze test. Het maakt ons niet zoveel uit wat de exacte formulering is, zolang er maar een zinvolle fout rond het intrekken wordt geretourneerd onder bepaalde voorwaarden.
 
-In Go, errors are values, so we can refactor it out into a variable and have a single source of truth for it.
+In Go zijn fouten waarden, dus we kunnen deze omzetten in een variabele en er één bron van waarheid voor hebben.
 
 ```go
 var ErrInsufficientFunds = errors.New("cannot withdraw, insufficient funds")
@@ -523,11 +519,11 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-The `var` keyword allows us to define values global to the package.
+Met het sleutelwoord `var` kunnen we waarden definiëren die globaal zijn voor het pakket.
 
-This is a positive change in itself because now our `Withdraw` function looks very clear.
+Dit is op zich al een positieve verandering, want nu ziet onze `Withdraw`-functie er heel overzichtelijk uit.
 
-Next we can refactor our test code to use this value instead of specific strings.
+Vervolgens kunnen we onze testcode refactoren om deze waarde te gebruiken in plaats van specifieke strings.
 
 ```go
 func TestWallet(t *testing.T) {
@@ -574,29 +570,29 @@ func assertError(t testing.TB, got, want error) {
 }
 ```
 
-And now the test is easier to follow too.
+En nu is de test ook gemakkelijker te volgen.
 
-I have moved the helpers out of the main test function just so when someone opens up a file they can start reading our assertions first, rather than some helpers.
+Ik heb de helpers uit de hoofd-testfunctie gehaald, zodat wanneer iemand een bestand opent, hij of zij eerst onze test beweringen kan lezen in plaats van een aantal helpers.
 
-Another useful property of tests is that they help us understand the _real_ usage of our code so we can make sympathetic code. We can see here that a developer can simply call our code and do an equals check to `ErrInsufficientFunds` and act accordingly.
+Een andere nuttige eigenschap van tests is dat ze ons helpen het _werkelijke_ gebruik van onze code te begrijpen, zodat we duidelijke code kunnen maken. We zien hier dat een ontwikkelaar simpelweg onze code kan aanroepen, een equals-check kan uitvoeren op `ErrInsufficientFunds` en daar naar kan handelen.
 
-### Unchecked errors
+### Ongegecontroleerde fouten
 
-Whilst the Go compiler helps you a lot, sometimes there are things you can still miss and error handling can sometimes be tricky.
+Hoewel de Go-compiler je veel helpt, zijn er soms toch nog dingen die je over het hoofd ziet en de foutafhandeling kan soms lastig zijn.
 
-There is one scenario we have not tested. To find it, run the following in a terminal to install `errcheck`, one of many linters available for Go.
+Er is één scenario dat we nog niet hebben getest. Om dit te vinden, voer je het volgende uit in een terminal om `errcheck` te installeren, een van de vele linters die beschikbaar zijn voor Go.
 
 `go install github.com/kisielk/errcheck@latest`
 
-Then, inside the directory with your code run `errcheck .`
+Voer vervolgens in de directory met je code het volgende uit: `errcheck .`
 
-You should get something like
+Je zou zoiets moeten krijgen als
 
 `wallet_test.go:17:18: wallet.Withdraw(Bitcoin(10))`
 
-What this is telling us is that we have not checked the error being returned on that line of code. That line of code on my computer corresponds to our normal withdraw scenario because we have not checked that if the `Withdraw` is successful that an error is _not_ returned.
+Wat dit ons vertelt, is dat we de fout die op die regel code wordt geretourneerd, niet hebben gecontroleerd. Die regel code op mijn computer komt overeen met ons normale opnamescenario, omdat we niet hebben gecontroleerd of er geen fout wordt geretourneerd als `Withdraw` succesvol is.
 
-Here is the final test code that accounts for this.
+Hier is de definitieve testcode die hiermee rekening houdt.
 
 ```go
 func TestWallet(t *testing.T) {
@@ -653,29 +649,29 @@ func assertError(t testing.TB, got error, want error) {
 }
 ```
 
-## Wrapping up
+## Samenvattend
 
 ### Pointers
 
-* Go copies values when you pass them to functions/methods, so if you're writing a function that needs to mutate state you'll need it to take a pointer to the thing you want to change.
-* The fact that Go takes a copy of values is useful a lot of the time but sometimes you won't want your system to make a copy of something, in which case you need to pass a reference. Examples include referencing very large data structures or things where only one instance is necessary \(like database connection pools\).
+* Go kopieert waarden wanneer je ze doorgeeft aan functies/methoden. Als je dus een functie schrijft waarvan de status moet worden gewijzigd, moet deze een pointer hebben naar datgene wat je wilt wijzigen.
+* Het feit dat Go een kopie van waarden maakt, is vaak nuttig, maar soms wil je niet dat je systeem een ​​kopie van iets maakt. In dat geval moet je een referentie doorgeven. Voorbeelden hiervan zijn het verwijzen naar zeer grote datastructuren of dingen waarbij slechts één instantie nodig is (zoals databaseverbindingspools).
 
 ### nil
 
-* Pointers can be nil
-* When a function returns a pointer to something, you need to make sure you check if it's nil or you might raise a runtime exception - the compiler won't help you here.
-* Useful for when you want to describe a value that could be missing
+* Pointers kunnen _nil_ zijn
+* Wanneer een functie een aanwijzer naar iets retourneert, moet je controleren of deze waarde nil is. Anders loop je het risico dat er een runtime-uitzondering ontstaat. De compiler kan je hier niet bij helpen.
+* Handig als je een waarde wilt beschrijven die mogelijk ontbreekt
 
 ### Errors
 
-* Errors are the way to signify failure when calling a function/method.
-* By listening to our tests we concluded that checking for a string in an error would result in a flaky test. So we refactored our implementation to use a meaningful value instead and this resulted in easier to test code and concluded this would be easier for users of our API too.
-* This is not the end of the story with error handling, you can do more sophisticated things but this is just an intro. Later sections will cover more strategies.
-* [Don’t just check errors, handle them gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully)
+* Errors zijn de manier om aan te geven dat er een fout is opgetreden bij het aanroepen van een functie/methode.
+* Door naar onze tests te luisteren, concludeerden we dat het controleren op een string in een fout zou resulteren in een onbetrouwbare test. Daarom hebben we onze implementatie gerefactored om in plaats daarvan een betekenisvolle waarde te gebruiken. Dit resulteerde in eenvoudiger te testen code en concludeerden dat dit ook voor gebruikers van onze API eenvoudiger zou zijn.
+* Dit is niet het einde van het verhaal over foutverwerking. Je kunt geavanceerdere dingen doen, maar dit is slechts een introductie. Latere secties zullen meer strategieën behandelen.
+* [Controleer niet alleen op fouten, maar handel ze ook op een correcte manier af](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully)
 
-### Create new types from existing ones
+### Nieuwe typen maken van bestaande typen
 
-* Useful for adding more domain specific meaning to values
-* Can let you implement interfaces
+* Handig om meer domeinspecifieke betekenis aan waarden toe te voegen
+* Geeft je de mogelijkheid om interfaces te implementeren
 
-Pointers and errors are a big part of writing Go that you need to get comfortable with. Thankfully the compiler will _usually_ help you out if you do something wrong, just take your time and read the error.
+Pointers en errors vormen een belangrijk onderdeel van het schrijven van Go en je moet er vertrouwd mee raken. Gelukkig helpt de compiler je _meestal_ als je iets verkeerd doet; neem gewoon de tijd en lees de fout.
