@@ -1,6 +1,6 @@
 # Arrays en slices
 
-[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
+[**Je kunt hier alle code voor dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
 
 Met arrays kun je meerdere elementen van hetzelfde type in een variabele in een bepaalde volgorde opslaan.
 
@@ -8,7 +8,7 @@ Wanneer je arrays hebt, is het heel gebruikelijk om eroverheen te itereren. Late
 
 Natuurlijk gebruiken we onze TDD vaardigheden!
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 Maak een nieuwe map aan om in te werken. Maak daarin een nieuw bestand aan met de naam `sum_test.go` en zet daarin de volgende codesum.:
 
@@ -39,7 +39,7 @@ Soms is het nuttig om ook de invoer van de functie in de foutmelding weer te gev
 
 [Lees meer over het formatteren van string waarden](https://golang.org/pkg/fmt/)
 
-## Probeer de test uit te voeren
+## Probeer en voer de test uit
 
 Als je go mod hebt geïnitialiseerd met `go mod init main`, krijg je de foutmelding `_testmain.go:13:2: cannot import "main"`. Dit komt doordat pakket main volgens de gangbare werkwijze alleen de integratie van andere pakketten bevat en geen unit-testbare code. Daarom staat Go het importeren van een pakket met de naam main niet toe.
 
@@ -47,7 +47,7 @@ Om dit probleem op te lossen, kun je de hoofdmodule in `go.mod` een andere naam 
 
 Zodra bovenstaande fout is verholpen, zal de compiler bij het uitvoeren van `go test` de bekende `./sum_test.go:10:15: undefined: Sum`-fout laten zien. Nu kunnen we verdergaan met het schrijven van de daadwerkelijk te testen methode.
 
-## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 In `sum.go`
 
@@ -63,7 +63,7 @@ Je test zou nu moeten mislukken met een _duidelijke foutmelding_
 
 `sum_test.go:13: got 0 want 15 given, [1 2 3 4 5]`
 
-## Schrijf voldoende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Sum(numbers [5]int) int {
@@ -103,7 +103,7 @@ Go heeft _slices_ die de grootte van de verzameling niet coderen, maar in plaats
 
 De volgende opdracht om te bouwen is het optellen van verzamelingen van verschillende lengtes.
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 We gebruiken nu het [slice-type](https://golang.org/doc/effective_go.html#slices), waarmee we verzamelingen van elke grootte kunnen hebben. De syntaxis is vergelijkbaar met die van arrays; je laat alleen de grootte weg bij het declareren.
 
@@ -143,7 +143,7 @@ Deze zal niet compileren
 
 `./sum_test.go:22:13: cannot use numbers (type []int) as type [5]int in argument to Sum`
 
-## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 Het probleem hier is dat we ofwel
 
@@ -164,7 +164,7 @@ func Sum(numbers []int) int {
 
 Als je de tests probeert uit te voeren, worden ze nog steeds niet gecompileerd. Je moet ook de eerste test wijzigen, zodat deze een slice bevat in plaats van een array.
 
-## Schrijf voldoende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 Het blijkt dat het oplossen van de compilerproblemen het enige was wat we hoeven te doen, om de tests de laten slagen!
 
@@ -231,7 +231,7 @@ of
 
 `SumAll([]int{1,1,1})` moet `[]int{3}` teruggeven
 
-## Schrijf eerst de test en voer die uit
+## Schrijf eerst je test
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -249,7 +249,7 @@ func TestSumAll(t *testing.T) {
 
 `./sum_test.go:23:9: undefined: SumAll`
 
-## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 We moeten `SumAll` definiëren op basis van wat onze test wil.
 
@@ -303,7 +303,7 @@ Verander de test naar de originele staat en voer deze uit. Je zou een resultaat 
 
 `sum_test.go:30: got [] want [3 9]`
 
-## Schrijf voldoende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 Wat we moeten doen is itereren over de `varargs`, de som berekenen met behulp van onze bestaande `Sum`-functie en deze vervolgens toevoegen aan de slice die we zullen retourneren
 
@@ -349,7 +349,7 @@ In deze implementatie maken we ons minder zorgen over capaciteit. We beginnen me
 
 Onze volgende opdracht is om `SumAll` te wijzigen in `SumAllTails`, zodat het de totalen van de "tails" van elke slice berekent. De tail van een collectie bestaat uit alle items in de collectie, behalve de eerste (de "head").
 
-## Schrijf de eerste test
+## Schrijf je eerste test
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -366,7 +366,7 @@ func TestSumAllTails(t *testing.T) {
 
 `./sum_test.go:26:9: undefined: SumAllTails`
 
-## Schrijf de minimale hoeveelheid code voor de test die moet worden uitgevoerd en controleer de uitvoer van de mislukte test
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 De opdracht was de bestaande functie te wijzigen. Hernoem daarom de functie `SumAll` naar `SumAllTails` en voer de test opnieuw uit.&#x20;
 
@@ -374,7 +374,7 @@ De opdracht was de bestaande functie te wijzigen. Hernoem daarom de functie `Sum
 
 **Let op:** Pas ook de aanroep van de `TestSumAll` functie aan!
 
-## Schrijf voldoende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func SumAllTails(numbersToSum ...[]int) []int {
@@ -396,7 +396,7 @@ Deze keer valt er niet veel te refactoren.
 
 Wat denk je dat er zou gebeuren als je een lege slice aan onze functie zou toevoegen? Wat is de "staart" van een lege slice? Wat gebeurt er als je Go opdracht geeft om alle elementen uit `myEmptySlice[1:]` vast te leggen?
 
-## Schrijf eerst de test
+## Schrijf eerst je test
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -434,7 +434,7 @@ O nee! Het is belangrijk om op te merken dat de test weliswaar is _gecompileerd_
 Fouten tijdens het compileren zijn onze vriend, omdat ze ons helpen werkende software te schrijven.\
 Rundtime-fouten zijn onze vijanden, omdat ze onze gebruikers beïnvloeden.
 
-## Schrijf voldoiende code om de test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func SumAllTails(numbersToSum ...[]int) []int {
