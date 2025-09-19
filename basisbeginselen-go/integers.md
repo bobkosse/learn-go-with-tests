@@ -1,6 +1,6 @@
 # Integers
 
-[**Je kunt alle code van dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/integers)
+[**Je kunt hier alle code van dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/integers)
 
 Integers werken zoals je zou verwachten. Laten we een `Add` functie schrijven om wat dingen te proberen. Maak eerst een bestand aan met de naam `adder_test.go` en schrijf de code voor de test.
 
