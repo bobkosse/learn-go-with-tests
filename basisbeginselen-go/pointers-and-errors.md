@@ -1,6 +1,6 @@
 # Pointers & errors
 
-[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
+[**Je kunt hier alle code voor dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/arrays)
 
 In de vorige sectie hebben we geleerd over structuren. Hiermee kunnen we een aantal waarden vastleggen die verband houden met een concept of onderwerp.
 
