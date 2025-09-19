@@ -1,19 +1,19 @@
 # Dependency Injection
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/di)**
+[Je kunt hier alle code van dit hoofdstuk vinden](https://github.com/quii/learn-go-with-tests/tree/main/di)
 
-It is assumed that you have read the [structs section](./structs-methods-and-interfaces.md) before as some understanding of interfaces will be needed for this.
+Ik ga ervan uit dat je het gedeelte over [structs](structs-methods-and-interfaces.md) al eerder hebt gelezen, omdat enige kennis van interfaces voor dit hoofdstuk nodig is.
 
-There are _a lot_ of misunderstandings around dependency injection around the programming community. Hopefully, this guide will show you how
+Er bestaan ​​veel misverstanden over dependency injection binnen de programmeergemeenschap. Hopelijk laat deze gids je zien hoe
 
-* You don't need a framework
-* It does not overcomplicate your design
-* It facilitates testing
-* It allows you to write great, general-purpose functions.
+* Je hebt geen framework nodig
+* Het je ontwerp niet onnodig ingewikkeld maakt
+* je faciliteert bij het testen
+* je hiermee geweldige, algemene functies kunt schrijven.
 
-We want to write a function that greets someone, just like we did in the hello-world chapter but this time we are going to be testing the _actual printing_.
+We willen een functie schrijven die iemand begroet, net zoals we deden in het hoofdstuk over de Hello World. Deze keer gaan we echter het daadwerkelijke _tonen op het scherm_ testen.
 
-Just to recap, here is what that function could look like
+Om het nog even samen te vatten: dit is hoe die functie eruit zou kunnen zien
 
 ```go
 func Greet(name string) {
@@ -21,15 +21,15 @@ func Greet(name string) {
 }
 ```
 
-But how can we test this? Calling `fmt.Printf` prints to stdout, which is pretty hard for us to capture using the testing framework.
+Maar hoe kunnen we dit testen? Door `fmt.Printf` aan te roepen, printen we naar stdout, wat voor ons vrij lastig is om vast te leggen met het testframework.
 
-What we need to do is to be able to **inject** \(which is just a fancy word for pass in\) the dependency of printing.
+Wat we moeten doen is de afhankelijkheid van het printen **injecteren** (een mooi woord voor doorgeven).
 
-**Our function doesn't need to care _where_ or _how_ the printing happens, so we should accept an _interface_ rather than a concrete type.**
+**Voor onze functie maakt het niet uit waar of hoe het afdrukken plaatsvindt. Daarom moeten we een interface accepteren in plaats van een concrete type.**
 
-If we do that, we can then change the implementation to print to something we control so that we can test it. In "real life" you would inject in something that writes to stdout.
+Als we dat doen, kunnen we de implementatie aanpassen om te printen naar iets dat we zelf beheren, zodat we het kunnen testen. In de "echte" praktijk zou je iets injecteren dat naar stdout schrijft.
 
-If you look at the source code of [`fmt.Printf`](https://pkg.go.dev/fmt#Printf) you can see a way for us to hook in
+Als je naar de broncode van [`fmt.Printf`](https://pkg.go.dev/fmt#Printf) kijkt, zie je een manier waarop we kunnen aansluiten
 
 ```go
 // It returns the number of bytes written and any write error encountered.
@@ -38,9 +38,9 @@ func Printf(format string, a ...interface{}) (n int, err error) {
 }
 ```
 
-Interesting! Under the hood `Printf` just calls `Fprintf` passing in `os.Stdout`.
+Interessant! Onder motorkap roept `Printf` gewoon de `Fprintf` functie aan en geeft het `os.Stdout` door.
 
-What exactly _is_ an `os.Stdout`? What does `Fprintf` expect to get passed to it for the 1st argument?
+Wat is _precies_ een `os.Stdout`? Wat verwacht `Fprintf` dat er als eerste argument aan wordt doorgegeven?
 
 ```go
 func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
@@ -52,7 +52,7 @@ func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
 }
 ```
 
-An `io.Writer`
+Een `io.Writer`
 
 ```go
 type Writer interface {
@@ -60,13 +60,13 @@ type Writer interface {
 }
 ```
 
-From this we can infer that `os.Stdout` implements `io.Writer`; `Printf` passes `os.Stdout` to `Fprintf` which expects an `io.Writer`.
+Hieruit kunnen we afleiden dat `os.Stdout` `io.Writer` implementeert; `Printf` geeft `os.Stdout` door aan `Fprintf`, die een `io.Writer` verwacht.
 
-As you write more Go code you will find this interface popping up a lot because it's a great general purpose interface for "put this data somewhere".
+Naarmate je meer Go-code schrijft, zul je merken dat deze interface steeds vaker opduikt. Het is namelijk een geweldige, algemene interface om "gegevens ergens neer te zetten".
 
-So we know under the covers we're ultimately using `Writer` to send our greeting somewhere. Let's use this existing abstraction to make our code testable and more reusable.
+We weten dus dat we uiteindelijk `Writer` gebruiken om onze groet ergens naartoe te sturen. Laten we deze bestaande abstractie gebruiken om onze code testbaar en herbruikbaarder te maken.
 
-## Write the test first
+## Schrijf eerst je test
 
 ```go
 func TestGreet(t *testing.T) {
@@ -82,21 +82,21 @@ func TestGreet(t *testing.T) {
 }
 ```
 
-The `Buffer` type from the `bytes` package implements the `Writer` interface, because it has the method `Write(p []byte) (n int, err error)`.
+Het type `Buffer` uit het `bytes`-pakket implementeert de `Writer`-interface, omdat het de methode `Write(p []byte) (n int, err error)` heeft.
 
-So we'll use it in our test to send in as our `Writer` and then we can check what was written to it after we invoke `Greet`
+We zullen het dus gebruiken in onze test om het als onze `Writer` in te sturen en dan kunnen we controleren wat erin is geschreven nadat we `Greet` hebben aangeroepen
 
-## Try and run the test
+## Probeer en voer de test uit
 
-The test will not compile
+De test zal niet compileren
 
-```text
+```
 ./di_test.go:10:2: undefined: Greet
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-_Listen to the compiler_ and fix the problem.
+_Luister naar de compiler_ en fix het probleem.
 
 ```go
 func Greet(writer *bytes.Buffer, name string) {
@@ -106,11 +106,11 @@ func Greet(writer *bytes.Buffer, name string) {
 
 `Hello, Chris di_test.go:16: got '' want 'Hello, Chris'`
 
-The test fails. Notice that the name is getting printed out, but it's going to stdout.
+De test mislukt. Merk op dat de naam wel wordt afgedrukt, maar op stdout staat.
 
-## Write enough code to make it pass
+## Schrijf genoeg code om test te laten slagen
 
-Use the writer to send the greeting to the buffer in our test. Remember `fmt.Fprintf` is like `fmt.Printf` but instead takes a `Writer` to send the string to, whereas `fmt.Printf` defaults to stdout.
+Gebruik de writer om de begroeting naar de buffer te sturen in onze test. Onthoud dat `fmt.Fprintf` hetzelfde is als `fmt.Printf`, maar een `Writer` nodig heeft om de string naartoe te sturen, terwijl `fmt.Printf` standaard stdout gebruikt.
 
 ```go
 func Greet(writer *bytes.Buffer, name string) {
@@ -118,13 +118,13 @@ func Greet(writer *bytes.Buffer, name string) {
 }
 ```
 
-The test now passes.
+De test slaagt nu.
 
 ## Refactor
 
-Earlier the compiler told us to pass in a pointer to a `bytes.Buffer`. This is technically correct but not very useful.
+Eerder vertelde de compiler ons dat we een pointer naar een `bytes.Buffer` moesten meegeven. Dit is technisch correct, maar niet erg nuttig.
 
-To demonstrate this, try wiring up the `Greet` function into a Go application where we want it to print to stdout.
+Om dit te demonstreren, kun je proberen de `Greet`-functie aan te sluiten op een Go-toepassing en deze vervolgens op stdout af te drukken.
 
 ```go
 func main() {
@@ -134,9 +134,9 @@ func main() {
 
 `./di.go:14:7: cannot use os.Stdout (type *os.File) as type *bytes.Buffer in argument to Greet`
 
-As discussed earlier `fmt.Fprintf` allows you to pass in an `io.Writer` which we know both `os.Stdout` and `bytes.Buffer` implement.
+Zoals eerder besproken, kun je met `fmt.Fprintf` een `io.Writer` doorgeven, waarvan we weten dat zowel `os.Stdout` als `bytes.Buffer` deze implementeren.
 
-If we change our code to use the more general purpose interface we can now use it in both tests and in our application.
+Als we onze code aanpassen om de meer algemene interface te gebruiken, kunnen we deze nu zowel in tests als in onze applicatie gebruiken.
 
 ```go
 package main
@@ -156,13 +156,13 @@ func main() {
 }
 ```
 
-## More on io.Writer
+## Meer over io.Writer
 
-What other places can we write data to using `io.Writer`? Just how general purpose is our `Greet` function?
+Naar welke andere plekken kunnen we gegevens schrijven met `io.Writer`? Hoe algemeen is onze Greet-functie?
 
-### The Internet
+### Het Internet
 
-Run the following
+Voer de volgende code uit:
 
 ```go
 package main
@@ -187,32 +187,32 @@ func main() {
 }
 ```
 
-Run the program and go to [http://localhost:5001](http://localhost:5001). You'll see your greeting function being used.
+Start het programma en ga naar [http://localhost:5001](http://localhost:5001/). Je zult zien dat je begroetingsfunctie wordt gebruikt.
 
-HTTP servers will be covered in a later chapter so don't worry too much about the details.
+HTTP-servers worden in een later hoofdstuk besproken, dus maak je niet te druk over de details.
 
-When you write an HTTP handler, you are given an `http.ResponseWriter` and the `http.Request` that was used to make the request. When you implement your server you _write_ your response using the writer.
+Wanneer je een HTTP-handler schrijft, krijg je een `http.ResponseWriter` en de `http.Request` die is gebruikt om de aanvraag te doen. Wanneer je je server implementeert, _schrijf_ je je antwoord met behulp van de writer.
 
-You can probably guess that `http.ResponseWriter` also implements `io.Writer` so this is why we could re-use our `Greet` function inside our handler.
+Je kunt waarschijnlijk wel raden dat `http.ResponseWriter` ook `io.Writer` implementeert en daarom kunnen we onze `Greet`-functie hergebruiken in onze handler.
 
-## Wrapping up
+## Samenvattend
 
-Our first round of code was not easy to test because it wrote data to somewhere we couldn't control.
+Onze eerste coderonde was niet eenvoudig te testen, omdat de gegevens naar een plek werden geschreven waar we geen controle over hadden.
 
-_Motivated by our tests_ we refactored the code so we could control _where_ the data was written by **injecting a dependency** which allowed us to:
+_Geïnspireerd door onze tests_ hebben we de code aangepast, zodat we konden bepalen waar de data naartoe werd geschreven door door gebruik te maken van **dependency injection**. Hierdoor konden we:
 
-* **Test our code** If you can't test a function _easily_, it's usually because of dependencies hard-wired into a function _or_ global state. If you have a global database connection pool for instance that is used by some kind of service layer, it is likely going to be difficult to test and they will be slow to run. DI will motivate you to inject in a database dependency \(via an interface\) which you can then mock out with something you can control in your tests.
-* **Separate our concerns**, decoupling _where the data goes_ from _how to generate it_. If you ever feel like a method/function has too many responsibilities \(generating data _and_ writing to a db? handling HTTP requests _and_ doing domain level logic?\) DI is probably going to be the tool you need.
-* **Allow our code to be re-used in different contexts** The first "new" context our code can be used in is inside tests. But further on if someone wants to try something new with your function they can inject their own dependencies.
+* **Onze code testen**. Als je een functie niet _gemakkelijk_ kunt testen, komt dat meestal door afhankelijkheden die vastliggen in een functie of globale status. Als je bijvoorbeeld een globale databaseverbindingspool hebt die wordt gebruikt door een servicelaag, zal het testen waarschijnlijk moeilijk zijn en zullen de uitvoeringen traag zijn. DI zal je motiveren om een ​​databaseafhankelijkheid te injecteren (via een interface), die je vervolgens kunt mocken met iets dat je in je tests kunt beheren.
+* **Scheid onze zorgen** en ontkoppel _waar de data naartoe gaat_ van _hoe deze gegenereerd wordt_. Als je ooit het gevoel hebt dat een methode/functie te veel verantwoordelijkheden heeft (data genereren en naar een database schrijven? HTTP-verzoeken verwerken en logica op domeinniveau uitvoeren?) dan is DI waarschijnlijk de tool die je nodig hebt.
+* **Sta toe dat onze code in verschillende contexten hergebruikt kan worden**. De eerste "nieuwe" context waarin onze code gebruikt kan worden, is binnen tests. Maar als iemand later iets nieuws met je functie wil proberen, kan hij of zij zijn of haar eigen afhankelijkheden injecteren.
 
-### What about mocking? I hear you need that for DI and also it's evil
+### Hoe zit het met mocken? Ik hoor dat je dat nodig hebt voor DI en het is ook nog eens slecht.
 
-Mocking will be covered in detail later \(and it's not evil\). You use mocking to replace real things you inject with a pretend version that you can control and inspect in your tests. In our case though, the standard library had something ready for us to use.
+Mocking wordt later uitgebreid behandeld (en het is niet slecht). Je gebruikt mocking om echte dingen die je injecteert te vervangen door een fictieve versie die je kunt controleren en inspecteren in je tests. In ons geval had de standaardbibliotheek echter iets kant-en-klaars voor ons.
 
-### The Go standard library is really good, take time to study it
+### De standaardbibliotheek van Go is echt goed, neem de tijd om deze te bestuderen
 
-By having some familiarity with the `io.Writer` interface we are able to use `bytes.Buffer` in our test as our `Writer` and then we can use other `Writer`s from the standard library to use our function in a command line app or in web server.
+Omdat we enigszins vertrouwd zijn met de `io.Writer`-interface, kunnen we `bytes.Buffer` in onze test gebruiken als onze `Writer`. Vervolgens kunnen we andere `Writers` uit de standaardbibliotheek gebruiken om onze functie in een command-line toepassing of op een webserver te gebruiken.
 
-The more familiar you are with the standard library the more you'll see these general purpose interfaces which you can then re-use in your own code to make your software reusable in a number of contexts.
+Naarmate je meer vertrouwd bent met de standaardbibliotheek, zul je vaker algemene interfaces tegenkomen. Je kunt deze vervolgens opnieuw gebruiken in je eigen code, zodat je software in diverse contexten hergebruikt kan worden.
 
-This example is heavily influenced by a chapter in [The Go Programming language](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440), so if you enjoyed this, go buy it!
+Dit voorbeeld is sterk beïnvloed door een hoofdstuk uit het boek [The Go Programming language](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440). Als je dit leuk vond, koop het dan!
