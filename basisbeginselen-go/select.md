@@ -340,15 +340,15 @@ func Racer(a, b string) (winner string, error error) {
 }
 ```
 
-`time.After` is a very handy function when using `select`. Although it didn't happen in our case you can potentially write code that blocks forever if the channels you're listening on never return a value. `time.After` returns a `chan` (like `ping`) and will send a signal down it after the amount of time you define.
+`time.After` is een erg handige functie bij het gebruik van `select`. Hoewel dit in ons geval niet gebeurde, kun je mogelijk code schrijven die permanent blokkeert als de kanalen waarnaar je luistert nooit een waarde retourneren. `time.After` retourneert een `chan` (zoals `ping`) en stuurt een signaal ernaartoe na de door jou gedefinieerde tijd.
 
-For us this is perfect; if `a` or `b` manage to return they win, but if we get to 10 seconds then our `time.After` will send a signal and we'll return an `error`.
+Voor ons is dit perfect; als `a` of `b` terug kunnen, hebben zij gewonnen, maar als wij 10 seconden halen, dan is onze `time.After` een signaal en geven wij een `error`.
 
-### Slow tests
+### Langzame tests
 
-The problem we have is that this test takes 10 seconds to run. For such a simple bit of logic, this doesn't feel great.
+Het probleem is dat deze test 10 seconden duurt. Voor zo'n simpele logica voelt dat niet echt prettig.
 
-What we can do is make the timeout configurable. So in our test, we can have a very short timeout and then when the code is used in the real world it can be set to 10 seconds.
+Wat we wel kunnen doen, is de time-out configureerbaar maken. In onze test kunnen we dus een zeer korte time-out instellen, en wanneer de code in productie wordt gebruikt, kan deze worden ingesteld op 10 seconden.
 
 ```go
 func Racer(a, b string, timeout time.Duration) (winner string, error error) {
@@ -363,14 +363,14 @@ func Racer(a, b string, timeout time.Duration) (winner string, error error) {
 }
 ```
 
-Our tests now won't compile because we're not supplying a timeout.
+Onze tests kunnen nu niet worden gecompileerd omdat we geen time-out opgeven.
 
-Before rushing in to add this default value to both our tests let's _listen to them_.
+Voordat we deze standaardwaarde aan beide tests toevoegen, gaan we eerst naar de resultaten _luisteren_.
 
-* Do we care about the timeout in the "happy" test?
-* The requirements were explicit about the timeout.
+* Maken we ons zorgen over de time-out in de "happy flow"?
+* De eisen waren expliciet over de timeout.
 
-Given this knowledge, let's do a little refactoring to be sympathetic to both our tests and the users of our code.
+Gegeven deze kennis, kunnen we een kleine refactoring uitvoeren om zowel onze tests als de gebruikers van onze code beter van dienst te zijn.
 
 ```go
 var tenSecondTimeout = 10 * time.Second
@@ -391,7 +391,7 @@ func ConfigurableRacer(a, b string, timeout time.Duration) (winner string, error
 }
 ```
 
-Our users and our first test can use `Racer` (which uses `ConfigurableRacer` under the hood) and our sad path test can use `ConfigurableRacer`.
+Onze gebruikers en onze eerste test kunnen `Racer` gebruiken (dat onder de motorkap ConfigurableRacer gebruikt) en onze _sad path-test_ kan `ConfigurableRacer` gebruiken.
 
 ```go
 func TestRacer(t *testing.T) {
@@ -432,16 +432,16 @@ func TestRacer(t *testing.T) {
 }
 ```
 
-I added one final check on the first test to verify we don't get an `error`.
+Ik heb nog een laatste controle aan de eerste test toegevoegd om te verifiëren dat we geen `error` terugkrijgen van de functieaanroep.
 
-## Wrapping up
+## Samenvattend
 
 ### `select`
 
-* Helps you wait on multiple channels.
-* Sometimes you'll want to include `time.After` in one of your `cases` to prevent your system blocking forever.
+* Helpt je bij het wachten op meerdere kanalen.
+* Soms wil je `time.After` gebruiken in `cases` om te voorkomen dat je systeem blokkeert
 
 ### `httptest`
 
-* A convenient way of creating test servers so you can have reliable and controllable tests.
-* Uses the same interfaces as the "real" `net/http` servers which is consistent and less for you to learn.
+* Een handige manier om testservers te maken, zodat je betrouwbare en controleerbare tests hebt.
+* Maakt gebruik van dezelfde interfaces als de "echte" `net/http`-servers, wat consistent is en minder kost om te leren.
