@@ -1,14 +1,12 @@
 # Concurrency
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/concurrency)**
+[**Je kunt hier alle code van dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/concurrency)
 
-Here's the setup: a colleague has written a function, `CheckWebsites`, that
-checks the status of a list of URLs.
+Dit is de opzet: een collega heeft een functie geschreven, `CheckWebsites`, die de status van een lijst met URL's controleert.
 
-```go
-package concurrency
-
-type WebsiteChecker func(string) bool
+<pre class="language-go"><code class="lang-go">package concurrency
+<strong>
+</strong>type WebsiteChecker func(string) bool
 
 func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 	results := make(map[string]bool)
@@ -19,18 +17,15 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 
 	return results
 }
-```
+</code></pre>
 
-It returns a map of each URL checked to a boolean value: `true` for a good
-response; `false` for a bad response.
+Hiermee wordt een map van elke gecontroleerde URL's geretourneerd met een Booleaanse waarde: `true` voor een goed response, `false` voor een slecht response.
 
-You also have to pass in a `WebsiteChecker` which takes a single URL and returns
-a boolean. This is used by the function to check all the websites.
+Je moet ook een `WebsiteChecker` opgeven die één URL accepteert en een boolean retourneert. Deze wordt door de functie gebruikt om alle websites te controleren.
 
-Using [dependency injection][DI] has allowed them to test the function without
-making real HTTP calls, making it reliable and fast.
+Door [dependency injection](dependency-injection.md) te gebruiken, konden ze de functie testen zonder echte HTTP-aanroepen te doen, waardoor deze betrouwbaar en snel is geworden.
 
-Here's the test they've written:
+Hier is de test die ze hebben geschreven:
 
 ```go
 package concurrency
@@ -65,14 +60,11 @@ func TestCheckWebsites(t *testing.T) {
 }
 ```
 
-The function is in production and being used to check hundreds of websites. But
-your colleague has started to get complaints that it's slow, so they've asked
-you to help speed it up.
+De functie is in productie en wordt gebruikt om honderden websites te controleren. Maar je collega krijgt klachten dat de functie traag is, dus hebben ze je gevraagd om te helpen de snelheid te verbeteren.
 
-## Write a test
+## Schrijf eerst je test
 
-Let's use a benchmark to test the speed of `CheckWebsites` so that we can see the
-effect of our changes.
+Laten we een benchmark gebruiken om de snelheid van `CheckWebsites` te testen, zodat we het effect van onze wijzigingen kunnen zien.
 
 ```go
 package concurrency
@@ -99,13 +91,9 @@ func BenchmarkCheckWebsites(b *testing.B) {
 }
 ```
 
-The benchmark tests `CheckWebsites` using a slice of one hundred urls and uses
-a new fake implementation of `WebsiteChecker`. `slowStubWebsiteChecker` is
-deliberately slow. It uses `time.Sleep` to wait exactly twenty milliseconds and
-then it returns true.
+De benchmark test `CheckWebsites` met een slice van honderd URL's en gebruikt een nieuwe nep-implementatie van `WebsiteChecker`. `slowStubWebsiteChecker` is opzettelijk traag. Het gebruikt `time.Sleep` om precies twintig milliseconden te wachten en retourneert vervolgens true.
 
-
-When we run the benchmark using `go test -bench=.` (or if you're in Windows Powershell `go test -bench="."`):
+Wanneer we de benchmark uitvoeren met go `test -bench=.` (of als je Windows PowerShell gebruikt, `go test -bench="."`) zie je dit resultaat:
 
 ```sh
 pkg: github.com/gypsydave5/learn-go-with-tests/concurrency/v0
@@ -114,41 +102,23 @@ PASS
 ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v0        2.268s
 ```
 
-`CheckWebsites` has been benchmarked at 2249228637 nanoseconds - about two and
-a quarter seconds.
+`CheckWebsites` is getest op 2249228637 nanoseconden, wat ongeveer twee en een kwart seconde is.
 
-Let's try and make this faster.
+Laten we proberen dit sneller te maken.
 
-### Write enough code to make it pass
+### Schrijf genoeg code om test te laten slagen
 
-Now we can finally talk about concurrency which, for the purposes of the
-following, means "having more than one thing in progress." This is something
-that we do naturally everyday.
+Nu kunnen we het eindelijk over _concurrency_ hebben, wat in het vervolg betekent dat er "meer dan één proces tegelijk is". Dit is iets wat we van nature elke dag doen.
 
-For instance, this morning I made a cup of tea. I put the kettle on and then,
-while I was waiting for it to boil, I got the milk out of the fridge, got the
-tea out of the cupboard, found my favourite mug, put the teabag into the cup and
-then, when the kettle had boiled, I put the water in the cup.
+Zo zette ik vanochtend bijvoorbeeld een kop thee. Ik zette de waterkoker aan en terwijl ik wachtte tot het water kookte, pakte ik de melk uit de koelkast, de thee uit de kast, pakte mijn favoriete mok, deed het theezakje in de kop en toen de waterkoker kookte, deed ik er water in.
 
-What I _didn't_ do was put the kettle on and then stand there blankly staring at
-the kettle until it boiled, then do everything else once the kettle had boiled.
+Wat ik _niet deed_, was de waterkoker aanzetten en er vervolgens wezenloos naar staren totdat het water kookte, en daarna alle het anders doen zodra het water kookte.
 
-If you can understand why it's faster to make tea the first way, then you can
-understand how we will make `CheckWebsites` faster. Instead of waiting for
-a website to respond before sending a request to the next website, we will tell
-our computer to make the next request while it is waiting.
+Als je begrijpt waarom het sneller is om thee op de eerste manier te zetten, dan begrijp je ook hoe we `CheckWebsites` sneller gaan maken. In plaats van te wachten tot een website reageert voordat we een verzoek naar de volgende website sturen, zullen we onze computer opdracht geven om het volgende verzoek te doen terwijl hij wacht.
 
-Normally in Go when we call a function `doSomething()` we wait for it to return
-(even if it has no value to return, we still wait for it to finish). We say that
-this operation is *blocking* - it makes us wait for it to finish. An operation
-that does not block in Go will run in a separate *process* called a *goroutine*.
-Think of a process as reading down the page of Go code from top to bottom, going
-'inside' each function when it gets called to read what it does. When a separate
-process starts, it's like another reader begins reading inside the function,
-leaving the original reader to carry on going down the page.
+Normaal gesproken wachten we in Go, wanneer we een functie `doSomething()` aanroepen, tot deze retourneert (zelfs als er geen waarde is om te retourneren, wachten we nog steeds tot de functie is voltooid). We noemen deze bewerking _blocking_ - het laat ons wachten tot de bewerking is voltooid. Een bewerking die in Go niet blokkeert, wordt uitgevoerd in een apart proces, _een goroutine genaamd_. Stel je een proces voor als het van boven naar beneden lezen van de pagina met Go-code, waarbij elke functie die wordt aangeroepen 'binnenin' wordt gelezen wat deze doet. Wanneer een apart proces start, is het alsof een andere lezer binnenin de functie begint te lezen, terwijl de oorspronkelijke lezer de pagina verder kan aflopen.
 
-To tell Go to start a new goroutine we turn a function call into a `go`
-statement by putting the keyword `go` in front of it: `go doSomething()`.
+Om Go te vertellen een nieuwe goroutine te starten, zetten we een functieaanroep om in een `go`-instructie door het sleutelwoord go ervoor te zetten: `go doSomething()`.
 
 ```go
 package concurrency
@@ -168,25 +138,13 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-Because the only way to start a goroutine is to put `go` in front of a function
-call, we often use *anonymous functions* when we want to start a goroutine. An
-anonymous function literal looks just the same as a normal function declaration,
-but without a name (unsurprisingly). You can see one above in the body of the
-`for` loop.
+Omdat de enige manier om een ​​goroutine te starten is door go voor een functieaanroep te plaatsen, gebruiken we vaak _anonieme functies_ wanneer we een goroutine willen starten. Een anonieme functieliteral ziet er precies hetzelfde uit als een normale functiedeclaratie, maar dan zonder naam (niet verrassend). Je ziet er hierboven een in de body van de `for`-lus.
 
-Anonymous functions have a number of features which make them useful, two of
-which we're using above. Firstly, they can be executed at the same time that
-they're declared - this is what the `()` at the end of the anonymous function is
-doing. Secondly they maintain access to the lexical scope in which they are
-defined - all the variables that are available at the point when you declare the
-anonymous function are also available in the body of the function.
+Anonieme functies hebben een aantal nuttige eigenschappen, waarvan we er hierboven twee hebben gebruikt. Ten eerste kunnen ze worden uitgevoerd op hetzelfde moment dat ze worden gedeclareerd - dit is wat de `()` aan het einde van de anonieme functie doet. Ten tweede behouden ze toegang tot de lexicale scope waarin ze zijn gedefinieerd - alle variabelen die beschikbaar zijn op het moment dat je de anonieme functie declareert, zijn ook beschikbaar in de body van de functie.
 
-The body of the anonymous function above is just the same as the loop body was
-before. The only difference is that each iteration of the loop will start a new
-goroutine, concurrent with the current process (the `WebsiteChecker` function).
-Each goroutine will add its result to the results map.
+De body van de anonieme functie hierboven is precies hetzelfde als de body van de lus. Het enige verschil is dat elke iteratie van de lus een nieuwe goroutine start, gelijktijdig met het huidige proces (de `WebsiteChecker`-functie). Elke goroutine voegt zijn resultaat toe aan de resultaten map.
 
-But when we run `go test`:
+Maar als we `go test` uitvoeren:
 
 ```sh
 --- FAIL: TestCheckWebsites (0.00s)
@@ -197,26 +155,17 @@ FAIL    github.com/gypsydave5/learn-go-with-tests/concurrency/v1        0.010s
 
 ```
 
-### A quick aside into the concurrency universe...
+### Een korte opmerking over het concurrency universum...
 
-You might not get this result. You might get a panic message that
-we're going to talk about in a bit. Don't worry if you got that, just keep
-running the test until you _do_ get the result above. Or pretend that you did.
-Up to you. Welcome to concurrency: when it's not handled correctly it's hard to
-predict what's going to happen. Don't worry - that's why we're writing tests, to
-help us know when we're handling concurrency predictably.
+Het kan zijn dat je dit resultaat niet krijgt. Je krijgt mogelijk een paniekmelding waar we het zo meteen over hebben. Maak je geen zorgen als je die krijgt, blijf de test gewoon uitvoeren totdat je het bovenstaande resultaat krijgt. Of doe alsof je dat wel krijgt. De keuze is aan jou. Welkom bij concurrency: als het niet correct wordt afgehandeld, is het moeilijk te voorspellen wat er gaat gebeuren. Maak je geen zorgen - daarom schrijven we tests, zodat we weten wanneer we concurrency voorspelbaar afhandelen.
 
-### ... and we're back.
+### ... en we zijn weer terug.
 
-We are caught by the original test `CheckWebsites`, it's now returning an
-empty map. What went wrong?
+We zijn gepakt door de originele test `CheckWebsites`, die nu een lege map retourneert. Wat is er misgegaan?
 
-None of the goroutines that our `for` loop started had enough time to add
-their result to the `results` map; the `WebsiteChecker` function is too fast for
-them, and it returns the still empty map.
+Geen van de goroutines die onze `for`-lus startte, had genoeg tijd om hun resultaat toe te voegen aan de `resultaten`. De `WebsiteChecker`-functie is te snel voor hen en retourneert een nog steeds lege map.
 
-To fix this we can just wait while all the goroutines do their work, and then
-return. Two seconds ought to do it, right?
+Om dit op te lossen, kunnen we gewoon wachten tot alle goroutines hun werk doen en dan terugkeren. Twee seconden zou voldoende moeten zijn, toch?
 
 ```go
 package concurrency
@@ -240,14 +189,14 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-Now if you're lucky you'll get:
+Als je nu geluk hebt krijg je:
 
 ```sh
 PASS
 ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v1        2.012s
 ```
 
-But if you're unlucky (this is more likely if you run them with the benchmark as you'll get more tries)
+Maar als je pech hebt (dit is waarschijnlijker als je ze uitvoert met de benchmark, aangezien je dan meer pogingen krijgt):
 
 ```sh
 fatal error: concurrent map writes
@@ -267,21 +216,13 @@ created by github.com/gypsydave5/learn-go-with-tests/concurrency/v3.WebsiteCheck
         ... many more scary lines of text ...
 ```
 
-This is long and scary, but all we need to do is take a breath and read the
-stacktrace: `fatal error: concurrent map writes`. Sometimes, when we run our
-tests, two of the goroutines write to the results map at exactly the same time.
-Maps in Go don't like it when more than one thing tries to write to them at
-once, and so `fatal error`.
+Dit is lang en eng, maar het enige wat we hoeven te doen is even ademhalen en de stacktrace lezen: `fatal error: concurrent map writes`. Soms, wanneer we onze tests uitvoeren, schrijven twee goroutines tegelijkertijd naar de resultatenmap. Maps in Go vinden het niet prettig als meer dan één ding er tegelijk naar probeert te schrijven, wat resulteert in een `fatal error`.
 
-This is a _race condition_, a bug that occurs when the output of our software is
-dependent on the timing and sequence of events that we have no control over.
-Because we cannot control exactly when each goroutine writes to the results map,
-we are vulnerable to two goroutines writing to it at the same time.
+Dit is een _raceconditie_, een bug die optreedt wanneer de uitvoer van onze software afhankelijk is van de timing en volgorde van gebeurtenissen waarover we geen controle hebben. Omdat we niet precies kunnen bepalen wanneer elke goroutine naar de resultatenmap schrijft, zijn we kwetsbaar voor twee goroutines die er tegelijkertijd naartoe schrijven.
 
-Go can help us to spot race conditions with its built in [_race detector_][godoc_race_detector].
-To enable this feature, run the tests with the `race` flag: `go test -race`.
+Go kan ons helpen raceomstandigheden te detecteren met de ingebouwde [racedetector](https://blog.golang.org/race-detector). Om deze functie in te schakelen, voer je de tests uit met de `race`vlag: `go test -race`.
 
-You should get some output that looks like this:
+Je zou een uitvoer moeten krijgen die er ongeveer zo uitziet:
 
 ```sh
 ==================
@@ -316,37 +257,29 @@ Goroutine 7 (finished) created at:
 ==================
 ```
 
-The details are, again, hard to read - but `WARNING: DATA RACE` is pretty
-unambiguous. Reading into the body of the error we can see two different
-goroutines performing writes on a map:
+De details zijn wederom moeilijk te lezen, maar `WARNING: DATA RACE` is vrij duidelijk. Als we de tekst van de fout lezen, zien we twee verschillende goroutines die schrijfbewerkingen op een map uitvoeren:
 
 `Write at 0x00c420084d20 by goroutine 8:`
 
-is writing to the same block of memory as
+schrijft naar hetzelfde geheugenblok als
 
 `Previous write at 0x00c420084d20 by goroutine 7:`
 
-On top of that, we can see the line of code where the write is happening:
+Daarboven kunnen we de regel code zien waar de schrijfbewerking plaatsvindt:
 
 `/Users/gypsydave5/go/src/github.com/gypsydave5/learn-go-with-tests/concurrency/v3/websiteChecker.go:12`
 
-and the line of code where goroutines 7 an 8 are started:
+en de regel code waar goroutines 7 en 8 worden gestart:
 
 `/Users/gypsydave5/go/src/github.com/gypsydave5/learn-go-with-tests/concurrency/v3/websiteChecker.go:11`
 
-Everything you need to know is printed to your terminal - all you have to do is
-be patient enough to read it.
+Alles wat je moet weten wordt op je terminal afgedrukt. Je hoeft alleen maar geduldig genoeg te zijn om de meldingen te lezen.
 
-### Channels
+### Kanalen
 
-We can solve this data race by coordinating our goroutines using _channels_.
-Channels are a Go data structure that can both receive and send values. These
-operations, along with their details, allow communication between different
-processes.
+We kunnen deze datarace oplossen door onze goroutines te coördineren met behulp van kanalen. Kanalen vormen een Go-datastructuur die waarden kan ontvangen en verzenden. Deze bewerkingen, samen met hun details, maken communicatie tussen verschillende processen mogelijk.
 
-In this case we want to think about the communication between the parent process
-and each of the goroutines that it makes to do the work of running the
-`WebsiteChecker` function with the url.
+In dit geval willen we nadenken over de communicatie tussen het bovenliggende proces en elk van de goroutines die het aanmaakt om de `WebsiteChecker`-functie met de url uit te voeren.
 
 ```go
 package concurrency
@@ -376,49 +309,29 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-Alongside the `results` map we now have a `resultChannel`, which we `make` in
-the same way. `chan result` is the type of the channel - a channel of `result`.
-The new type, `result` has been made to associate the return value of the
-`WebsiteChecker` with the url being checked - it's a struct of `string` and
-`bool`. As we don't need either value to be named, each of them is anonymous
-within the struct; this can be useful in when it's hard to know what to name
-a value.
+Naast de `results` map hebben we nu een `resultChannel`, die we op dezelfde manier maken. `chan result` is het type van het kanaal - een channel van `result`. Het nieuwe type `result` is gemaakt om de retourwaarde van de `WebsiteChecker` te koppelen aan de URL die wordt gecontroleerd - het is een struct van `string` en `bool`. Omdat we geen van beide waarden hoeven te benoemen, is elke waarde anoniem binnen de struct; dit kan handig zijn wanneer het moeilijk is om te weten hoe een waarde moet worden genoemd.
 
-Now when we iterate over the urls, instead of writing to the `map` directly
-we're sending a `result` struct for each call to `wc` to the `resultChannel`
-with a _send statement_. This uses the `<-` operator, taking a channel on the
-left and a value on the right:
+Wanneer we nu over de URL's itereren, sturen we in plaats van rechtstreeks naar de map te schrijven, een resultaatstructuur voor elke aanroep van `wc` naar het `resultChannel` met een _send-statement_. Hiervoor gebruiken we de `<-` operator, waarbij een kanaal aan de linkerkant en een waarde aan de rechterkant worden geschreven:
 
 ```go
 // Send statement
 resultChannel <- result{u, wc(u)}
 ```
 
-The next `for` loop iterates once for each of the urls. Inside we're using
-a _receive expression_, which assigns a value received from a channel to
-a variable. This also uses the `<-` operator, but with the two operands now
-reversed: the channel is now on the right and the variable that
-we're assigning to is on the left:
+De volgende `for`-lus itereert één keer voor elk van de URL's. Binnenin gebruiken we een ontvangstexpressie, die een waarde die van een kanaal is ontvangen, toewijst aan een variabele. Dit gebruikt ook de `<-` operator, maar nu met de twee operanden omgedraaid: het kanaal staat nu rechts en de variabele waaraan we toewijzen staat links:
 
 ```go
 // Receive expression
 r := <-resultChannel
 ```
 
-We then use the `result` received to update the map.
+Vervolgens gebruiken we het ontvangen resultaat om de map bij te werken.
 
-By sending the results into a channel, we can control the timing of each write
-into the results map, ensuring that it happens one at a time. Although each of
-the calls of `wc`, and each send to the result channel, is happening concurrently
-inside its own process, each of the results is being dealt with one at a time as
-we take values out of the result channel with the receive expression.
+Door de resultaten naar een kanaal te sturen, kunnen we de timing van elke schrijfbewerking in de resultatenmap bepalen, zodat deze één voor één plaatsvindt. Hoewel elke aanroep van `wc` en elke verzending naar het resultatenkanaal gelijktijdig binnen een eigen proces plaatsvindt, worden de resultaten één voor één verwerkt terwijl we waarden uit het resultatenkanaal halen met de ontvangstexpressie.
 
-We have used concurrency for the part of the code that we wanted to make faster, while
-making sure that the part that cannot happen simultaneously still happens linearly.
-And we have communicated across the multiple processes involved by using
-channels.
+We hebben gelijktijdigheid gebruikt voor het deel van de code dat we sneller wilden maken, terwijl we ervoor zorgden dat het deel dat niet gelijktijdig kon gebeuren, toch lineair gebeurde. En we hebben de communicatie tussen de verschillende betrokken processen verzorgd via kanalen.
 
-When we run the benchmark:
+Wanneer we de benchmark uitvoeren:
 
 ```sh
 pkg: github.com/gypsydave5/learn-go-with-tests/concurrency/v2
@@ -426,46 +339,28 @@ BenchmarkCheckWebsites-8             100          23406615 ns/op
 PASS
 ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v2        2.377s
 ```
-23406615 nanoseconds - 0.023 seconds, about one hundred times as fast as
-original function. A great success.
 
-## Wrapping up
+23406615 nanoseconden - 0,023 seconden, ongeveer honderd keer zo snel als de oorspronkelijke functie. Een groot succes.
 
-This exercise has been a little lighter on the TDD than usual. In a way we've
-been taking part in one long refactoring of the `CheckWebsites` function; the
-inputs and outputs never changed, it just got faster. But the tests we had in
-place, as well as the benchmark we wrote, allowed us to refactor `CheckWebsites`
-in a way that maintained confidence that the software was still working, while
-demonstrating that it had actually become faster.
+## Samenvattend
 
-In making it faster we learned about
+Deze oefening was iets minder intensief wat betreft de TDD dan normaal. We hebben in zekere zin deelgenomen aan één lange refactoring van de `CheckWebsites`-functie; de ​​invoer en uitvoer zijn nooit veranderd, het is alleen sneller geworden. Maar de tests die we hadden, evenals de benchmark die we schreven, stelden ons in staat `CheckWebsites` zo te refactoren dat we er zeker van konden zijn dat de software nog steeds werkte, terwijl we tegelijkertijd aantoonden dat deze daadwerkelijk sneller was geworden.
 
-- *goroutines*, the basic unit of concurrency in Go, which let us manage more
-  than one website check request.
-- *anonymous functions*, which we used to start each of the concurrent processes
-  that check websites.
-- *channels*, to help organize and control the communication between the
-  different processes, allowing us to avoid a *race condition* bug.
-- *the race detector* which helped us debug problems with concurrent code
+Door deze functionaliteit sneller te maken leerde we over:
 
-### Make it fast
+* _goroutines_, de basiseenheid voor concurrency in Go, waarmee we meer dan één websitecontroleverzoek kunnen beheren.
+* _anonieme functies_, die we gebruikten om elk van de gelijktijdige processen te starten die websites controleren.
+* _kanalen_, om de communicatie tussen de verschillende processen te helpen organiseren en controleren, zodat we een _race condition_ bug kunnen voorkomen.
+* de _racedetector_ die ons hielp problemen met gelijktijdige code te debuggen
 
-One formulation of an agile way of building software, often misattributed to Kent
-Beck, is:
+### Maak het snel
 
-> [Make it work, make it right, make it fast][wrf]
+Eén formulering van een agile manier van software bouwen, die vaak ten onrechte aan Kent Beck wordt toegeschreven, is \*:
 
-Where 'work' is making the tests pass, 'right' is refactoring the code, and
-'fast' is optimizing the code to make it, for example, run quickly. We can only
-'make it fast' once we've made it work and made it right. We were lucky that the
-code we were given was already demonstrated to be working, and didn't need to be
-refactored. We should never try to 'make it fast' before the other two steps
-have been performed because
+> [Make it work, make it right, make it fast](http://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast)
 
-> [Premature optimization is the root of all evil][popt]
-> -- Donald Knuth
+Waar 'werk' het slagen van de tests inhoudt, 'goed' het refactoren van de code is, en 'snel' het optimaliseren van de code om deze bijvoorbeeld snel te laten werken. We kunnen het pas 'snel maken' als we het werkend en goed hebben gemaakt. We hadden geluk dat de code die we kregen al bewezen werkte en niet gerefactored hoefde te worden. We zouden nooit moeten proberen het 'snel te maken' voordat de andere twee stappen zijn uitgevoerd, omdat \*:
 
-[DI]: dependency-injection.md
-[wrf]: http://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast
-[godoc_race_detector]: https://blog.golang.org/race-detector
-[popt]: http://wiki.c2.com/?PrematureOptimization
+> [Premature optimization is the root of all evil](http://wiki.c2.com/?PrematureOptimization) -- Donald Knuth
+
+\*) Deze teksten zijn zo iconisch in de software development gemeenschap, dat ik ze bewust in het Engels heb laten staan.&#x20;
