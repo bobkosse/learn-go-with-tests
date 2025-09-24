@@ -39,7 +39,7 @@ Soms is het nuttig om ook de invoer van de functie in de foutmelding weer te gev
 
 [Lees meer over het formatteren van string waarden](https://golang.org/pkg/fmt/)
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 Als je go mod hebt geïnitialiseerd met `go mod init main`, krijg je de foutmelding `_testmain.go:13:2: cannot import "main"`. Dit komt doordat pakket main volgens de gangbare werkwijze alleen de integratie van andere pakketten bevat en geen unit-testbare code. Daarom staat Go het importeren van een pakket met de naam main niet toe.
 
@@ -137,7 +137,7 @@ func TestSum(t *testing.T) {
 }
 ```
 
-## Voer de test uit
+## Probeer de test uit te voeren
 
 Deze zal niet compileren
 
