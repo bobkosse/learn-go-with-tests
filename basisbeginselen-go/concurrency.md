@@ -106,7 +106,7 @@ ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v0        2.268s
 
 Laten we proberen dit sneller te maken.
 
-### Schrijf genoeg code om test te laten slagen
+### Schrijf genoeg code om de test te laten slagen
 
 Nu kunnen we het eindelijk over _concurrency_ hebben, wat in het vervolg betekent dat er "meer dan één proces tegelijk is". Dit is iets wat we van nature elke dag doen.
 
