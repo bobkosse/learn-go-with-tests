@@ -25,7 +25,7 @@ func TestRepeat(t *testing.T) {
 }
 ```
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 `./repeat_test.go:6:14: undefined: Repeat`
 
@@ -49,7 +49,7 @@ Is het niet fijn om te weten dat je al genoeg Go-kennis hebt om tests te schrijv
 
 `repeat_test.go:10: expected 'aaaaa' but got ''`
 
-## Schrijf genoeg code om te test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 De `for` syntaxis is zeer onopvallend en volgt die van de meeste C-achtige talen.
 
