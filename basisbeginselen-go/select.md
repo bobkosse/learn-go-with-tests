@@ -31,7 +31,7 @@ func TestRacer(t *testing.T) {
 
 We weten dat dit niet perfect is en dat er problemen zijn, maar het is een begin. Het is belangrijk om niet te gefixeerd te zijn op het idee om alles in één keer perfect te doen.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 `./racer_test.go:14:9: undefined: Racer`
 
@@ -45,7 +45,7 @@ func Racer(a, b string) (winner string) {
 
 `racer_test.go:25: got '', want 'http://www.quii.dev'`
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Racer(a, b string) (winner string) {
@@ -296,7 +296,7 @@ We hebben ervoor gezorgd dat onze testservers langer dan 10 seconden nodig hebbe
 
 Merk op dat we de foutmeldingen in onze oorspronkelijke test ook hebben afgehandeld. We gebruiken nu `_` om er zeker van te zijn dat de tests worden uitgevoerd.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 `./racer_test.go:37:10: assignment mismatch: 2 variables but Racer returns 1 value`
 
@@ -325,7 +325,7 @@ Als je de test nu uitvoert, zal deze na 11 seconden mislukken.
         racer_test.go:40: expected an error but didn't get one
 ```
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Racer(a, b string) (winner string, error error) {
