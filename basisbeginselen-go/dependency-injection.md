@@ -86,7 +86,7 @@ Het type `Buffer` uit het `bytes`-pakket implementeert de `Writer`-interface, om
 
 We zullen het dus gebruiken in onze test om het als onze `Writer` in te sturen en dan kunnen we controleren wat erin is geschreven nadat we `Greet` hebben aangeroepen
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 De test zal niet compileren
 
@@ -108,7 +108,7 @@ func Greet(writer *bytes.Buffer, name string) {
 
 De test mislukt. Merk op dat de naam wel wordt afgedrukt, maar op stdout staat.
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 Gebruik de writer om de begroeting naar de buffer te sturen in onze test. Onthoud dat `fmt.Fprintf` hetzelfde is als `fmt.Printf`, maar een `Writer` nodig heeft om de string naartoe te sturen, terwijl `fmt.Printf` standaard stdout gebruikt.
 
