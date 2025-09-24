@@ -61,7 +61,7 @@ We weten dat we willen dat onze `Countdown`-functie ergens gegevens naartoe schr
 * In `main` sturen we het bericht naar `os.Stdout` waardoor onze gebruikers het aftellen in de terminal kunnen zien.
 * In de test sturen we dit naar `bytes.Buffer` waardoor onze teste de gegenerereerde data kunnen afvangen.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 `./countdown_test.go:11:2: undefined: Countdown`
 
@@ -91,7 +91,7 @@ func Countdown(out *bytes.Buffer) {}
 
 Perfect!
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Countdown(out *bytes.Buffer) {
@@ -163,7 +163,7 @@ Go!`
 
 De backtick-syntaxis is een andere manier om een ​​`string` te maken, maar hiermee kun je zaken als nieuwe regels gebruiken, wat perfect is voor onze test.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 ```
 countdown_test.go:21: got '3' want '3
@@ -283,7 +283,7 @@ Go!`
 }
 ```
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 ```
 too many arguments in call to Countdown
@@ -333,7 +333,7 @@ func main() {
 }
 ```
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 De test compileert nu, maar slaagt niet omdat we nog steeds de `time.Sleep`-afhankelijkheid aanroepen in plaats van de geïnjecteerde afhankelijkheid. Laten we dat oplossen.
 
@@ -520,7 +520,7 @@ func TestConfigurableSleeper(t *testing.T) {
 
 Er zal niets nieuws zijn in deze test en de opzet ervan lijkt erg op de vorige mock testen.
 
-### Probeer en voer de test uit
+### Probeer de test uit te voeren
 
 ```
 sleeper.Sleep undefined (type ConfigurableSleeper has no field or method Sleep, but does have sleep)
@@ -542,7 +542,7 @@ Nu onze nieuwe `Sleep`functie is geïmplementeerd, hebben we een test die faalt.
 countdown_test.go:56: should have slept for 5s but slept for 0s
 ```
 
-### Schrijf genoeg code om test te laten slagen
+### Schrijf genoeg code om de test te laten slagen
 
 Het enige wat we nu nog hoeven te doen is de `Sleep`functie voor `ConfigurableSleeper` implementeren.
 
