@@ -379,7 +379,7 @@ Vervolgens controleren we of er een fout is geretourneerd door de test te laten 
 
 Net als bij `null` zal een **runtime-panic** optreden als je probeert toegang te krijgen tot een waarde die `nil` is. Dit is niet goed! Controleer daarom altijd op nils.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 `./wallet_test.go:31:25: wallet.Withdraw(Bitcoin(100)) used as value`
 
@@ -396,7 +396,7 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 
 Nogmaals, het is erg belangrijk om net genoeg code te schrijven om de compiler tevreden te stellen. We corrigeren onze `Withdraw`-methode om een ​​`error` te retourneren en voor nu moeten we _iets_ retourneren, dus laten we gewoon `nil` retourneren.
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -479,11 +479,11 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 
 We hebben `t.Fatal` geïntroduceerd, dat de test stopt als deze wordt aangeroepen. Dit doen we omdat we geen verdere beweringen willen doen over de geretourneerde fout als er geen is. Zonder deze bewering zou de test doorgaan naar de volgende stap en in paniek raken vanwege een nil-pointer.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 `wallet_test.go:61: got err 'oh no' want 'cannot withdraw, insufficient funds'`
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
