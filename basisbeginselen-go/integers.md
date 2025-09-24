@@ -43,7 +43,7 @@ Het valt je misschien op dat we nu `%d` gebruiken als format strings, in plaats 
 
 Merk ook op dat we niet langer de main package gebruiken. In plaats daarvan definieren we een package met de naam `integers`. Zoals de naam al doet vermoeden, dit groepeert functies (zoals onze `Add` functie) om met integers te werken samen.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 Voer de test uit met het commando: `go test`
 
@@ -73,7 +73,7 @@ Voer de test opnieuw uit en we zouden moeten zien dat de test goed draait en net
 
 Misschien heb je gemerkt dat we in de [vorige](hello-world.md#een...laatste...refactor) sectie over _named return value_ hebben geleerd, maar dat je die hier niet gebruikt. Named return values zouden over het algemeen gebruikt moeten worden wanneer de betekenis van het resultaat niet duidelijk is uit de context. In ons geval is het vrijwel duidelijk dat de functie `Add` de opgegeven parameters zal optellen. Raadpleeg [deze](https://go.dev/wiki/CodeReviewComments#named-result-parameters) wiki voor meer informatie.
 
-## Schrijf genoeg code om te test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 Volgens de meest strikte definitie van TDD moeten nu de _minimale hoeveelheid code schrijven om te test te laten slagen_. Een programmeur die zich heel strikt aan de regels wil houden zou nu iets kunnen schrijven als:
 
