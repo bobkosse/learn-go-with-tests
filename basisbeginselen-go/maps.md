@@ -37,7 +37,7 @@ Het waardetype kan daarentegen elk gewenst type zijn. Het kan zelfs een andere m
 
 Al het overige in de test zou je bekend voor moeten komen.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 Door het uitvoeren van `go test` zal de compiler falen met `./dictionary_test.go:8:9: undefined: Search`.
 
@@ -57,7 +57,7 @@ Je test zou nu moeten mislukken met een _duidelijke foutmelding_
 
 `dictionary_test.go:12: got '' want 'this is just a test' given, 'test'`.
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Search(dictionary map[string]string, word string) string {
@@ -157,7 +157,7 @@ De manier om dit scenario in Go af te handelen is om een ​​tweede argument t
 
 Merk op dat we in de sectie over [pointers en errors](pointers-and-errors.md) hebben gezien dat we, om de foutmelding te bevestigen, eerst moeten controleren of de fout niet `nil` is. Vervolgens gebruiken we de methode `.Error()` om de tekenreeks te verkrijgen die we vervolgens aan de bevestiging kunnen doorgeven.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 Dit zal niet compileren
 
@@ -177,7 +177,7 @@ Je test zou nu moeten mislukken en er verschijnt een veel duidelijkere foutmeldi
 
 `dictionary_test.go:22: expected to get an error.`
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (d Dictionary) Search(word string) (string, error) {
@@ -370,7 +370,7 @@ func TestAdd(t *testing.T) {
 
 Voor deze test hebben we `Add` aangepast om een ​​fout te retourneren, die we valideren met een nieuwe foutvariabele, `ErrWordExists`. We hebben ook de vorige test aangepast om te controleren op een nulfout.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 De compiler zal falen omdat we geen waarde voor `Add` retourneren.
 
@@ -402,7 +402,7 @@ dictionary_test.go:43: got error '%!q(<nil>)' want 'cannot add word because it a
 dictionary_test.go:44: got 'new test' want 'this is just a test'
 ```
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (d Dictionary) Add(word, definition string) error {
@@ -461,7 +461,7 @@ func TestUpdate(t *testing.T) {
 
 `Update` is nauw verwant aan `Add` en zal onze volgende implementatie zijn.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 ```
 ./dictionary_test.go:53:2: dictionary.Update undefined (type Dictionary has no field or method Update)
@@ -481,7 +481,7 @@ Nu we dat weten, zien we dat we de definitie van het woord moeten veranderen.
 dictionary_test.go:55: got 'this is just a test' want 'new definition'
 ```
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 We hebben al gezien hoe we dit kunnen doen toen we het probleem met `Add` oplosten. Laten we dus iets implementeren dat erg lijkt op `Add`.
 
@@ -521,7 +521,7 @@ t.Run("new word", func(t *testing.T) {
 
 We hebben nog een fouttype toegevoegd voor wanneer het woord niet bestaat. Ook hebben we `Update` aangepast om een ​​`error`waarde te retourneren.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 ```
 ./dictionary_test.go:53:16: dictionary.Update(word, newDefinition) used as value
@@ -554,7 +554,7 @@ Door deze wijzigingen krijgen we nu een heel duidelijke foutmelding:
 dictionary_test.go:66: got error '%!q(<nil>)' want 'cannot update word because it does not exist'
 ```
 
-## Schrijf genoeg code om test te laten slagen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (d Dictionary) Update(word, definition string) error {
@@ -601,7 +601,7 @@ func TestDelete(t *testing.T) {
 
 Onze test maakt een `Dictionary` met een woord en controleert vervolgens of het woord is verwijderd.
 
-## Probeer en voer de test uit
+## Probeer de test uit te voeren
 
 Door `go test` uit te voeren, krijgen we:
 
@@ -623,7 +623,7 @@ Nadat we dit hebben toegevoegd, geeft de test aan dat we het woord niet verwijde
 dictionary_test.go:78: got error '%!q(<nil>)' want 'could not find the word you were looking for'
 ```
 
-## Schrijf genoeg code om de test te laten salgen
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func (d Dictionary) Delete(word string) {
