@@ -19,7 +19,7 @@
 * [Reflection](basisbeginselen-go/reflection.md)
 * [Sync](basisbeginselen-go/sync.md)
 * [Context](basisbeginselen-go/context.md)
-* [Intro to property based tests](basisbeginselen-go/roman-numerals.md)
+* [Inleiding tot property based testen](basisbeginselen-go/roman-numerals.md)
 * [Maths](basisbeginselen-go/math.md)
 * [Reading files](basisbeginselen-go/reading-files.md)
 * [Templating](basisbeginselen-go/html-templates.md)
