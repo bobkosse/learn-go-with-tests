@@ -259,7 +259,7 @@ func ConvertToRoman(arabic int) string {
 
 ## Refactor
 
-I don't "like" that we have broken our string building pattern and I want to carry on with it.
+Ik vind het niet prettig dat we het patroon van het opbouwen van strings hebben doorbroken, en ik zou graag op die manier willen doorgaan.
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -278,17 +278,17 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-In order for 4 to "fit" with my current thinking I now count down from the Arabic number, adding symbols to our string as we progress. Not sure if this will work in the long run but let's see!
+Om 4 te laten "passen" bij mijn huidige denkwijze, tel ik nu af vanaf het Arabische getal en voeg ik naarmate we vorderen symbolen toe aan de reeks. Ik weet niet zeker of dit op de lange termijn zal werken, maar we zullen zien!
 
-Let's make 5 work
+Laten we zorgen dat 5 ook werkt&#x20;
 
-## Write the test first
+## Schrijf eerst de test
 
 ```
 {"5 gets converted to V", 5, "V"},
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```console
 === RUN   TestRomanNumerals/5_gets_converted_to_V
@@ -296,9 +296,9 @@ Let's make 5 work
         numeral_test.go:25: got 'IIV', want 'V'
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-Just copy the approach we did for 4
+Kopieer gewoon de aanpak die we voor 4 hebben gebruikt
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -323,9 +323,9 @@ func ConvertToRoman(arabic int) string {
 
 ## Refactor
 
-Repetition in loops like this are usually a sign of an abstraction waiting to be called out. Short-circuiting loops can be an effective tool for readability but it could also be telling you something else.
+Herhaling in lussen zoals deze is meestal een teken dat een abstractie wacht om benoemd te worden. Kortsluitende lussen kunnen een effectief hulpmiddel zijn voor leesbaarheid, maar ze kunnen je ook iets anders vertellen.
 
-We are looping over our Arabic number and if we hit certain symbols we are calling `break` but what we are _really_ doing is subtracting over `i` in a ham-fisted manner.
+We gaan over ons Arabische getal heen en als we bepaalde symbolen tegenkomen roepen we `break` aan, maar wat we _eigenlijk_ doen is op een onhandige `i` verlagen.
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -350,12 +350,12 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-* Given the signals I'm reading from our code, driven from our tests of some very basic scenarios I can see that to build a Roman Numeral I need to subtract from `arabic` as I apply symbols
-* The `for` loop no longer relies on an `i` and instead we will keep building our string until we have subtracted enough symbols away from `arabic`.
+* Als ik goed kijk naar de code, en onze tests van een aantal zeer eenvoudige scenario's, kan ik zien dat ik, om een ​​Romeins cijfer te maken, iets van `arabic` moet aftrekken terwijl ik symbolen toepas.
+* De `for`-lus is niet langer afhankelijk van een `i` en in plaats daarvan blijven we de string opbouwen totdat we genoeg waarden van `arabic` hebben afgetrokken.
 
-I'm pretty sure this approach will be valid for 6 (VI), 7 (VII) and 8 (VIII) too. Nonetheless add the cases in to our test suite and check (I won't include the code for brevity, check the github for samples if you're unsure).
+Ik ben er vrij zeker van dat deze aanpak ook voor 6 (VI), 7 (VII) en 8 (VIII) zal gelden. Voeg de cases desalniettemin toe aan onze testsuite en controleer dit (ik zal de code niet opnemen om dit hoofdstuk niet te lang te maken. Kijk op GitHub voor voorbeelden als je het niet zeker weet hoe je dit doet).
 
-9 follows the same rule as 4 in that we should subtract `I` from the representation of the following number. 10 is represented in Roman Numerals with `X`; so therefore 9 should be `IX`.
+9 volgt dezelfde regel als 4 in die zin dat we 1 moeten aftrekken van de representatie van het volgende getal. 10 wordt in Romeinse cijfers weergegeven met `X`; dus 9 zou `IX` moeten zijn.
 
 ## Write the test first
 
