@@ -767,6 +767,8 @@ Go heeft typen voor _unsigned integers_, wat betekent dat ze niet negatief kunne
 
 Probeer de code bij te werken zodat deze `uint16` gebruikt in plaats van `int`. Ik heb de `assertion` in de test bijgewerkt om iets meer zichtbaarheid te geven.
 
+> Let erop dat je in `roman.go` ook de variabele `arabic` moet aanpassen naar `uint16` (de test zal je dit vertellen). Wat misschien een grotere zoektocht is, is de foutmelding die je krijgt voor de regel `arabic += numeral.Value`. Deze melding krijg je omdat we `arabic`  in `ConvertToArabic` hebben gedeclareerd met `arabic := 0`. Deze manier van declareren is goed, maar Go zal er vanuit gaan dat we de `0` moeten behandelen als een `int` waarde. De foutmelding gaat er dus over dat je een `int` waarde en een `uint16` waarde bij elkaar op probeert te tellen. Omdat Go een typed language is, zal dat niet gaan. Pas daarom `arabic := 0` aan naar var arabic `uint16 = 0` om de code te laten werken. &#x20;
+
 ```go
 assertion := func(arabic uint16) bool {
 	if arabic > 3999 {
