@@ -1,18 +1,18 @@
-# Maths
+# Wiskunde
 
-[**You can find all the code for this chapter here**](https://github.com/quii/learn-go-with-tests/tree/main/math)
+[**Je kunt hier alle code van dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/math)
 
-For all the power of modern computers to perform huge sums at lightning speed, the average developer rarely uses any mathematics to do their job. But not today! Today we'll use mathematics to solve a _real_ problem. And not boring mathematics - we're going to use trigonometry and vectors and all sorts of stuff that you always said you'd never have to use after highschool.
+Ondanks alle kracht van moderne computers om razendsnel enorme sommen te berekenen, gebruikt de gemiddelde ontwikkelaar zelden wiskunde om zijn werk te doen. Maar vandaag zal anders zijn! Vandaag gebruiken we wiskunde om een ​&#x200B;_&#x65;cht_ probleem op te lossen. En geen saaie wiskunde, we gaan goniometrie, vectoren en allerlei andere dingen gebruiken waarvan je altijd zei dat je ze na de middelbare school nooit meer zou hoeven gebruiken.
 
-## The Problem
+## Het probleem
 
-You want to make an SVG of a clock. Not a digital clock - no, that would be easy - an _analogue_ clock, with hands. You're not looking for anything fancy, just a nice function that takes a `Time` from the `time` package and spits out an SVG of a clock with all the hands - hour, minute and second - pointing in the right direction. How hard can that be?
+Je wilt een SVG maken van een klok. Geen digitale klok, dat zou veel te makkelijk zijn, maar een analoge klok, met wijzers. Je zoekt niets bijzonders, gewoon een handige functie die een tijd uit het `Time` pakket haalt en een SVG van een klok genereert met alle wijzers: uur, minuut en seconde, die in de juiste richting wijzen. Hoe moeilijk kan dat zijn?
 
-First we're going to need an SVG of a clock for us to play with. SVGs are a fantastic image format to manipulate programmatically because they're written as a series of shapes, described in XML. So this clock:
+Eerst hebben we een SVG van een klok nodig om mee te spelen. SVG's zijn een fantastisch afbeeldingsformaat om programmatisch te bewerken, omdat ze geschreven zijn als een reeks vormen, beschreven in XML. Dus deze klok:
 
-![an svg of a clock](../math/example_clock.svg)
+![een svg van een klok](../math/example_clock.svg)
 
-is described like this:
+is als volgt beschreven:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -40,51 +40,51 @@ is described like this:
 </svg>
 ```
 
-It's a circle with three lines, each of the lines starting in the middle of the circle (x=150, y=150), and ending some distance away.
+Het is een cirkel met drie lijnen. Elke lijn begint in het midden van de cirkel (x=150, y=150) en eindigt op enige afstand.
 
-So what we're going to do is reconstruct the above somehow, but change the lines so they point in the appropriate directions for a given time.
+Wat we dus gaan doen is het bovenstaande op een of andere manier reconstrueren, maar dan veranderen we de lijnen zodat ze in de juiste richting wijzen voor een bepaalde tijd.
 
-## An Acceptance Test
+## Een acceptatie test
 
-Before we get too stuck in, lets think about an acceptance test.
+Voordat we er te diep op ingaan, laten we eerst eens nadenken over een acceptatietest.
 
-Wait, you don't know what an acceptance test is yet. Look, let me try to explain.
+Wacht even, je weet nog niet wat een acceptatietest is. Laat me het proberen uit te leggen.
 
-Let me ask you: what does winning look like? How do we know we've finished work? TDD provides a good way of knowing when you've finished: when the test passes. Sometimes it's nice - actually, almost all of the time it's nice - to write a test that tells you when you've finished writing the whole usable feature. Not just a test that tells you that a particular function is working in the way you expect, but a test that tells you that the whole thing you're trying to achieve - the 'feature' - is complete.
+Laat me je eens het volgende vragen: hoe ziet winnen eruit? Hoe weten we dat we klaar zijn met werken? TDD biedt een goede manier om te weten wanneer je klaar bent: wanneer de test slaagt. Soms is het fijn, eigenlijk bijna altijd, om een ​​test te schrijven die aangeeft wanneer je klaar bent met het schrijven van de hele bruikbare feature. Niet alleen een test die aangeeft dat een bepaalde functie werkt zoals je verwacht, maar een test die aangeeft dat alles wat je probeert te bereiken, de 'feature'. voltooid is.
 
-These tests are sometimes called 'acceptance tests', sometimes called 'feature tests'. The idea is that you write a really high level test to describe what you're trying to achieve - a user clicks a button on a website, and they see a complete list of the Pokémon they've caught, for instance. When we've written that test, we can then write more tests - unit tests - that build towards a working system that will pass the acceptance test. So for our example these tests might be about rendering a webpage with a button, testing route handlers on a web server, performing database look ups, etc. All of these things will be TDD'd, and all of them will go towards making the original acceptance test pass.
+Deze tests worden soms 'acceptatietests' of 'feature tests' genoemd. Het idee is dat je een test op hoog niveau schrijft om te beschrijven wat je probeert te bereiken: een gebruiker klikt bijvoorbeeld op een knop op een website en ziet een complete lijst met de gevangen Pokémon. Zodra we die test hebben geschreven, kunnen we meer tests schrijven, de unit tests, die toewerken naar een werkend systeem dat de acceptatietest zal doorstaan. In ons voorbeeld kunnen deze tests bijvoorbeeld gaan over het weergeven van een webpagina met een knop, het testen van route handlers op een webserver, het uitvoeren van database-opzoekingen, enzovoort. Al deze dingen worden tests volgens de TDD-aanpak en dragen allemaal bij aan het slagen van de oorspronkelijke acceptatietest.
 
-Something like this _classic_ picture by Nat Pryce and Steve Freeman
+Iets als deze _klassieke_ afbeelding van Nat Pryce en Steve Freeman
 
-![Outside-in feedback loops in TDD](../TDD-outside-in.jpg)
+![Van buiten naar binnen feedbackloops in TDD](../TDD-outside-in.jpg)
 
-Anyway, let's try and write that acceptance test - the one that will let us know when we're done.
+Hoe dan ook, laten we proberen die acceptatietest te schrijven, de test die ons laat weten wanneer we klaar zijn.
 
-We've got an example clock, so let's think about what the important parameters are going to be.
+We hebben een voorbeeldklok, dus laten we eens nadenken over de belangrijke parameters.
 
 ```
 <line x1="150" y1="150" x2="114.150000" y2="132.260000"
         style="fill:none;stroke:#000;stroke-width:7px;"/>
 ```
 
-The centre of the clock (the attributes `x1` and `y1` for this line) is the same for each hand of the clock. The numbers that need to change for each hand of the clock - the parameters to whatever builds the SVG - are the `x2` and `y2` attributes. We'll need an X and a Y for each of the hands of the clock.
+Het middelpunt van de klok (de attributen `x1` en `y1` voor deze lijn) is voor elke wijzer hetzelfde. De getallen die voor elke wijzer moeten veranderen, de parameters voor de SVG, zijn de attributen `x2` en `y2`. We hebben een X en een Y nodig voor elke wijzer van de klok.
 
-I _could_ think about more parameters - the radius of the clockface circle, the size of the SVG, the colours of the hands, their shape, etc... but it's better to start off by solving a simple, concrete problem with a simple, concrete solution, and then to start adding parameters to make it generalised.
+Ik zou aan meer parameters kunnen denken, de straal van de cirkel van de wijzerplaat, de grootte van de SVG, de kleuren van de wijzers, hun vorm, etc. Maar het is beter om te beginnen met het oplossen van een eenvoudig, concreet probleem met een eenvoudige, concrete oplossing, en dan parameters toe te voegen om de oplossing te generaliseren.
 
-So we'll say that
+Laten we dus van het volgende uitgaan:
 
-* every clock has a centre of (150, 150)
-* the hour hand is 50 long
-* the minute hand is 80 long
-* the second hand is 90 long.
+* iedere klok heeft een middelpunt op (150, 150)
+* de uren wijzer is 50 lang&#x20;
+* de minutenwijzer is 80 lang
+* de secondenwijzer is 90 lang.
 
-A thing to note about SVGs: the origin - point (0,0) - is at the _top left_ hand corner, not the _bottom left_ as we might expect. It'll be important to remember this when we're working out where what numbers to plug in to our lines.
+Let op: SVG's hebben een punt nodig: de oorsprong, punt (0,0), bevindt zich in de _linkerbovenhoek_, niet _linksonder_ zoals we misschien zouden verwachten. Het is belangrijk om dit te onthouden wanneer we bepalen waar we welke getallen in onze lijnen moeten invoeren.
 
-Finally, I'm not deciding _how_ to construct the SVG - we could use a template from the [`text/template`](https://golang.org/pkg/text/template/) package, or we could just send bytes into a `bytes.Buffer` or a writer. But we know we'll need those numbers, so let's focus on testing something that creates them.
+Tot slot bepaal ik nog niet hoe we de SVG gaan maken, we zouden een sjabloon uit het  [`text/template`](https://golang.org/pkg/text/template/) pakket kunnen gebruiken, of we zouden bytes gewoon naar een `bytes.Buffer` of een andere `writer` kunnen sturen. Maar we weten dat we die getallen nodig hebben, dus laten we ons concentreren op het testen van iets dat ze genereert.
 
-### Write the test first
+### Schrijf eerst je test
 
-So my first test looks like this:
+Mijn eerste test ziet er dus zo uit:
 
 ```go
 package clockface_test
@@ -107,11 +107,11 @@ func TestSecondHandAtMidnight(t *testing.T) {
 }
 ```
 
-Remember how SVGs plot their coordinates from the top left hand corner? To place the second hand at midnight we expect that it hasn't moved from the centre of the clockface on the X axis - still 150 - and the Y axis is the length of the hand 'up' from the centre; 150 minus 90.
+Weet je nog hoe SVG's hun coördinaten vanuit de linkerbovenhoek weergeven? Om de secondewijzer op middernacht te plaatsen, verwachten we dat deze niet van het midden van de wijzerplaat op de X-as is verplaatst, nog steeds 150, en dat de Y-as de lengte van de wijzer 'omhoog' vanaf het midden is; 150 min 90.
 
-### Try to run the test
+### Probeer de test uit te voeren
 
-This drives out the expected failures around the missing functions and types:
+Hiermee worden de verwachte fouten rondom de ontbrekende functies en typen verholpen:
 
 ```
 --- FAIL: TestSecondHandAtMidnight (0.00s)
@@ -119,11 +119,11 @@ This drives out the expected failures around the missing functions and types:
 ./clockface_test.go:14:9: undefined: clockface.SecondHand
 ```
 
-So a `Point` where the tip of the second hand should go, and a function to get it.
+Dus een `Point` waar de punt van de secondewijzer moet komen, en een functie om dat te krijgen.
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-Let's implement those types to get the code to compile
+Laten we deze typen implementeren om de code te laten compileren
 
 ```go
 package clockface
@@ -143,7 +143,7 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-and now we get:
+en nu krijgen we:
 
 ```
 --- FAIL: TestSecondHandAtMidnight (0.00s)
@@ -153,9 +153,9 @@ exit status 1
 FAIL	learn-go-with-tests/math/clockface	0.006s
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-When we get the expected failure, we can fill in the return value of `SecondHand`:
+Wanneer we de verwachte fout krijgen, kunnen we de retourwaarde invullen van `SecondHand`:
 
 ```go
 // SecondHand is the unit vector of the second hand of an analogue clock at time `t`
@@ -165,7 +165,7 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-Behold, a passing test.
+Ziehier, een geslaagd examen.
 
 ```
 PASS
@@ -174,13 +174,13 @@ ok  	    clockface	0.006s
 
 ### Refactor
 
-No need to refactor yet - there's barely enough code!
+Geen reden te refactoren, er is nauwelijks genoeg code!
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
-We probably need to do some work here that doesn't just involve returning a clock that shows midnight for every time...
+Waarschijnlijk moeten we hier wat werk doen dat niet alleen bestaat uit het terugzetten van een klok die op elk tijdstip middernacht aangeeft...
 
-### Write the test first
+### Schrijf eerst je test
 
 ```go
 func TestSecondHandAt30Seconds(t *testing.T) {
@@ -195,65 +195,65 @@ func TestSecondHandAt30Seconds(t *testing.T) {
 }
 ```
 
-Same idea, but now the second hand is pointing _downwards_ so we _add_ the length to the Y axis.
+Hetzelfde idee, maar nu wijst de secondewijzer naar _beneden_. Daarom _voegen_ we de lengte _toe_ aan de Y-as.
 
-This will compile... but how do we make it pass?
+Dit zal compileren... maar hoe zorgen we ervoor dat het lukt?
 
-## Thinking time
+## Denken in tijd
 
-How are we going to solve this problem?
+Hoe gaan we dit probleem oplossen?
 
-Every minute the second hand goes through the same 60 states, pointing in 60 different directions. When it's 0 seconds it points to the top of the clockface, when it's 30 seconds it points to the bottom of the clockface. Easy enough.
+Elke minuut doorloopt de secondewijzer dezelfde 60 standen en wijst hij in 60 verschillende richtingen. Bij 0 seconden wijst hij naar de bovenkant van de wijzerplaat, bij 30 seconden naar de onderkant. Zo simpel is het.
 
-So if I wanted to think about in what direction the second hand was pointing at, say, 37 seconds, I'd want the angle between 12 o'clock and 37/60ths around the circle. In degrees this is `(360 / 60 ) * 37 = 222`, but it's easier just to remember that it's `37/60` of a complete rotation.
+Dus als ik wilde nadenken over de richting waarin de secondewijzer wees, bijvoorbeeld 37 seconden, zou ik de hoek tussen 12 uur en 37/60e van een volledige rotatie willen. In graden is dit `(360/60) * 37 = 222`, maar het is makkelijker om gewoon te onthouden dat het `37/60`e van een volledige rotatie is.
 
-But the angle is only half the story; we need to know the X and Y coordinate that the tip of the second hand is pointing at. How can we work that out?
+Maar de hoek is slechts het halve verhaal; we moeten de X- en Y-coördinaat weten waar de punt van de secondewijzer naar wijst. Hoe kunnen we dat berekenen?
 
-## Math
+## Wiskunde
 
-Imagine a circle with a radius of 1 drawn around the origin - the coordinate `0, 0`.
+Stel je een cirkel voor met een straal van 1, getekend rond de oorsprong, de coördinaat `0, 0`.
 
 ![picture of the unit circle](../math/images/unit_circle.png)
 
-This is called the 'unit circle' because... well, the radius is 1 unit!
+Dit wordt de 'eenheidscirkel' genoemd, omdat... de straal 1 eenheid is!
 
-The circumference of the circle is made of points on the grid - more coordinates. The x and y components of each of these coordinates form a triangle, the hypotenuse of which is always 1 (i.e. the radius of the circle).
+De omtrek van de cirkel bestaat uit punten op het raster, of coördinaten. De x- en y-componenten van elk van deze coördinaten vormen een driehoek, waarvan de schuine zijde altijd 1 is (d.w.z. de straal van de cirkel).
 
 ![picture of the unit circle with a point defined on the circumference](../math/images/unit_circle_coords.png)
 
-Now, trigonometry will let us work out the lengths of X and Y for each triangle if we know the angle they make with the origin. The X coordinate will be cos(a), and the Y coordinate will be sin(a), where a is the angle made between the line and the (positive) x axis.
+Met trigonometrie kunnen we nu de lengtes van X en Y voor elke driehoek berekenen, mits we de hoek kennen die ze met de oorsprong maken. De X-coördinaat is dan cos(a) en de Y-coördinaat sin(a), waarbij a de hoek is tussen de lijn en de (positieve) x-as.
 
-![picture of the unit circle with the x and y elements of a ray defined as cos(a) and sin(a) respectively, where a is the angle made by the ray with the x axis](../math/images/unit_circle_params.png)
+![afbeelding van de eenheidscirkel met de x- en y-elementen van een straal gedefinieerd als respectievelijk cos(a) en sin(a), waarbij a de hoek is die de straal maakt met de x-as](../math/images/unit_circle_params.png)
 
-(If you don't believe this, [go and look at Wikipedia...](https://en.wikipedia.org/wiki/Sine#Unit_circle_definition))
+(Als je dit niet gelooft, [neem dan een kijkje op Wikipedia...](https://en.wikipedia.org/wiki/Sine#Unit_circle_definition))
 
-One final twist - because we want to measure the angle from 12 o'clock rather than from the X axis (3 o'clock), we need to swap the axis around; now x = sin(a) and y = cos(a).
+Nog een laatste verandering: omdat we de hoek vanaf 12 uur willen meten in plaats van vanaf de X-as (3 uur), moeten we de assen omdraaien; nu is x = sin(a) en y = cos(a).
 
 ![unit circle ray defined from by angle from y axis](../math/images/unit_circle_12_oclock.png)
 
-So now we know how to get the angle of the second hand (1/60th of a circle for each second) and the X and Y coordinates. We'll need functions for both `sin` and `cos`.
+Nu weten we hoe we de hoek van de secondewijzer (1/60e van een cirkel voor elke seconde) en de X- en Y-coördinaten kunnen bepalen. We hebben functies nodig voor zowel `sin` als `cos`.
 
 ## `math`
 
-Happily the Go `math` package has both, with one small snag we'll need to get our heads around; if we look at the description of [`math.Cos`](https://golang.org/pkg/math/#Cos):
+Gelukkig heeft het Go-`math`pakket beide, met één klein minpuntje waar we even aan moeten wennen. Kijk maar naar de beschrijving van `math.Cos`:
 
-> Cos returns the cosine of the radian argument x.
+> Cos retourneert de cosinus van het radiant argument x.
 
-It wants the angle to be in radians. So what's a radian? Instead of defining the full turn of a circle to be made up of 360 degrees, we define a full turn as being 2π radians. There are good reasons to do this that we won't go in to.
+De hoek moet in radialen zijn. Dus wat is een radiaal? In plaats van de volledige omwenteling van een cirkel te definiëren als 360 graden, definiëren we een volledige omwenteling als 2π radialen. Er zijn goede redenen om dit te doen, maar daar gaan we nu niet op in.
 
-Now that we've done some reading, some learning and some thinking, we can write our next test.
+Nu we wat gelezen, geleerd en nagedacht hebben, kunnen we de volgende toets schrijven.
 
-### Write the test first
+### Schrijf eerst je test
 
-All this maths is hard and confusing. I'm not confident I understand what's going on - so let's write a test! We don't need to solve the whole problem in one go - let's start off with working out the correct angle, in radians, for the second hand at a particular time.
+Al deze wiskunde is moeilijk en verwarrend. Ik weet niet zeker of ik begrijp wat er aan de hand is, dus laten we een test maken! We hoeven de hele opgave niet in één keer op te lossen, laten we beginnen met het berekenen van de juiste hoek, in radialen, voor de secondewijzer op een bepaald moment.
 
-I'm going to _comment out_ the acceptance test that I was working on while I'm working on these tests - I don't want to get distracted by that test while I'm getting this one to pass.
+Ik ga de acceptatietest waar ik aan werkte, even buiten beschouwing laten terwijl ik aan deze tests werk. Ik wil niet afgeleid worden door die test terwijl ik deze test laat slagen.
 
-### A recap on packages
+### Een samenvatting van packages
 
-At the moment, our acceptance tests are in the `clockface_test` package. Our tests can be outside of the `clockface` package - as long as their name ends with `_test.go` they can be run.
+Onze acceptatie tests bevinden zich momenteel in het `clockface_test`-pakket. Onze tests kunnen ook buiten het `clockface`-pakket worden uitgevoerd, zolang hun naam eindigt op `_test.go`.
 
-I'm going to write these radians tests _within_ the `clockface` package; they may never get exported, and they may get deleted (or moved) once I have a better grip on what's going on. I'll rename my acceptance test file to `clockface_acceptance_test.go`, so that I can create a _new_ file called `clockface_test` to test seconds in radians.
+Ik ga deze radialentests schrijven _binnen_ het `clockface`-pakket; ze worden mogelijk nooit geëxporteerd en mogelijk verwijderd (of verplaatst) zodra ik meer inzicht heb in wat er echt gebeurt. Ik hernoem mijn acceptatie test bestand naar `clockface_acceptance_test.go`, zodat ik een nieuw bestand met de naam `clockface_test` kan maken om seconden in radialen te testen.
 
 ```go
 package clockface
@@ -275,15 +275,15 @@ func TestSecondsInRadians(t *testing.T) {
 }
 ```
 
-Here we're testing that 30 seconds past the minute should put the second hand at halfway around the clock. And it's our first use of the `math` package! If a full turn of a circle is 2π radians, we know that halfway round should just be π radians. `math.Pi` provides us with a value for π.
+Hier testen we dat 30 seconden over de minuut de secondewijzer halverwege de klok zou moeten zetten. En dit is ons eerste gebruik van het `math`pakket! Als een volledige omwenteling van een cirkel 2π radialen is, weten we dat halverwege gewoon π radialen zou moeten zijn. `math.Pi` geeft ons een waarde voor π.
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 ./clockface_test.go:12:9: undefined: secondsInRadians
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -295,7 +295,7 @@ func secondsInRadians(t time.Time) float64 {
 clockface_test.go:15: Wanted 3.141592653589793 radians, but got 0
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -310,11 +310,11 @@ ok  	clockface	0.011s
 
 ### Refactor
 
-Nothing needs refactoring yet
+Er hoeft nog niets gerefactored te worden
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
-Now we can extend the test to cover a few more scenarios. I'm going to skip forward a bit and show some already refactored test code - it should be clear enough how I got where I want to.
+Nu kunnen we de test uitbreiden met een paar extra scenario's. Ik 'spoel' even vooruit en laat wat reeds gerefactoriseerde testcode zien, het zou duidelijk genoeg moeten zijn hoe ik op mijn gewenste punt ben gekomen.
 
 ```go
 func TestSecondsInRadians(t *testing.T) {
@@ -339,7 +339,7 @@ func TestSecondsInRadians(t *testing.T) {
 }
 ```
 
-I added a couple of helper functions to make writing this table based test a little less tedious. `testName` converts a time into a digital watch format (HH:MM:SS), and `simpleTime` constructs a `time.Time` using only the parts we actually care about (again, hours, minutes and seconds). Here they are:
+Ik heb een paar hulpfuncties toegevoegd om het schrijven van deze tabel gebaseerde test wat minder saai te maken. `testName` converteert een tijd naar een digitaal horlogeformaat (UU:MM:SS), en `simpleTime` construeert een `time.Time` met alleen de onderdelen die we echt belangrijk vinden (opnieuw uren, minuten en seconden). Hier zijn ze:
 
 ```go
 func simpleTime(hours, minutes, seconds int) time.Time {
@@ -351,9 +351,9 @@ func testName(t time.Time) string {
 }
 ```
 
-These two functions should help make these tests (and future tests) a little easier to write and maintain.
+Deze twee functies moeten het schrijven en onderhouden van deze tests (en toekomstige tests) een stuk eenvoudiger maken.
 
-This gives us some nice test output:
+Dit levert ons een mooi testresultaat op:
 
 ```
 clockface_test.go:24: Wanted 0 radians, but got 3.141592653589793
@@ -361,7 +361,7 @@ clockface_test.go:24: Wanted 0 radians, but got 3.141592653589793
 clockface_test.go:24: Wanted 4.71238898038469 radians, but got 3.141592653589793
 ```
 
-Time to implement all of that maths stuff we were talking about above:
+Tijd om alle wiskundige zaken waar we het hierboven over hadden in de praktijk te brengen:
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -369,38 +369,38 @@ func secondsInRadians(t time.Time) float64 {
 }
 ```
 
-One second is (2π / 60) radians... cancel out the 2 and we get π/30 radians. Multiply that by the number of seconds (as a `float64`) and we should now have all the tests passing...
+Wacht even is (2π / 60) radialen... streep de 2 weg en we krijgen π/30 radialen. Vermenigvuldig dat met het aantal seconden (als een `float64`) en dan zouden alle tests moeten slagen...
 
 ```
 clockface_test.go:24: Wanted 3.141592653589793 radians, but got 3.1415926535897936
 ```
 
-Wait, what?
+Wacht even, wat gebeurt hier?
 
-### Floats are horrible
+### Floats zijn verschikkelijk
 
-Floating point arithmetic is [notoriously inaccurate](https://0.30000000000000004.com/). Computers can only really handle integers, and rational numbers to some extent. Decimal numbers start to become inaccurate, especially when we factor them up and down as we are in the `secondsInRadians` function. By dividing `math.Pi` by 30 and then by multiplying it by 30 we've ended up with _a number that's no longer the same as `math.Pi`_.
+Rekenen met komma getallen is [notoir onnauwkeurig](https://0.30000000000000004.com/). Computers kunnen eigenlijk alleen gehele getallen verwerken, en tot op zekere hoogte ook rationale getallen. Decimale getallen worden onnauwkeurig, vooral wanneer we ze ontbinden in factoren, zoals in de functie `secondenInRadians`. Door `math.Pi` te delen door 30 en vervolgens te vermenigvuldigen met 30, _hebben we een getal gekregen dat niet langer hetzelfde is als `math.Pi`_.
 
-There are two ways around this:
+Er zijn twee manieren om hiermee om te gaan:
 
-1. Live with it
-2. Refactor our function by refactoring our equation
+1. Leer ermee leven
+2. Herschrijf onze functie door onze vergelijking te herstructureren
 
-Now (1) may not seem all that appealing, but it's often the only way to make floating point equality work. Being inaccurate by some infinitesimal fraction is frankly not going to matter for the purposes of drawing a clockface, so we could write a function that defines a 'close enough' equality for our angles. But there's a simple way we can get the accuracy back: we rearrange the equation so that we're no longer dividing down and then multiplying up. We can do it all by just dividing.
+Nu lijkt (1) misschien niet zo aantrekkelijk, maar het is vaak de enige manier om komma-gelijkheid te laten werken. Een onnauwkeurigheid van een oneindig klein deel maakt eerlijk gezegd niet uit voor het tekenen van een wijzerplaat, dus we zouden een functie kunnen schrijven die een 'voldoende nauwkeurige' gelijkheid definieert voor onze hoeken. Maar er is een eenvoudige manier om de nauwkeurigheid terug te krijgen: we herschikken de vergelijking zodat we niet langer hoeven te delen en vervolgens te vermenigvuldigen. We kunnen het allemaal doen door simpelweg te delen.
 
-So instead of
+Dus in plaats van
 
 ```
 numberOfSeconds * π / 30
 ```
 
-we can write
+kunnen we het volgende schrijven
 
 ```
 π / (30 / numberOfSeconds)
 ```
 
-which is equivalent.
+wat eigenlijk precies hetzelfde doet.
 
 In Go:
 
@@ -410,20 +410,20 @@ func secondsInRadians(t time.Time) float64 {
 }
 ```
 
-And we get a pass.
+En alle testen slagen
 
 ```
 PASS
 ok      clockface     0.005s
 ```
 
-It should all look [something like this](https://github.com/quii/learn-go-with-tests/tree/main/math/v3/clockface).
+Je code zou er nu [ongeveer zo uit moeten zien](https://github.com/quii/learn-go-with-tests/tree/main/math/v3/clockface).
 
-### A note on dividing by zero
+### Een opmerking over delen door nul
 
-Computers often don't like dividing by zero because infinity is a bit strange.
+Computers vinden delen door nul vaak niet prettig, omdat oneindigheid een beetje vreemd is.
 
-In Go if you try to explicitly divide by zero you will get a compilation error.
+Als je in Go expliciet door nul probeert te delen, krijg je een compilatiefout.
 
 ```go
 package main
@@ -437,9 +437,9 @@ func main() {
 }
 ```
 
-Obviously the compiler can't always predict that you'll divide by zero, such as our `t.Second()`
+Uiteraard kan de compiler niet altijd voorspellen dat je door nul deelt, zoals bij onze `t.Second()`
 
-Try this
+Probeer dit maar eens:
 
 ```go
 func main() {
@@ -451,7 +451,7 @@ func zero() float64 {
 }
 ```
 
-It will print `+Inf` (infinity). Dividing by +Inf seems to result in zero and we can see this with the following:
+Dit geeft `+Inf` (oneindig) terug. Delen door +Inf lijkt nul te zijn, en dat zien we terug in het volgende:
 
 ```go
 package main
@@ -474,13 +474,13 @@ func secondsinradians() float64 {
 }
 ```
 
-### Repeat for new requirements
+### Herhaal voor de nieuwe eisen
 
-So we've got the first part covered here - we know what angle the second hand will be pointing at in radians. Now we need to work out the coordinates.
+We hebben het eerste deel dus al behandeld: we weten in welke hoek de secondewijzer in radialen zal wijzen. Nu moeten we de coördinaten bepalen.
 
-Again, let's keep this as simple as possible and only work with the _unit circle_; the circle with a radius of 1. This means that our hands will all have a length of one but, on the bright side, it means that the maths will be easy for us to swallow.
+Laten we het zo simpel mogelijk houden en alleen met de _eenheidscirkel_ werken; de cirkel met een straal van 1. Dit betekent dat al onze wijzers een lengte van 1 hebben, maar aan de andere kant betekent dit dat de berekening voor ons makkelijker te begrijpen is.
 
-### Write the test first
+### Schrijf eerst je test
 
 ```go
 func TestSecondHandPoint(t *testing.T) {
@@ -502,13 +502,13 @@ func TestSecondHandPoint(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 ./clockface_test.go:40:11: undefined: secondHandPoint
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func secondHandPoint(t time.Time) Point {
@@ -520,7 +520,7 @@ func secondHandPoint(t time.Time) Point {
 clockface_test.go:42: Wanted {0 -1} Point, but got {0 0}
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
 ```go
 func secondHandPoint(t time.Time) Point {
@@ -533,7 +533,7 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
 ```go
 func TestSecondHandPoint(t *testing.T) {
@@ -556,23 +556,23 @@ func TestSecondHandPoint(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_test.go:43: Wanted {-1 0} Point, but got {0 -1}
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-Remember our unit circle picture?
+Herinner je zich de afbeelding met de eenheidscirkel nog?
 
-![picture of the unit circle with the x and y elements of a ray defined as cos(a) and sin(a) respectively, where a is the angle made by the ray with the x axis](../math/images/unit_circle_params.png)
+![afbeelding van de eenheidscirkel met de x- en y-elementen van een straal gedefinieerd als respectievelijk cos(a) en sin(a), waarbij a de hoek is die de straal maakt met de x-as](../math/images/unit_circle_params.png)
 
-Also recall that we want to measure the angle from 12 o'clock which is the Y axis instead of from the X axis which we would like measuring the angle between the second hand and 3 o'clock.
+Bedenk ook dat we de hoek willen meten vanaf 12 uur, de Y-as, in plaats van vanaf de X-as. We willen de hoek meten tussen de secondewijzer en 3 uur.
 
 ![unit circle ray defined from by angle from y axis](../math/images/unit_circle_12_oclock.png)
 
-We now want the equation that produces X and Y. Let's write it into seconds:
+We willen nu de vergelijking die X en Y oplevert. Laten we deze in seconden opschrijven:
 
 ```go
 func secondHandPoint(t time.Time) Point {
@@ -584,7 +584,7 @@ func secondHandPoint(t time.Time) Point {
 }
 ```
 
-Now we get
+Nu krijgen we
 
 ```
 clockface_test.go:43: Wanted {0 -1} Point, but got {1.2246467991473515e-16 -1}
@@ -592,9 +592,9 @@ clockface_test.go:43: Wanted {0 -1} Point, but got {1.2246467991473515e-16 -1}
 clockface_test.go:43: Wanted {-1 0} Point, but got {-1 -1.8369701987210272e-16}
 ```
 
-Wait, what (again)? Looks like we've been cursed by the floats once more - both of those unexpected numbers are _infinitesimal_ - way down at the 16th decimal place. So again we can either choose to try to increase precision, or to just say that they're roughly equal and get on with our lives.
+Wacht, wat (alweer)? Het lijkt erop dat we weer vervloekt zijn door de floats, beide onverwachte getallen zijn infinitesimaal, tot ver in de 16e decimaal. Dus we kunnen er weer voor kiezen om de precisie te verhogen, of gewoon te zeggen dat ze ongeveer gelijk zijn en verder te gaan met ons leven.
 
-One option to increase the accuracy of these angles would be to use the rational type `Rat` from the `math/big` package. But given the objective is to draw an SVG and not land on the moon, I think we can live with a bit of fuzziness.
+Een optie om de nauwkeurigheid van deze hoeken te vergroten, zou zijn om het rationale type `Rat` uit het `math/big`-pakket te gebruiken. Maar aangezien het doel is om een ​​SVG te tekenen en niet om op de maan te landen, denk ik dat we wel met wat vaagheid kunnen leven.
 
 ```go
 func TestSecondHandPoint(t *testing.T) {
@@ -627,9 +627,9 @@ func roughlyEqualPoint(a, b Point) bool {
 }
 ```
 
-We've defined two functions to define approximate equality between two `Points` - they'll work if the X and Y elements are within 0.0000001 of each other. That's still pretty accurate.
+We hebben twee functies gedefinieerd om de geschatte gelijkheid tussen twee `Points` te definiëren. Ze werken als de X- en Y-elementen binnen 0,0000001 van elkaar liggen. Dat is nog steeds behoorlijk nauwkeurig.
 
-And now we get:
+En nu krijgen we:
 
 ```
 PASS
@@ -638,13 +638,13 @@ ok  	clockface	0.007s
 
 ### Refactor
 
-I'm still pretty happy with this.
+Ik ben nog steeds behoorlijk blij met de code.
 
-Here's [what it looks like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v4/clockface)
+Hier is [hoe het eruit ziet op dit moment](https://github.com/quii/learn-go-with-tests/tree/main/math/v4/clockface)
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
-Well, saying _new_ isn't entirely accurate - really what we can do now is get that acceptance test passing! Let's remind ourselves of what it looks like:
+Nou, _nieuw_ zeggen is niet helemaal waar, wat we nu echt kunnen doen is die acceptatietest laten slagen! Laten we die test er nog eens bij pakken en bekijken hoe deze eruitziet:
 
 ```go
 func TestSecondHandAt30Seconds(t *testing.T) {
@@ -659,21 +659,21 @@ func TestSecondHandAt30Seconds(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_acceptance_test.go:28: Got {150 60}, wanted {150 240}
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-We need to do three things to convert our unit vector into a point on the SVG:
+We moeten drie dingen doen om onze eenheidsvector om te zetten in een punt op de SVG:
 
-1. Scale it to the length of the hand
-2. Flip it over the X axis to account for the SVG having an origin in the top left hand corner
-3. Translate it to the right position (so that it's coming from an origin of (150,150))
+1. Naar de lengte van de wijzer schalen
+2. Spiegelen over de X-as om rekening te houden met het feit dat de SVG een oorsprong heeft in de linkerbovenhoek
+3. Vertaal het naar de juiste positie (zodat het afkomstig is van een oorsprong van (150,150))
 
-Fun times!
+Laat de echte lol beginnen!
 
 ```go
 // SecondHand is the unit vector of the second hand of an analogue clock at time `t`
@@ -687,7 +687,7 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-Scale, flip, and translate in exactly that order. Hooray maths!
+Schaal, spiegel en vertaal in precies die volgorde. Hoera, wiskunde!
 
 ```
 PASS
@@ -696,7 +696,7 @@ ok  	clockface	0.007s
 
 ### Refactor
 
-There's a few magic numbers here that should get pulled out as constants, so let's do that
+Er zijn hier een paar magische getallen die als constanten moeten worden gebruikt, dus laten we dat doen:
 
 ```go
 const secondHandLength = 90
@@ -714,13 +714,13 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-## Draw the clock
+## Teken de klok
 
-Well... the second hand anyway...
+Nou ja... de secondewijzer in ieder geval...
 
-Let's do this thing - because there's nothing worse than not delivering some value when it's just sitting there waiting to get out into the world to dazzle people. Let's draw a second hand!
+Laten we dit doen, want er is niets erger dan geen waarde te leveren terwijl het er maar ligt te wachten om de wereld in te gaan om mensen te verbazen. Laten we eens een secondewijzer tekenen!
 
-We're going to stick a new directory under our main `clockface` package directory, called (confusingly), `clockface`. In there we'll put the `main` package that will create the binary that will build an SVG:
+We gaan een nieuwe map toevoegen onder onze hoofdmap voor het `clockface`-pakket, genaamd (verwarrend genoeg) `clockface`. Daarin plaatsen we het `main`-pakket dat het binaire bestand voor een SVG-bestand aanmaakt:
 
 ```
 |-- clockface
@@ -730,7 +730,7 @@ We're going to stick a new directory under our main `clockface` package director
 |-- clockface_test.go
 ```
 
-Inside `main.go`, you'll start with this code but change the import for the clockface package to point at your own version:
+In `main.go` begin je met deze code, maar wijzig je de import voor het clockface-pakket zodat deze naar uw eigen versie verwijst:
 
 ```go
 package main
@@ -770,36 +770,36 @@ const bezel = `<circle cx="150" cy="150" r="100" style="fill:#fff;stroke:#000;st
 const svgEnd = `</svg>`
 ```
 
-Oh boy am I not trying to win any prizes for beautiful code with _this_ mess - but it does the job. It's writing an SVG out to `os.Stdout` - one string at a time.
+O jee, ik probeer met deze puinhoop geen prijzen te winnen voor mooie code, maar het doet zijn werk. Het schrijft een SVG naar `os.Stdout`, string voor string tegelijk.
 
-If we build this
+Bouw deze code
 
 ```
 go build
 ```
 
-and run it, sending the output into a file
+en voer het uit, waarbij de uitvoer naar een bestand wordt verzonden
 
 ```
 ./clockface > clock.svg
 ```
 
-We should see something like
+Je zou iets moeten zien als hieronder:
 
-![a clock with only a second hand](../math/v6/clockface/clockface/clock.svg)
+![een klok met alleen een secondewijzer](../math/v6/clockface/clockface/clock.svg)
 
-And this is [how the code looks](https://github.com/quii/learn-go-with-tests/tree/main/math/v6/clockface).
+En dit is [hoe de code eruit ziet](https://github.com/quii/learn-go-with-tests/tree/main/math/v6/clockface).
 
 ### Refactor
 
-This stinks. Well, it doesn't quite _stink_ stink, but I'm not happy about it.
+Dit stinkt. Nou ja, het stinkt niet echt, maar ik ben er niet blij mee.
 
-1. That whole `SecondHand` function is _super_ tied to being an SVG... without mentioning SVGs or actually producing an SVG...
-2. ... while at the same time I'm not testing any of my SVG code.
+1. Die hele `SecondHand`-functie is super gekoppeld aan het feit dat het een SVG is... zonder SVG's te noemen of daadwerkelijk een SVG te produceren...
+2. ... terwijl ik tegelijkertijd geen enkele SVG-code test.
 
-Yeah, I guess I screwed up. This feels wrong. Let's try to recover with a more SVG-centric test.
+Ja, ik denk dat ik een fout heb gemaakt. Dit voelt verkeerd. Laten we proberen het te herstellen met een meer SVG-gerichte test.
 
-What are our options? Well, we could try testing that the characters spewing out of the `SVGWriter` contain things that look like the sort of SVG tag we're expecting for a particular time. For instance:
+Wat zijn onze opties? We zouden kunnen testen of de tekens die uit de `SVGWriter` komen, dingen bevatten die lijken op het soort SVG-tag dat we voor een bepaalde tijd verwachten. Bijvoorbeeld:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -817,25 +817,24 @@ func TestSVGWriterAtMidnight(t *testing.T) {
 }
 ```
 
-But is this really an improvement?
+Maar is dat echt een verbetering?
 
-Not only will it still pass if I don't produce a valid SVG (as it's only testing that a string appears in the output), but it will also fail if I make the smallest, unimportant change to that string - if I add an extra space between the attributes, for instance.
+De test slaagt niet alleen als ik geen geldige SVG produceer (er wordt immers alleen getest of een tekenreeks in de uitvoer voorkomt), maar mislukt ook als ik een kleine, onbelangrijke wijziging in die tekenreeks aanbreng, bijvoorbeeld als ik een extra spatie tussen de kenmerken toevoeg.
 
-The _biggest_ smell is that I'm testing a data structure - XML - by looking at its representation as a series of characters - as a string. This is _never_, _ever_ a good idea as it produces problems just like the ones I outline above: a test that's both too fragile and not sensitive enough. A test that's testing the wrong thing!
+De _grootste_ valkuil is dat ik een datastructuur (XML)​ test door de representatie ervan te bekijken als een reeks tekens, als een string. Dit is nooit een goed idee, want het levert problemen op zoals die ik hierboven heb geschetst: een test die te kwetsbaar en niet gevoelig genoeg is. Een test die het verkeerde test!
 
-So the only solution is to test the output _as XML_. And to do that we'll need to parse it.
+De enige oplossing is dus om de uitvoer als `XML` te testen. En daarvoor moeten we het parsen.
 
-## Parsing XML
+## Parsen van XML
 
-[`encoding/xml`](https://pkg.go.dev/encoding/xml) is the Go package that can handle all things to do with simple XML parsing.
+[`encoding/xml`](https://pkg.go.dev/encoding/xml) is het Go-pakket dat alles kan afhandelen wat te maken heeft met eenvoudige XML-parsing.
 
-The function [`xml.Unmarshal`](https://pkg.go.dev/encoding/xml#Unmarshal) takes a `[]byte` of XML data, and a pointer to a struct for it to get unmarshalled in to.
+De functie [`xml.Unmarshal`](https://pkg.go.dev/encoding/xml#Unmarshal) neemt een `[]byte` aan XML-gegevens en een aanwijzer naar een struct waarin deze moet worden gedeserialiseerd.
 
-So we'll need a struct to unmarshall our XML into. We could spend some time working out what the correct names for all of the nodes and attributes, and how to write the correct structure but, happily, someone has written [`zek`](https://github.com/miku/zek) a program that will automate all of that hard work for us. Even better, there's an online version at [https://xml-to-go.github.io/](https://xml-to-go.github.io/). Just paste the SVG from the top of the file into one box and - bam - out pops:
+We hebben dus een structuur nodig om onze XML in te deserialiseren. We zouden wat tijd kunnen besteden aan het uitzoeken van de juiste namen voor alle knooppunten en attributen, en hoe we de juiste structuur moeten schrijven, maar gelukkig heeft iemand een programma voor [`zek`](https://github.com/miku/zek) geschreven dat al dat zware werk voor ons automatiseert. Sterker nog, er is een online versie op [https://xml-to-go.github.io/](https://xml-to-go.github.io/). Plak de SVG van boven in het bestand in één vak en - bam - daar verschijnt:
 
-```go
-type Svg struct {
-	XMLName xml.Name `xml:"svg"`
+<pre class="language-go"><code class="lang-go"><strong>type Svg struct {
+</strong>	XMLName xml.Name `xml:"svg"`
 	Text    string   `xml:",chardata"`
 	Xmlns   string   `xml:"xmlns,attr"`
 	Width   string   `xml:"width,attr"`
@@ -858,9 +857,9 @@ type Svg struct {
 		Style string `xml:"style,attr"`
 	} `xml:"line"`
 }
-```
+</code></pre>
 
-We could make adjustments to this if we needed to (like changing the name of the struct to `SVG`) but it's definitely good enough to start us off. Paste the struct into the `clockface_acceptance_test` file and let's write a test with it:
+We kunnen hier indien nodig aanpassingen aan doen (zoals de naam van de struct wijzigen naar `SVG`), maar het is zeker goed genoeg om mee te beginnen. Plak de struct in het bestand `clockface_acceptance_test` en laten we er een test mee schrijven:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -885,13 +884,13 @@ func TestSVGWriterAtMidnight(t *testing.T) {
 }
 ```
 
-We write the output of `clockface.SVGWriter` to a `bytes.Buffer` and then `Unmarshal` it into an `Svg`. We then look at each `Line` in the `Svg` to see if any of them have the expected `X2` and `Y2` values. If we get a match we return early (passing the test); if not we fail with a (hopefully) informative message.
+We schrijven de uitvoer van `clockface.SVGWriter` naar een `bytes.Buffer` en `Unmarshal` deze vervolgens naar een `SVG`. Vervolgens bekijken we elke `Line` in de `SVG` om te zien of deze de verwachte `X2`- en `Y2`-waarden heeft. Als we een match vinden, keren we eerder terug (en slagen we voor de test); zo niet, dan falen we met een (hopelijk) informatief bericht.
 
 ```sh
 ./clockface_acceptance_test.go:41:2: undefined: clockface.SVGWriter
 ```
 
-Looks like we'd better create `SVGWriter.go`...
+Het lijkt erop dat we `SVGWriter.go` moeten creëren...
 
 ```go
 package clockface
@@ -937,7 +936,7 @@ const bezel = `<circle cx="150" cy="150" r="100" style="fill:#fff;stroke:#000;st
 const svgEnd = `</svg>`
 ```
 
-The most beautiful SVG writer? No. But hopefully it'll do the job...
+De mooiste SVG-schrijf oplossing? Nee. Maar hopelijk doet hij zijn werk...
 
 ```
 clockface_acceptance_test.go:56: Expected to find the second hand with x2 of 150 and y2 of 60, in the SVG output <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -949,27 +948,27 @@ clockface_acceptance_test.go:56: Expected to find the second hand with x2 of 150
          version="2.0"><circle cx="150" cy="150" r="100" style="fill:#fff;stroke:#000;stroke-width:5px;"/><line x1="150" y1="150" x2="150.000000" y2="60.000000" style="fill:none;stroke:#f00;stroke-width:3px;"/></svg>
 ```
 
-Oooops! The `%f` format directive is printing our coordinates to the default level of precision - six decimal places. We should be explicit as to what level of precision we're expecting for the coordinates. Let's say three decimal places.
+Oeps! De `%f`-opmaakrichtlijn drukt onze coördinaten af ​​met het standaardnauwkeurigheidsniveau van zes decimalen. We moeten expliciet aangeven welk nauwkeurigheidsniveau we voor de coördinaten verwachten. Laten we zeggen drie decimalen.
 
 ```go
 	fmt.Fprintf(w, `<line x1="150" y1="150" x2="%.3f" y2="%.3f" style="fill:none;stroke:#f00;stroke-width:3px;"/>`, p.X, p.Y)
 ```
 
-And after we update our expectations in the test
+En nadat we onze verwachtingen in de test hebben bijgewerkt
 
 ```go
 	x2 := "150.000"
 	y2 := "60.000"
 ```
 
-We get:
+Krijgen we:
 
 ```
 PASS
 ok  	clockface	0.006s
 ```
 
-We can now shorten our `main` function:
+Nu kunnen we onze `main` functie inkorten:
 
 ```go
 package main
@@ -987,19 +986,19 @@ func main() {
 }
 ```
 
-This is what [things should look like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v7b/clockface).
+Dit is hoe [de code er nu uit zou moeten zien](https://github.com/quii/learn-go-with-tests/tree/main/math/v7b/clockface).
 
-And we can write a test for another time following the same pattern, but not before...
+En we kunnen een test voor een ander tijdstip schrijven volgens hetzelfde patroon, maar niet voordat...
 
 ### Refactor
 
-Three things stick out:
+Drie dingen vallen op:
 
-1. We're not really testing for all of the information we need to ensure is present - what about the `x1` values, for instance?
-2. Also, those attributes for `x1` etc. aren't really `strings` are they? They're numbers!
-3. Do I really care about the `style` of the hand? Or, for that matter, the empty `Text` node that's been generated by `zak`?
+1. We testen niet echt of alle informatie aanwezig is. Hoe zit het bijvoorbeeld met de `x1`-waarden?
+2. En die attributen voor `x1` etc. zijn toch geen `strings`? Het zijn getallen!
+3. Maakt het mij echt uit hoe de `stijl` van de wijzer is? Of, wat dat betreft, de lege `Text`node die door `zak` is gegenereerd?
 
-We can do better. Let's make a few adjustments to the `Svg` struct, and the tests, to sharpen everything up.
+Dat kunnen we beter. Laten we een paar aanpassingen doen aan de `SVG`-structuur en de tests om alles scherper te maken.
 
 ```go
 type SVG struct {
@@ -1027,14 +1026,14 @@ type Line struct {
 }
 ```
 
-Here I've
+Hier heb ik
 
-* Made the important parts of the struct named types -- the `Line` and the `Circle`
-* Turned the numeric attributes into `float64`s instead of `string`s.
-* Deleted unused attributes like `Style` and `Text`
-* Renamed `Svg` to `SVG` because _it's the right thing to do_.
+* De belangrijke onderdelen van de structuur de `Line` en de `Circle` apart benoemd
+* De numerieke kenmerken omgezet naar `float64`'s in plaats van `string`s.
+* De ongebruikte attributen `Style` en `Text` verwijderd
+* `Svg` hernoemd naar `SVG` omdat dit _het juiste was om te doen_
 
-This will let us assert more precisely on the line we're looking for:
+Hiermee kunnen we nauwkeuriger bepalen welke regel we zoeken:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -1059,7 +1058,7 @@ func TestSVGWriterAtMidnight(t *testing.T) {
 }
 ```
 
-Finally we can take a leaf out of the unit tests' tables, and we can write a helper function `containsLine(line Line, lines []Line) bool` to really make these tests shine:
+Ten slotte kunnen we een voorbeeld nemen aan de tabellen van de unit-tests en een hulpfunctie schrijven die `containsLine(line Line, lines []Line) bool` toelaat om deze tests echt te laten schitteren:
 
 ```go
 func TestSVGWriterSecondHand(t *testing.T) {
@@ -1102,13 +1101,13 @@ func containsLine(l Line, ls []Line) bool {
 }
 ```
 
-Here's what [it looks like](https://github.com/quii/learn-go-with-tests/tree/main/math/v7c/clockface)
+Hier zie hoe de [code eruit ziet](https://github.com/quii/learn-go-with-tests/tree/main/math/v7c/clockface)
 
-Now _that's_ what I call an acceptance test!
+Dit noem ik nog eens een acceptatietest!
 
-### Write the test first
+### Schrijf eerst je test
 
-So that's the second hand done. Now let's get started on the minute hand.
+Zo, dat is de secondewijzer. Laten we nu beginnen met de minutenwijzer.
 
 ```go
 func TestSVGWriterMinuteHand(t *testing.T) {
@@ -1118,7 +1117,7 @@ func TestSVGWriterMinuteHand(t *testing.T) {
 	}{
 		{
 			simpleTime(0, 0, 0),
-			Line{150, 150, 150, 70},
+			Line{150, 150, 150, 60},
 		},
 	}
 
@@ -1138,13 +1137,13 @@ func TestSVGWriterMinuteHand(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_acceptance_test.go:87: Expected to find the minute hand line {X1:150 Y1:150 X2:150 Y2:70}, in the SVG lines [{X1:150 Y1:150 X2:150 Y2:60}]
 ```
 
-We'd better start building some other clock hands, Much in the same way as we produced the tests for the second hand, we can iterate to produce the following set of tests. Again we'll comment out our acceptance test while we get this working:
+We kunnen beter beginnen met het bouwen van andere wijzers. Net zoals we de tests voor de secondewijzer hebben gemaakt, kunnen we itereren om de volgende set tests te produceren. We zullen onze acceptatietest opnieuw uit-commentariëren terwijl we dit werkend krijgen:
 
 ```go
 func TestMinutesInRadians(t *testing.T) {
@@ -1166,13 +1165,13 @@ func TestMinutesInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 ./clockface_test.go:59:11: undefined: minutesInRadians
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func minutesInRadians(t time.Time) float64 {
@@ -1180,9 +1179,9 @@ func minutesInRadians(t time.Time) float64 {
 }
 ```
 
-### Repeat for new requirements
+### Herhaal voor de nieuwe eisen
 
-Well, OK - now let's make ourselves do some _real_ work. We could model the minute hand as only moving every full minute - so that it 'jumps' from 30 to 31 minutes past without moving in between. But that would look a bit rubbish. What we want it to do is move a _tiny little bit_ every second.
+Oké, laten we nu eens wat echt werk doen. We zouden de minutenwijzer kunnen modelleren alsof hij elke hele minuut beweegt, zodat hij 'springt' van 30 naar 31 minuten, zonder tussendoor te bewegen. Maar dat zou er een beetje raar uitzien. Wat we willen is dat hij elke seconde een klein beetje beweegt. Laten we daar de test voor schrijven.
 
 ```go
 func TestMinutesInRadians(t *testing.T) {
@@ -1205,23 +1204,23 @@ func TestMinutesInRadians(t *testing.T) {
 }
 ```
 
-How much is that tiny little bit? Well...
+Hoeveel is dat kleine beetje? Nou...
 
-* Sixty seconds in a minute
-* thirty minutes in a half turn of the circle (`math.Pi` radians)
-* so `30 * 60` seconds in a half turn.
-* So if the time is 7 seconds past the hour ...
-* ... we're expecting to see the minute hand at `7 * (math.Pi / (30 * 60))` radians past the 12.
+* Zestig seconden in een minuut
+* dertig minuten in een halve draai van de cirkel (`math.Pi` radialen)
+* dus `30 * 60` seconden in een halve draai.
+* Dus als de tijd 7 seconden na het uur is ...
+* ... verwachten we de minutenwijzer te zien op `7 * (math.Pi / (30 * 60))` radialen voorbij de 12.
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_test.go:62: Wanted 0.012217304763960306 radians, but got 3.141592653589793
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-In the immortal words of Jennifer Aniston: [Here comes the science bit](https://www.youtube.com/watch?v=29Im23SPNok)
+In de onsterfelijke woorden van Jennifer Aniston: [Here comes the science bit](https://www.youtube.com/watch?v=29Im23SPNok)
 
 ```go
 func minutesInRadians(t time.Time) float64 {
@@ -1230,38 +1229,38 @@ func minutesInRadians(t time.Time) float64 {
 }
 ```
 
-Rather than working out how far to push the minute hand around the clockface for every second from scratch, here we can just leverage the `secondsInRadians` function. For every second the minute hand will move 1/60th of the angle the second hand moves.
+In plaats van helemaal opnieuw uit te rekenen hoe ver de minutenwijzer per seconde rond de wijzerplaat moet worden gedraaid, kunnen we hier gewoon de functie `secondsInRadians` gebruiken. Voor elke seconde beweegt de minutenwijzer 1/60e van de hoek die de secondewijzer beweegt.
 
 ```go
 secondsInRadians(t) / 60
 ```
 
-Then we just add on the movement for the minutes - similar to the movement of the second hand.
+Vervolgens voegen we de beweging voor de minuten toe, vergelijkbaar met het beweging van de secondewijzer.
 
 ```go
 math.Pi / (30 / float64(t.Minute()))
 ```
 
-And...
+En...
 
 ```
 PASS
 ok  	clockface	0.007s
 ```
 
-Nice and easy. This is what things [look like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v8/clockface/clockface_acceptance_test.go)
+Dat valt mee toch!? Dit is hoe de code er [nu uit zou moeten zien](https://github.com/quii/learn-go-with-tests/tree/main/math/v8/clockface/clockface_acceptance_test.go)
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
-Should I add more cases to the `minutesInRadians` test? At the moment there are only two. How many cases do I need before I move on to the testing the `minuteHandPoint` function?
+Moet ik meer gevallen toevoegen aan de `minutesInRadians`-test? Op dit moment zijn er maar twee. Hoeveel gevallen heb ik nodig voordat ik verder ga met het testen van de `minuteHandPoint`-functie?
 
-One of my favourite TDD quotes, often attributed to Kent Beck, is
+Een van mijn favoriete TDD-citaten, vaak toegeschreven aan Kent Beck, is
 
-> Write tests until fear is transformed into boredom.
+> Schrijf tests totdat angst omslaat in verveling.
 
-And, frankly, I'm bored of testing that function. I'm confident I know how it works. So it's on to the next one.
+En eerlijk gezegd ben ik het beu om die functie te testen. Ik weet wel hoe het werkt, dus op naar de volgende.
 
-### Write the test first
+### Schrijf eerst de test
 
 ```go
 func TestMinuteHandPoint(t *testing.T) {
@@ -1283,13 +1282,13 @@ func TestMinuteHandPoint(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 ./clockface_test.go:79:11: undefined: minuteHandPoint
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1301,7 +1300,7 @@ func minuteHandPoint(t time.Time) Point {
 clockface_test.go:80: Wanted {0 -1} Point, but got {0 0}
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1314,9 +1313,9 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
-And now for some actual work
+En nu wat echt werk
 
 ```go
 func TestMinuteHandPoint(t *testing.T) {
@@ -1343,9 +1342,9 @@ func TestMinuteHandPoint(t *testing.T) {
 clockface_test.go:81: Wanted {-1 0} Point, but got {0 -1}
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-A quick copy and paste of the `secondHandPoint` function with some minor changes ought to do it...
+Een snelle kopie en plak van de `secondHandPoint`-functie met een paar kleine aanpassingen zou voldoende moeten zijn...
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1364,7 +1363,7 @@ ok  	clockface	0.009s
 
 ### Refactor
 
-We've definitely got a bit of repetition in the `minuteHandPoint` and `secondHandPoint` - I know because we just copied and pasted one to make the other. Let's DRY it out with a function.
+We hebben zeker wat herhaling in de `minuteHandPoint` en `secondHandPoint`, dat weten we omdat we de ene gewoon hebben gekopieerd en geplakt om de andere te maken. Laten we het opdrogen met een functie.
 
 ```go
 func angleToPoint(angle float64) Point {
@@ -1375,7 +1374,7 @@ func angleToPoint(angle float64) Point {
 }
 ```
 
-and we can rewrite `minuteHandPoint` and `secondHandPoint` as one liners:
+en we kunnen `minuteHandPoint` en `secondHandPoint` herschrijven als one-liners:
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1394,11 +1393,11 @@ PASS
 ok  	clockface	0.007s
 ```
 
-Now we can uncomment the acceptance test and get to work drawing the minute hand.
+Nu kunnen we de acceptatietest uit commentaar halen en aan de slag gaan met het tekenen van de minutenwijzer.
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-The `minuteHand` function is a copy-and-paste of `secondHand` with some minor adjustments, such as declaring a `minuteHandLength`:
+De `minuteHand`-functie is een kopieer-en-plakbewerking van `secondHand` met enkele kleine aanpassingen, zoals het declareren van een `minuteHandLength`:
 
 ```go
 const minuteHandLength = 80
@@ -1414,7 +1413,7 @@ func minuteHand(w io.Writer, t time.Time) {
 }
 ```
 
-And a call to it in our `SVGWriter` function:
+En een aanroep ervan in onze `SVGWriter`-functie:
 
 ```go
 func SVGWriter(w io.Writer, t time.Time) {
@@ -1426,20 +1425,20 @@ func SVGWriter(w io.Writer, t time.Time) {
 }
 ```
 
-Now we should see that `TestSVGWriterMinuteHand` passes:
+Nu zouden we moeten zien dat `TestSVGWriterMinuteHand` het volgende resultaat geeft:
 
 ```
 PASS
 ok  	clockface	0.006s
 ```
 
-But the proof of the pudding is in the eating - if we now compile and run our `clockface` program, we should see something like
+Maar het bewijs van de pudding zit in het eten. Als we nu ons `clockface` programma compileren en uitvoeren, zouden we iets moeten zien als
 
-![a clock with second and minute hands](../math/v9/clockface/clockface/clock.svg)
+![een klok met seconde- en minutenwijzers](../math/v9/clockface/clockface/clock.svg)
 
 ### Refactor
 
-Let's remove the duplication from the `secondHand` and `minuteHand` functions, putting all of that scale, flip and translate logic all in one place.
+Laten we de duplicatie uit de functies `secondHand` en `minuteHand` verwijderen en alle logica voor schaal, flip en vertaling op één plek onderbrengen.
 
 ```go
 func secondHand(w io.Writer, t time.Time) {
@@ -1464,11 +1463,11 @@ PASS
 ok  	clockface	0.007s
 ```
 
-This is [where we're up to now](https://github.com/quii/learn-go-with-tests/tree/main/math/v9/clockface).
+Dit is [waar we nu zijn aangekomen](https://github.com/quii/learn-go-with-tests/tree/main/math/v9/clockface).
 
-There... now it's just the hour hand to do!
+Zo... nu hoef je alleen nog maar de kleine wijzer te doen!
 
-### Write the test first
+### Schrijf eerst je test
 
 ```go
 func TestSVGWriterHourHand(t *testing.T) {
@@ -1498,15 +1497,15 @@ func TestSVGWriterHourHand(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_acceptance_test.go:113: Expected to find the hour hand line {X1:150 Y1:150 X2:150 Y2:200}, in the SVG lines [{X1:150 Y1:150 X2:150 Y2:60} {X1:150 Y1:150 X2:150 Y2:70}]
 ```
 
-Again, let's comment this one out until we've got the some coverage with the lower level tests:
+Laten we dit nog even buiten beschouwing laten totdat we wat dekking hebben met de tests op lager niveau:
 
-### Write the test first
+### Schrijf de eerste test
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1528,13 +1527,13 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 ./clockface_test.go:97:11: undefined: hoursInRadians
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1547,7 +1546,7 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1570,13 +1569,13 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_test.go:100: Wanted 0 radians, but got 3.141592653589793
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1584,7 +1583,7 @@ func hoursInRadians(t time.Time) float64 {
 }
 ```
 
-### Repeat for new requirements
+### Herhaal voor nieuwe eisen
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1608,13 +1607,13 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_test.go:101: Wanted 4.71238898038469 radians, but got 10.995574287564276
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1622,16 +1621,16 @@ func hoursInRadians(t time.Time) float64 {
 }
 ```
 
-Remember, this is not a 24-hour clock; we have to use the remainder operator to get the remainder of the current hour divided by 12.
+Bedenk wel dat dit geen 24-uursklok is. Om de rest van het huidige uur te berekenen, gedeeld door 12, moeten we de restoperator gebruiken.
 
 ```
 PASS
 ok  	learn-go-with-tests/math/clockface	0.008s
 ```
 
-### Write the test first
+### Schrijf eerst je test
 
-Now let's try to move the hour hand around the clockface based on the minutes and the seconds that have passed.
+Laten we nu proberen de kleine wijzer op de klok te draaien, gebaseerd op de minuten en seconden die verstreken zijn.
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1656,17 +1655,17 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_test.go:102: Wanted 0.013089969389957472 radians, but got 0
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-Again, a bit of thinking is now required. We need to move the hour hand along a little bit for both the minutes and the seconds. Luckily we have an angle already to hand for the minutes and the seconds - the one returned by `minutesInRadians`. We can reuse it!
+Opnieuw is er nu wat denkwerk nodig. We moeten de uurwijzer een klein beetje verplaatsen voor zowel de minuten als de seconden. Gelukkig hebben we al een hoek voor de minuten en de seconden bij de hand: die van `minutenInRadians`. Die kunnen we hergebruiken!
 
-So the only question is by what factor to reduce the size of that angle. One full turn is one hour for the minute hand, but for the hour hand it's twelve hours. So we just divide the angle returned by `minutesInRadians` by twelve:
+De enige vraag is dus met welke factor we die hoek moeten verkleinen. Een volledige draai is één uur voor de minutenwijzer, maar voor de urenwijzer is dat twaalf uur. Dus delen we de hoek die `minutesInRadians` oplevert gewoon door twaalf:
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1675,15 +1674,15 @@ func hoursInRadians(t time.Time) float64 {
 }
 ```
 
-and behold:
+en zie:
 
 ```
 clockface_test.go:104: Wanted 0.013089969389957472 radians, but got 0.01308996938995747
 ```
 
-Floating point arithmetic strikes again.
+De komma berekening slaat weer toe.
 
-Let's update our test to use `roughlyEqualFloat64` for the comparison of the angles.
+Laten we onze test bijwerken om grofweg `EqualFloat64` te gebruiken voor de vergelijking van de hoeken.
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1715,13 +1714,13 @@ ok  	clockface	0.007s
 
 ### Refactor
 
-If we're going to use `roughlyEqualFloat64` in _one_ of our radians tests, we should probably use it for _all_ of them. That's a nice and simple refactor, which will leave things [looking like this](https://github.com/quii/learn-go-with-tests/tree/main/math/v10/clockface).
+Als we `rouglyEqualFloat64` gaan gebruiken in een van onze radialentests, moeten we het waarschijnlijk voor _alle_ tests gebruiken. Dat is een mooie en simpele refactoring, waardoor [het er zo uitziet](https://github.com/quii/learn-go-with-tests/tree/main/math/v10/clockface).
 
-## Hour Hand Point
+## Uurwijzer
 
-Right, it's time to calculate where the hour hand point is going to go by working out the unit vector.
+Oké, het is tijd om te berekenen waar de kleine wijzer naartoe gaat door de eenheidsvector te berekenen.
 
-### Write the test first
+### Schrijf eerst je test
 
 ```go
 func TestHourHandPoint(t *testing.T) {
@@ -1744,27 +1743,27 @@ func TestHourHandPoint(t *testing.T) {
 }
 ```
 
-Wait, am I going to write _two_ test cases _at once_? Isn't this _bad TDD_?
+Wacht, ga ik twee testcases tegelijk schrijven? Is dit geen slechte TDD?
 
-### On TDD Zealotry
+### Over TDD-fanatisme
 
-Test driven development is not a religion. Some people might act like it is - usually people who don't do TDD but are happy to moan on Twitter or Dev.to that it's only done by zealots and that they're 'being pragmatic' when they don't write tests. But it's not a religion. It's a tool.
+Test Driven Development is geen religie. Sommige mensen doen misschien alsof dat wel zo is (meestal mensen die geen TDD doen) maar graag op Twitter of Dev.to klagen dat het alleen door fanatici wordt gedaan en dat ze 'pragmatisch' zijn als ze geen tests schrijven. Maar het is geen religie. Het is een tool.
 
-I _know_ what the two tests are going to be - I've tested two other clock hands in exactly the same way - and I already know what my implementation is going to be - I wrote a function for the general case of changing an angle into a point in the minute hand iteration.
+Ik weet welke twee tests het worden. Ik heb twee andere wijzers op exact dezelfde manier getest. En ik weet ook al wat mijn implementatie wordt. Ik heb een functie geschreven voor het algemene geval waarbij een hoek in de minutenwijzeriteratie in een punt wordt veranderd.
 
-I'm not going to plough through TDD ceremony for the sake of it. TDD is a technique that helps me understand the code I'm writing - and the code that I'm going to write - better. TDD gives me feedback, knowledge and insight. But if I've already got that knowledge, then I'm not going to plough through the ceremony for no reason. Neither tests nor TDD are an end in themselves.
+Ik ga de TDD-ceremonie niet zomaar doorploegen. TDD is een techniek die me helpt de code die ik schrijf, en de code die ik ga schrijven, beter te begrijpen. TDD geeft me feedback, kennis en inzicht. Maar als ik die kennis al heb, ga ik de ceremonie niet zomaar doorploegen. Noch tests, noch TDD zijn een doel op zich.
 
-My confidence has increased, so I feel I can make larger strides forward. I'm going to 'skip' a few steps, because I know where I am, I know where I'm going and I've been down this road before.
+Mijn zelfvertrouwen is toegenomen, dus ik heb het gevoel dat ik grotere stappen vooruit kan zetten. Ik ga een paar stappen 'overslaan', want ik weet waar ik ben, ik weet waar ik naartoe ga en ik heb deze weg al eerder bewandeld.
 
-But also note: I'm not skipping writing the tests entirely - I'm still writing them first. They're just appearing in less granular chunks.
+Maar let op: ik sla het schrijven van de tests niet helemaal over, ik schrijf ze nog steeds eerst. Ze verschijnen alleen in minder gedetailleerde stukjes.
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 ./clockface_test.go:119:11: undefined: hourHandPoint
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
 ```go
 func hourHandPoint(t time.Time) Point {
@@ -1772,16 +1771,16 @@ func hourHandPoint(t time.Time) Point {
 }
 ```
 
-As I said, I know where I am, and I know where I'm going. Why pretend otherwise? The tests will soon tell me if I'm wrong.
+Zoals ik al zei, ik weet waar ik ben en ik weet waar ik naartoe ga. Waarom zou ik anders doen alsof? De tests zullen me binnenkort vertellen of ik het mis heb.
 
 ```
 PASS
 ok  	learn-go-with-tests/math/clockface	0.009s
 ```
 
-## Draw the hour hand
+## Teken de uur wijzer
 
-And finally we get to draw in the hour hand. We can bring in that acceptance test by uncommenting it:
+En tot slot tekenen we de uren wijzer. We kunnen die acceptatietest invoeren door hem in te schakelen:
 
 ```go
 func TestSVGWriterHourHand(t *testing.T) {
@@ -1811,16 +1810,16 @@ func TestSVGWriterHourHand(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### Probeer de test uit te voeren
 
 ```
 clockface_acceptance_test.go:113: Expected to find the hour hand line {X1:150 Y1:150 X2:150 Y2:200},
     in the SVG lines [{X1:150 Y1:150 X2:150 Y2:60} {X1:150 Y1:150 X2:150 Y2:70}]
 ```
 
-### Write enough code to make it pass
+### Schrijf genoeg code om de test te laten slagen
 
-And we can now make our final adjustments to the SVG writing constants and functions:
+En nu kunnen we onze laatste aanpassingen maken aan de SVG-schrijfconstanten en -functies:
 
 ```go
 const (
@@ -1850,19 +1849,19 @@ func hourHand(w io.Writer, t time.Time) {
 
 ```
 
-And so...
+En dus...
 
 ```
 ok  	clockface	0.007s
 ```
 
-Let's just check by compiling and running our `clockface` program.
+Laten we dit controleren door ons `clockface` programma te compileren en uit te voeren.
 
-![a clock](../math/v12/clockface/clockface/clock.svg)
+![een klok](../math/v12/clockface/clockface/clock.svg)
 
 ### Refactor
 
-Looking at `clockface.go`, there are a few 'magic numbers' floating about. They are all based around how many hours/minutes/seconds there are in a half-turn around a clockface. Let's refactor so that we make explicit their meaning.
+Kijkend naar `clockface.go`, zie je een paar 'magische getallen' rondzweven. Ze zijn allemaal gebaseerd op het aantal uren/minuten/seconden dat er in een halve draai rond een wijzerplaat zit. Laten we de betekenis ervan eens herstructureren.
 
 ```go
 const (
@@ -1875,9 +1874,9 @@ const (
 )
 ```
 
-Why do this? Well, it makes explicit what each number _means_ in the equation. If - _when_ - we come back to this code, these names will help us to understand what's going on.
+Waarom doen we dit? Nou, het maakt duidelijk wat elk getal in de vergelijking _betekent_. Als we later terugkomen bij deze code, zullen deze namen ons helpen te begrijpen waar de waarden voor staan.
 
-Moreover, should we ever want to make some really, really WEIRD clocks - ones with 4 hours for the hour hand, and 20 seconds for the second hand say - these constants could easily become parameters. We're helping to leave that door open (even if we never go through it).
+Bovendien, mochten we ooit echt heel VREEMDE klokken willen maken (bijvoorbeeld met 4 uur voor de uurwijzer en 20 seconden voor de secondewijzer) dan zouden deze constanten gemakkelijk parameters kunnen worden. We helpen die deur open te houden (zelfs als we er nooit doorheen gaan).
 
 ## Wrapping up
 

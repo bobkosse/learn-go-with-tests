@@ -20,7 +20,7 @@
 * [Sync](basisbeginselen-go/sync.md)
 * [Context](basisbeginselen-go/context.md)
 * [Inleiding tot property based testen](basisbeginselen-go/roman-numerals.md)
-* [Maths](basisbeginselen-go/math.md)
+* [Wiskunde](basisbeginselen-go/math.md)
 * [Reading files](basisbeginselen-go/reading-files.md)
 * [Templating](basisbeginselen-go/html-templates.md)
 * [Generics](basisbeginselen-go/generics.md)
