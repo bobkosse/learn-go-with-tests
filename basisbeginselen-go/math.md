@@ -1878,36 +1878,38 @@ Waarom doen we dit? Nou, het maakt duidelijk wat elk getal in de vergelijking _b
 
 Bovendien, mochten we ooit echt heel VREEMDE klokken willen maken (bijvoorbeeld met 4 uur voor de uurwijzer en 20 seconden voor de secondewijzer) dan zouden deze constanten gemakkelijk parameters kunnen worden. We helpen die deur open te houden (zelfs als we er nooit doorheen gaan).
 
-## Wrapping up
+## Samenvattend
 
-Do we need to do anything else?
+Moeten we nog iets anders doen?
 
-First, let's pat ourselves on the back - we've written a program that makes an SVG clockface. It works and it's great. It will only ever make one sort of clockface - but that's fine! Maybe you only _want_ one sort of clockface. There's nothing wrong with a program that solves a specific problem and nothing else.
+Laten we onszelf eerst een schouderklopje geven: we hebben een programma geschreven dat een SVG-wijzerplaat maakt. Het werkt en het is geweldig. Het maakt maar één soort wijzerplaat, maar dat is prima! Misschien wil je maar één soort wijzerplaat. Er is niets mis met een programma dat een specifiek probleem oplost en niets anders.
 
-### A Program... and a Library
+### Een programma... en een bibliotheek
 
-But the code we've written _does_ solve a more general set of problems to do with drawing a clockface. Because we used tests to think about each small part of the problem in isolation, and because we codified that isolation with functions, we've built a very reasonable little API for clockface calculations.
+Maar de code die we hebben geschreven, lost wel een meer algemene reeks problemen op die te maken hebben met het tekenen van een wijzerplaat. Omdat we tests hebben gebruikt om elk klein onderdeel van het probleem afzonderlijk te bekijken, en omdat we die isolatie met functies hebben vastgelegd, hebben we een zeer redelijke kleine API gebouwd voor wijzerplaatberekeningen.
 
-We can work on this project and turn it into something more general - a library for calculating clockface angles and/or vectors.
+We kunnen aan dit project werken en het omzetten in iets algemeners: een bibliotheek voor het berekenen van hoeken en/of vectoren van wijzerplaten.
 
-In fact, providing the library along with the program is _a really good idea_. It costs us nothing, while increasing the utility of our program and helping to document how it works.
+Het is eigenlijk een _heel goed idee_ om de bibliotheek samen met het programma aan te bieden. Het kost ons niets, maar vergroot wel de bruikbaarheid van ons programma en helpt bij het documenteren van de werking ervan.
 
-> APIs should come with programs, and vice versa. An API that you must write C code to use, which cannot be invoked easily from the command line, is harder to learn and use. And contrariwise, it's a royal pain to have interfaces whose only open, documented form is a program, so you cannot invoke them easily from a C program. -- Henry Spencer, in _The Art of Unix Programming_
+> API's zouden met programma's meegeleverd moeten worden, en vice versa. Een API waarvoor je C-code moet schrijven en die niet eenvoudig vanaf de opdrachtregel kan worden aangeroepen, is moeilijker te leren en te gebruiken. En omgekeerd is het een enorme opgave om interfaces te hebben waarvan de enige open, gedocumenteerde vorm een ​​programma is, waardoor je ze niet eenvoudig vanuit een C-programma kunt aanroepen.
+>
+> \-- Henry Spencer, uit _The Art of Unix Programming_
 
-In [my final take on this program](https://github.com/quii/learn-go-with-tests/tree/main/math/vFinal/clockface), I've made the unexported functions within `clockface` into a public API for the library, with functions to calculate the angle and unit vector for each of the clock hands. I've also split the SVG generation part into its own package, `svg`, which is then used by the `clockface` program directly. Naturally I've documented each of the functions and packages.
+In mijn [uiteindelijke versie van dit programma](https://github.com/quii/learn-go-with-tests/tree/main/math/vFinal/clockface) heb ik de niet-geëxporteerde functies in `clockface` omgezet naar een openbare API voor de bibliotheek, met functies om de hoek en eenheidsvector voor elke wijzer te berekenen. Ik heb het SVG-generatiegedeelte ook opgesplitst in een eigen pakket, `svg`, dat vervolgens rechtstreeks door het `clockface`-programma wordt gebruikt. Uiteraard heb ik elk van de functies en pakketten gedocumenteerd.
 
-Talking about SVGs...
+Over SVG's gesproken...
 
-### The Most Valuable Test
+### De meest waardevolle test
 
-I'm sure you've noticed that the most sophisticated piece of code for handling SVGs isn't in our application code at all; it's in the test code. Should this make us feel uncomfortable? Shouldn't we do something like
+Ik weet zeker dat je hebt gemerkt dat het meest geavanceerde stukje code voor het verwerken van SVG's helemaal niet in onze applicatiecode zit; het zit in de testcode. Moeten we ons hier ongemakkelijk bij voelen? Zouden we niet zoiets moeten doen als:
 
-* use a template from `text/template`?
-* use an XML library (much as we're doing in our test)?
-* use an SVG library?
+* een template van `text/template` gebruiken?
+* een XML-bibliotheek gebruiken (zoals we in onze test doen)?
+* een SVG-bibliotheek gebruiken?
 
-We could refactor our code to do any of these things, and we can do so because it doesn't matter _how_ we produce our SVG, what is important is _what_ we produce - _an SVG_. As such, the part of our system that needs to know the most about SVGs - that needs to be the strictest about what constitutes an SVG - is the test for the SVG output: it needs to have enough context and knowledge about what an SVG is for us to be confident that we're outputting an SVG. The _what_ of an SVG lives in our tests; the _how_ in the code.
+We zouden onze code kunnen refactoren om al deze dingen te doen, en dat kunnen we doen omdat het niet uitmaakt _hoe_ we onze SVG produceren; wat belangrijk is, is _wat_ we produceren: een SVG. Het deel van ons systeem dat het meest over SVG's moet weten (en dus het meest strikt moet zijn over wat een SVG is) is de test voor de SVG-uitvoer: het moet voldoende context en kennis hebben over wat een SVG is, zodat we er zeker van kunnen zijn dat we een SVG uitgeven. Het _wat_ van een SVG zit in onze tests; het _hoe_ in de code.
 
-We may have felt odd that we were pouring a lot of time and effort into those SVG tests - importing an XML library, parsing XML, refactoring the structs - but that test code is a valuable part of our codebase - possibly more valuable than the current production code. It will help guarantee that the output is always a valid SVG, no matter what we choose to use to produce it.
+We vonden het misschien vreemd dat we zoveel tijd en moeite in die SVG-tests staken, het importeren van een XML-bibliotheek, het parsen van XML, het refactoren van de structs,  maar die testcode is een waardevol onderdeel van onze codebase. Mogelijk zelfs waardevoller dan de huidige productiecode. Het helpt garanderen dat de output altijd een geldige SVG is, ongeacht wat we ervoor gebruiken.
 
-Tests are not second class citizens - they are not 'throwaway' code. Good tests will last a lot longer than the version of the code they are testing. You should never feel like you're spending 'too much time' writing your tests. It is an investment.
+Tests zijn geen tweederangsburgers. Het is geen 'wegwerpcode'. Goede tests gaan veel langer mee dan de versie van de code die ze testen. Je moet nooit het gevoel hebben dat je 'te veel tijd' besteedt aan het schrijven van je tests. Het is een investering.
