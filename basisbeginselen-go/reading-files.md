@@ -1,17 +1,18 @@
 # Reading files
 
-- **[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/reading-files)**
-- [Here is a video of me working through the problem and taking questions from the Twitch stream](https://www.youtube.com/watch?v=nXts4dEJnkU)
+* [**Je kunt hier alle code van dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/reading-files)
+* [Hier is een video waarin ik (Chris James) het probleem aanpak en vragen beantwoord uit de Twitch-stream](https://www.youtube.com/watch?v=nXts4dEJnkU)
 
-In this chapter we're going to learn how to read some files, get some data out of them, and do something useful.
+In dit hoofdstuk gaan we leren hoe we bestanden kunnen lezen, er gegevens uit kunnen halen en er iets nuttigs mee kunnen doen.
 
-Pretend you're working with your friend to create some blog software. The idea is an author will write their posts in markdown, with some metadata at the top of the file. On startup, the web server will read a folder to create some `Post`s, and then a separate `NewHandler` function will use those `Post`s as a datasource for the blog's webserver.
+Stel je voor dat je samen met een vriend(in) aan het bloggen bent. Het idee is dat een auteur zijn of haar berichten in markdown schrijft, met wat metadata bovenaan het bestand. Bij het opstarten leest de webserver een map om een ​​aantal berichten te maken, waarna een aparte `NewHandler`-functie die berichten gebruikt als gegevensbron voor de webserver van de blog.
 
-We've been asked to create the package that converts a given folder of blog post files into a collection of `Post`s.
+Ons is gevraagd een pakket te maken waarmee een bepaalde map met blogberichtbestanden kan worden omgezet in een verzameling berichten (`Post`s).
 
-### Example data
+### Voorbeeld data
 
-hello world.md
+`hello world.md`
+
 ```markdown
 Title: Hello, TDD world!
 Description: First post on our wonderful blog
@@ -22,7 +23,7 @@ Hello world!
 The body of posts starts after the `---`
 ```
 
-### Expected data
+### Verwachte data
 
 ```go
 type Post struct {
@@ -31,78 +32,77 @@ type Post struct {
 }
 ```
 
-## Iterative, test-driven development
+## Iteratieve, test-gestuurde ontwikkeling
 
-We'll take an iterative approach where we're always taking simple, safe steps toward our goal.
+We hanteren een iteratieve aanpak, waarbij we steeds eenvoudige, veilige stappen zetten om ons doel te bereiken.
 
-This requires us to break up our work, but we should be careful not to fall into the trap of taking a ["bottom up"](https://en.wikipedia.org/wiki/Top-down_and_bottom-up_design) approach.
+Dat vereist dat we ons werk opsplitsen, maar we moeten wel oppassen dat we niet in de valkuil trappen van een ['bottom-up'](https://en.wikipedia.org/wiki/Top-down_and_bottom-up_design)-benadering.
 
-We should not trust our over-active imaginations when we start work. We could be tempted into making some kind of abstraction that is only validated once we stick everything together, such as some kind of `BlogPostFileParser`.
+We moeten niet op onze overactieve verbeelding vertrouwen wanneer we aan het werk gaan. We zouden in de verleiding kunnen komen om een ​​soort abstractie te maken die pas gevalideerd wordt als we alles aan elkaar plakken, zoals een soort `BlogPostFileParser`.
 
-This is _not_ iterative and is missing out on the tight feedback loops that TDD is supposed to bring us.
+Dit is _niet_ iteratief en mist de strakke feedback lussen die TDD ons zou moeten opleveren.
 
-Kent Beck says:
+Kent Beck zegt hierover:
 
-> Optimism is an occupational hazard of programming. Feedback is the treatment.
+> Optimisme is een beroepsrisico van programmeren. Feedback is de behandeling.
 
-Instead, our approach should strive to be as close to delivering _real_ consumer value as quickly as possible (often called a "happy path"). Once we have delivered a small amount of consumer value end-to-end, further iteration of the rest of the requirements is usually straightforward.
+In plaats daarvan moeten we ernaar streven om zo snel mogelijk zo dicht mogelijk bij het leveren van _echte consumentenwaarde_ te komen (vaak een "happy path" genoemd). Zodra we een kleine hoeveelheid consumentenwaarde van begin tot eind hebben opgeleverd, is verdere iteratie van de rest van de eisen meestal eenvoudig.
 
-## Thinking about the kind of test we want to see
+## Nadenken over het soort test dat we willen zien
 
-Let's remind ourselves of our mindset and goals when starting:
+Laten we onszelf herinneren aan onze mindset en doelen wanneer we beginnen:
 
-- **Write the test we want to see**. Think about how we'd like to use the code we're going to write from a consumer's point of view.
-- Focus on _what_ and _why_, but don't get distracted by _how_.
+* **Schrijf de test die we willen zien.** Denk na over hoe we de code die we gaan schrijven willen gebruiken vanuit het perspectief van de consument.
+* Concentreer je op het _wat_ en _waarom_, maar laat je niet afleiden door het _hoe_.
 
-Our package needs to offer a function that can be pointed at a folder, and return us some posts.
+Ons pakket moet een functie bieden waarmee naar een map kan worden verwezen en die ons berichten terugstuurt.
 
 ```go
 var posts []blogposts.Post
 posts = blogposts.NewPostsFromFS("some-folder")
 ```
 
-To write a test around this, we'd need some kind of test folder with some example posts in it. _There's nothing terribly wrong with this_, but you are making some trade-offs:
+Om hier een test over te schrijven, hebben we een soort testmap nodig met een aantal voorbeeldberichten. _Daar is niets mis mee_, maar je maakt wel een paar compromissen:
 
-- for each test you may need to create new files to test a particular behaviour
-- some behaviour will be challenging to test, such as failing to load files
-- the tests will run a little slower because they will need to access the file system
+* Voor elke test moet je mogelijk nieuwe bestanden maken om een ​​bepaald gedrag te testen
+* sommige gedragingen zullen moeilijk te testen zijn, zoals het niet kunnen laden van bestanden
+* de tests zullen iets langzamer verlopen omdat ze toegang nodig hebben tot het bestandssysteem
 
-We're also unnecessarily coupling ourselves to a specific implementation of the file system.
+Bovendien koppelen we onszelf onnodig aan een specifieke implementatie van het bestandssysteem.
 
-### File system abstractions introduced in Go 1.16
+### Bestandssysteemabstracties geïntroduceerd in Go 1.16&#x20;
 
-Go 1.16 introduced an abstraction for file systems; the [io/fs](https://golang.org/pkg/io/fs/) package.
+Go 1.16 introduceerde een abstractie voor bestandssystemen: het [io/fs](https://golang.org/pkg/io/fs/)-pakket.
 
-> Package fs defines basic interfaces to a file system. A file system can be provided by the host operating system but also by other packages.
+> Pakket fs definieert basisinterfaces voor een bestandssysteem. Een bestandssysteem kan worden geleverd door het hostbesturingssysteem, maar ook door andere pakketten.
 
-This lets us loosen our coupling to a specific file system, which will then let us inject different implementations according to our needs.
+Hiermee kunnen we de koppeling met een specifiek bestandssysteem versoepelen, waarna we verschillende implementaties kunnen injecteren op basis van onze behoeften.
 
-> [On the producer side of the interface, the new embed.FS type implements fs.FS, as does zip.Reader. The new os.DirFS function provides an implementation of fs.FS backed by a tree of operating system files.](https://golang.org/doc/go1.16#fs)
+> [Aan de producerkant van de interface implementeert het nieuwe type fs.FS, net als zip.Reader. De nieuwe functie os.DirFS biedt een implementatie van fs.FS, ondersteund door een boomstructuur van besturingssysteem bestanden.](https://golang.org/doc/go1.16#fs)
 
-If we use this interface, users of our package have a number of options baked-in to the standard library to use. Learning to leverage interfaces defined in Go's standard library (e.g. `io.fs`, [`io.Reader`](https://golang.org/pkg/io/#Reader), [`io.Writer`](https://golang.org/pkg/io/#Writer)), is vital to writing loosely coupled packages. These packages can then be re-used in contexts different to those you imagined, with minimal fuss from your consumers.
+Met deze interface hebben gebruikers van ons pakket een aantal ingebouwde opties in de standaardbibliotheek tot hun beschikking. Het leren gebruiken van interfaces die zijn gedefinieerd in de standaardbibliotheek van Go (bijv. `io.fs`, [`io.Reader`](https://golang.org/pkg/io/#Reader), [`io.Writer`](https://golang.org/pkg/io/#Writer)) is essentieel voor het schrijven van los gekoppelde pakketten. Deze pakketten kunnen vervolgens opnieuw worden gebruikt in andere contexten dan je je had voorgesteld, met minimale moeite voor je gebruikers.
 
-In our case, maybe our consumer wants the posts to be embedded into the Go binary rather than files in a "real" filesystem? Either way, _our code doesn't need to care_.
+In ons geval wil onze gebruiker misschien dat de berichten in het Go-bestand worden ingesloten in plaats van bestanden in een "echt" bestandssysteem? _Hoe dan ook, onze code hoeft zich er geen zorgen over te maken._
 
-For our tests, the package [testing/fstest](https://golang.org/pkg/testing/fstest/) offers us an implementation of [io/FS](https://golang.org/pkg/io/fs/#FS) to use, similar to the tools we're familiar with in [net/http/httptest](https://golang.org/pkg/net/http/httptest/).
+Voor onze tests biedt het pakket [testing/fstest](https://golang.org/pkg/testing/fstest/) ons een implementatie van [io/FS](https://golang.org/pkg/io/fs/#FS) die we kunnen gebruiken, vergelijkbaar met de hulpmiddelen die we kennen van [net/http/httptest](https://golang.org/pkg/net/http/httptest/).
 
-Given this information, the following feels like a better approach,
+Gezien deze informatie lijkt het volgende een betere aanpak:
 
 ```go
 var posts []blogposts.Post
 posts = blogposts.NewPostsFromFS(someFS)
 ```
 
-
 ## Write the test first
 
-We should keep scope as small and useful as possible. If we prove that we can read all the files in a directory, that will be a good start.  This will give us confidence in the software we're writing.  We can check that the count of `[]Post` returned is the same as the number of files in our fake file system.
+We should keep scope as small and useful as possible. If we prove that we can read all the files in a directory, that will be a good start. This will give us confidence in the software we're writing. We can check that the count of `[]Post` returned is the same as the number of files in our fake file system.
 
 Create a new project to work through this chapter.
 
-- `mkdir blogposts`
-- `cd blogposts`
-- `go mod init github.com/{your-name}/blogposts`
-- `touch blogposts_test.go`
+* `mkdir blogposts`
+* `cd blogposts`
+* `go mod init github.com/{your-name}/blogposts`
+* `touch blogposts_test.go`
 
 ```go
 package blogposts_test
@@ -195,7 +195,7 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 
 But, as Denise Yu wrote:
 
->Sliming is useful for giving a “skeleton” to your object. Designing an interface and executing logic are two concerns, and sliming tests strategically lets you focus on one at a time.
+> Sliming is useful for giving a “skeleton” to your object. Designing an interface and executing logic are two concerns, and sliming tests strategically lets you focus on one at a time.
 
 We already have our structure. So, what do we do instead?
 
@@ -284,6 +284,7 @@ func (s StubFailingFS) Open(name string) (fs.File, error) {
 	return nil, errors.New("oh no, i always fail")
 }
 ```
+
 ```go
 // later
 _, err := blogposts.NewPostsFromFS(StubFailingFS{})
@@ -300,6 +301,7 @@ Logically, our next iterations will be around expanding our `Post` type so that 
 We'll start with the first line in the proposed blog post schema, the title field.
 
 We need to change the contents of the test files so they match what was specified, and then we can make an assertion that it is parsed correctly.
+
 ```go
 func TestNewBlogPosts(t *testing.T) {
 	fs := fstest.MapFS{
@@ -318,6 +320,7 @@ func TestNewBlogPosts(t *testing.T) {
 ```
 
 ## Try to run the test
+
 ```
 ./blogpost_test.go:58:26: unknown field 'Title' in struct literal of type blogposts.Post
 ```
@@ -384,7 +387,7 @@ Even though this feels like a small increment forward it still required us to wr
 
 The iterative approach has given us fast feedback that our understanding of the requirements is incomplete.
 
-`fs.FS` gives us a way of opening a file within it by name with its `Open` method. From there we read the data from the file and, for now, we do not need any sophisticated parsing, just cutting out the `Title: ` text by slicing the string.
+`fs.FS` gives us a way of opening a file within it by name with its `Open` method. From there we read the data from the file and, for now, we do not need any sophisticated parsing, just cutting out the `Title:` text by slicing the string.
 
 ## Refactor
 
@@ -784,9 +787,9 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-- `scanner.Scan()` returns a `bool` which indicates whether there's more data to scan, so we can use that with a `for` loop to keep reading through the data until the end.
-- After every `Scan()` we write the data into the buffer using `fmt.Fprintln`. We use the version that adds a newline because the scanner removes the newlines from each line, but we need to maintain them.
-- Because of the above, we need to trim the final newline, so we don't have a trailing one.
+* `scanner.Scan()` returns a `bool` which indicates whether there's more data to scan, so we can use that with a `for` loop to keep reading through the data until the end.
+* After every `Scan()` we write the data into the buffer using `fmt.Fprintln`. We use the version that adds a newline because the scanner removes the newlines from each line, but we need to maintain them.
+* Because of the above, we need to trim the final newline, so we don't have a trailing one.
 
 ## Refactor
 
@@ -825,9 +828,9 @@ We've made our "steel thread" of functionality, taking the shortest route to get
 
 We haven't handled:
 
-- when the file's format is not correct
-- the file is not a `.md`
-- what if the order of the metadata fields is different? Should that be allowed? Should we be able to handle it?
+* when the file's format is not correct
+* the file is not a `.md`
+* what if the order of the metadata fields is different? Should that be allowed? Should we be able to handle it?
 
 Crucially though, we have working software, and we have defined our interface. The above are just further iterations, more tests to write and drive our behaviour. To support any of the above we shouldn't have to change our _design_, just implementation details.
 
@@ -839,8 +842,8 @@ Keeping focused on the goal means we made the important decisions, and validated
 
 If you wish to try out the code "for real":
 
-- Create a `cmd` folder within the project, add a `main.go` file
-- Add the following code
+* Create a `cmd` folder within the project, add a `main.go` file
+* Add the following code
 
 ```go
 import (
@@ -858,7 +861,7 @@ func main() {
 }
 ```
 
-- Add some markdown files into a `posts` folder and run the program!
+* Add some markdown files into a `posts` folder and run the program!
 
 Notice the symmetry between the production code
 
@@ -876,7 +879,7 @@ This is when consumer-driven, top-down TDD _feels correct_.
 
 A user of our package can look at our tests and quickly get up to speed with what it's supposed to do and how to use it. As maintainers, we can be _confident our tests are useful because they're from a consumer's point of view_. We're not testing implementation details or other incidental details, so we can be reasonably confident that our tests will help us, rather than hinder us when refactoring.
 
-By relying on good software engineering practices like  [**dependency injection**](dependency-injection.md) our code is simple to test and re-use.
+By relying on good software engineering practices like [**dependency injection**](dependency-injection.md) our code is simple to test and re-use.
 
 When you're creating packages, even if they're only internal to your project, prefer a top-down consumer driven approach. This will stop you over-imagining designs and making abstractions you may not even need and will help ensure the tests you write are useful.
 
@@ -888,5 +891,5 @@ It's important to note that these new features only have operations for _reading
 
 ### Further reading
 
-- This was a light intro to `io/fs`. [Ben Congdon has done an excellent write-up](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which was a lot of help for writing this chapter.
-- [Discussion on the file system interfaces](https://github.com/golang/go/issues/41190)
+* This was a light intro to `io/fs`. [Ben Congdon has done an excellent write-up](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which was a lot of help for writing this chapter.
+* [Discussion on the file system interfaces](https://github.com/golang/go/issues/41190)
