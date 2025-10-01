@@ -381,17 +381,17 @@ func getPost(fileSystem fs.FS, f fs.DirEntry) (Post, error) {
 }
 ```
 
-Remember our focus at this point is not to write elegant code, it's just to get to a point where we have working software.
+Houd er rekening mee dat het op dit moment niet onze bedoeling is om elegante code te schrijven, maar om tot een punt te komen waarop we werkende software hebben.
 
-Even though this feels like a small increment forward it still required us to write a fair amount of code and make some assumptions in respect to error handling. This would be a point where you should talk to your colleagues and decide the best approach.
+Hoewel dit als een kleine stap vooruit voelt, moesten we toch behoorlijk wat code schrijven en een aantal aannames doen met betrekking tot foutafhandeling. Dit is een moment waarop je met je collega's moet overleggen om de beste aanpak te bepalen.
 
-The iterative approach has given us fast feedback that our understanding of the requirements is incomplete.
+Dankzij de iteratieve aanpak kregen we snel feedback en weten we dat ons begrip van de eisen nog niet volledig is.
 
-`fs.FS` gives us a way of opening a file within it by name with its `Open` method. From there we read the data from the file and, for now, we do not need any sophisticated parsing, just cutting out the `Title:` text by slicing the string.
+`fs.FS` biedt ons een manier om een ​​bestand erin op naam te openen met de `Open`-methode. Van daaruit lezen we de gegevens uit het bestand en voorlopig hebben we geen geavanceerde parsing nodig. We hoeven alleen de tekst `Title:` te verwijderen door de string te 'slicen'.
 
 ## Refactor
 
-Separating the 'opening file code' from the 'parsing file contents code' will make the code simpler to understand and work with.
+Door de 'open het bestand code' te scheiden van de 'code voor het verwerken van de bestandsinhoud' wordt de code eenvoudiger te begrijpen en te gebruiken.
 
 ```go
 func getPost(fileSystem fs.FS, f fs.DirEntry) (Post, error) {
@@ -414,11 +414,11 @@ func newPost(postFile fs.File) (Post, error) {
 }
 ```
 
-When you refactor out new functions or methods, take care and think about the arguments. You're designing here, and are free to think deeply about what is appropriate because you have passing tests. Think about coupling and cohesion. In this case you should ask yourself:
+Wanneer je nieuwe functies of methoden refactoren, denk dan goed na over de argumenten. Je bent hier aan het ontwerpen en je kunt goed nadenken over wat geschikt is, omdat je tests hebt die voldoen aan de eisen. Denk na over koppeling en samenhang. In dit geval moet je jezelf het volgende afvragen:
 
-> Does `newPost` have to be coupled to an `fs.File` ? Do we use all the methods and data from this type? What do we _really_ need?
+> Moet `newPost` gekoppeld worden aan een `fs.File`? Gebruiken we alle methoden en data van dit type? Wat hebben we _echt_ nodig?
 
-In our case we only use it as an argument to `io.ReadAll` which needs an `io.Reader`. So we should loosen the coupling in our function and ask for an `io.Reader`.
+In ons geval gebruiken we het alleen als argument voor `io.ReadAll`, waarvoor een `io.Reader` nodig is. We moeten de koppeling in onze functie dus losmaken en om een ​​`io.Reader` vragen.
 
 ```go
 func newPost(postFile io.Reader) (Post, error) {
@@ -432,7 +432,7 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-You can make a similar argument for our `getPost` function, which takes an `fs.DirEntry` argument but simply calls `Name()` to get the file name. We don't need all that; let's decouple from that type and pass the file name through as a string. Here's the fully refactored code:
+Je kunt een soortgelijk argument gebruiken voor onze `getPost`-functie, die een `fs.DirEntry`-argument accepteert, maar simpelweg `Name()` aanroept om de bestandsnaam op te halen. We hebben dat allemaal niet nodig; laten we loskoppelen van dat type en de bestandsnaam als een string doorgeven. Hier is de volledig gerefactoriseerde code:
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
@@ -471,11 +471,11 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-From now on, most of our efforts can be neatly contained within `newPost`. The concerns of opening and iterating over files are done, and now we can focus on extracting the data for our `Post` type. Whilst not technically necessary, files are a nice way to logically group related things together, so I moved the `Post` type and `newPost` into a new `post.go` file.
+Vanaf nu kunnen de meeste van onze inspanningen netjes in `newPost` worden ondergebracht. De zorgen over het openen en itereren van bestanden zijn voorbij en we kunnen ons nu richten op het extraheren van de gegevens voor ons `Post`-type. Hoewel technisch gezien niet noodzakelijk, zijn bestanden een handige manier om gerelateerde zaken logisch te groeperen. Daarom heb ik het `Post`-type en `newPost` verplaatst naar een nieuw bestand `post.go`.
 
 ### Test helper
 
-We should take care of our tests too. We're going to be making assertions on `Posts` a lot, so we should write some code to help with that
+We moeten ook goed op onze tests letten. We gaan veel beweringen doen over `Posts`, dus we moeten wat code schrijven om dat te ondersteunen
 
 ```go
 func assertPost(t *testing.T, got blogposts.Post, want blogposts.Post) {
@@ -490,9 +490,9 @@ func assertPost(t *testing.T, got blogposts.Post, want blogposts.Post) {
 assertPost(t, posts[0], blogposts.Post{Title: "Post 1"})
 ```
 
-## Write the test first
+## Schrijf eerst je test
 
-Let's extend our test further to extract the next line from the file, the description. Up until making it pass should now feel comfortable and familiar.
+Laten we onze test verder uitbreiden om de volgende regel uit het bestand te halen, de beschrijving. Totdat de test slaagt, zou het nu comfortabel en vertrouwd moeten aanvoelen.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -508,7 +508,7 @@ Description: Description 2`
 		"hello-world2.md": {Data: []byte(secondBody)},
 	}
 
-	// rest of test code cut for brevity
+	// rest van de testcode ingekort voor overzicht
 	assertPost(t, posts[0], blogposts.Post{
 		Title:       "Post 1",
 		Description: "Description 1",
@@ -517,15 +517,15 @@ Description: Description 2`
 }
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./blogpost_test.go:47:58: unknown field 'Description' in struct literal of type blogposts.Post
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-Add the new field to `Post`.
+Voeg het nieuwe veld toe aan `Post`.
 
 ```go
 type Post struct {
@@ -534,7 +534,7 @@ type Post struct {
 }
 ```
 
-The tests should now compile, and fail.
+De test zou nu moeten werken, en falen.
 
 ```
 === RUN   TestNewBlogPosts
@@ -542,11 +542,11 @@ The tests should now compile, and fail.
         Description: Description 1 Description:}, want {Title:Post 1 Description:Description 1}
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-The standard library has a handy library for helping you scan through data, line by line; [`bufio.Scanner`](https://golang.org/pkg/bufio/#Scanner)
+De standaardbibliotheek heeft een handige functie waarmee je regel voor regel door gegevens kunt scannen; [`bufio.Scanner`](https://golang.org/pkg/bufio/#Scanner)
 
-> Scanner provides a convenient interface for reading data such as a file of newline-delimited lines of text.
+> Scanner biedt een handige interface voor het lezen van gegevens, zoals een bestand met door nieuwe regels gescheiden tekst.
 
 ```go
 func newPost(postFile io.Reader) (Post, error) {
@@ -562,15 +562,15 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-Handily, it also takes an `io.Reader` to read through (thank you again, loose-coupling), we don't need to change our function arguments.
+Het handige is dat je ook een `io.Reader` nodig hebt om alles te lezen (nogmaals bedankt, loose-coupling), dus we hoeven onze functieargumenten niet te wijzigen.
 
-Call `Scan` to read a line, and then extract the data using `Text`.
+Roep `Scan` aan om een ​​regel te lezen en haal vervolgens de gegevens op met behulp van `Text`.
 
-This function could never return an `error`. It would be tempting at this point to remove it from the return type, but we know we'll have to handle invalid file structures later so, we may as well leave it.
+Deze functie kan nooit een `error` retourneren. Het zou verleidelijk zijn om hem op dit punt uit het retourtype te verwijderen, maar we weten dat we later ongeldige bestandsstructuren moeten verwerken, dus we kunnen hem net zo goed laten staan.
 
 ## Refactor
 
-We have repetition around scanning a line and then reading the text. We know we're going to do this operation at least one more time, it's a simple refactor to DRY up so let's start with that.
+We hebben herhaling rond het scannen van een regel en het vervolgens lezen van de tekst. We weten dat we deze bewerking minstens nog één keer gaan uitvoeren, het is een simpele refactoring om door te voeren en aan de DRY-principes te houden, dus laten we daarmee beginnen.
 
 ```go
 func newPost(postFile io.Reader) (Post, error) {
@@ -588,9 +588,9 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-This has barely saved any lines of code, but that's rarely the point of refactoring. What I'm trying to do here is just separating the _what_ from the _how_ of reading lines to make the code a little more declarative to the reader.
+Dit heeft nauwelijks regels code bespaard, maar dat is zelden de bedoeling van refactoring. Wat ik hier probeer te doen, is het _wat_ van het _hoe_ van het lezen scheiden om de code wat duidelijker te maken voor de lezer.
 
-Whilst the magic numbers of 7 and 13 get the job done, they're not awfully descriptive.
+De magische getallen 7 en 13 zijn weliswaar voldoende, maar ze zijn niet erg beschrijvend.
 
 ```go
 const (
@@ -613,7 +613,7 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-Now that I'm staring at the code with my creative refactoring mind, I'd like to try making our readLine function take care of removing the tag. There's also a more readable way of trimming a prefix from a string with the function `strings.TrimPrefix`.
+Nu ik met mijn creatieve refactoring-geest naar de code staar, wil ik proberen onze readLine-functie de tag te laten verwijderen. Er is ook een beter leesbare manier om een ​​voorvoegsel van een string te verwijderen met de functie `strings.TrimPrefix`.
 
 ```go
 func newPost(postBody io.Reader) (Post, error) {
@@ -631,11 +631,11 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-You may or may not like this idea, but I do. The point is in the refactoring state we are free to play with the internal details, and you can keep running your tests to check things still behave correctly. We can always go back to previous states if we're not happy. The TDD approach gives us this license to frequently experiment with ideas, so we have more shots at writing great code.
+Misschien vind je dit idee wel of niet leuk, maar ik wel. Het punt is dat we in de refactoring-status vrij zijn om met de interne details te spelen, en je kunt je tests blijven uitvoeren om te controleren of alles nog steeds correct werkt. We kunnen altijd teruggaan naar eerdere statussen als we niet tevreden zijn. De TDD-aanpak geeft ons de vrijheid om regelmatig met ideeën te experimenteren, zodat we meer kansen hebben om geweldige code te schrijven.
 
-The next requirement is extracting the post's tags. If you're following along, I'd recommend trying to implement it yourself before reading on. You should now have a good, iterative rhythm and feel confident to extract the next line and parse out the data.
+De volgende vereiste is het extraheren van de tags van het bericht. Als je meedoet, raad ik je aan om dit zelf te proberen voordat je verder leest. Je zou nu een goed, iteratief ritme moeten hebben en je zelfverzekerd genoeg moeten voelen om de volgende regel te extraheren en de data te parseren.
 
-For brevity, I will not go through the TDD steps, but here's the test with tags added.
+Voor de leesbaarheid, zal ik de TDD-stappen niet doornemen, maar hier is de test met toegevoegde tags.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -657,7 +657,7 @@ Tags: rust, borrow-checker`
 }
 ```
 
-You're only cheating yourself if you just copy and paste what I write. To make sure we're all on the same page, here's my code which includes extracting the tags.
+Je houdt jezelf alleen maar voor de gek als je gewoon kopieert en plakt wat ik schrijf. Om er zeker van te zijn dat we allemaal op dezelfde pagina zitten, is hier mijn code, inclusief het extraheren van de tags.
 
 ```go
 const (
@@ -682,11 +682,11 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-Hopefully no surprises here. We were able to re-use `readMetaLine` to get the next line for the tags and then split them up using `strings.Split`.
+Hopelijk geen verrassingen hier. We konden `readMetaLine` hergebruiken om de volgende regel voor de tags te krijgen en deze vervolgens opsplitsen met `strings.Split`.
 
-The last iteration on our happy path is to extract the body.
+De laatste stap op ons happy path is het extraheren van de inhoud.
 
-Here's a reminder of the proposed file format.
+Hierbij een herinnering aan het voorgestelde bestandsformaat.
 
 ```markdown
 Title: Hello, TDD world!
@@ -698,11 +698,11 @@ Hello world!
 The body of posts starts after the `---`
 ```
 
-We've read the first 3 lines already. We then need to read one more line, discard it and then the remainder of the file contains the post's body.
+We hebben de eerste drie regels al gelezen. Vervolgens moeten we nog één regel lezen, deze weglaten en dan bevat de rest van het bestand de tekst van het bericht.
 
-## Write the test first
+## Schrijf eerst je test
 
-Change the test data to have the separator, and a body with a few newlines to check we grab all the content.
+Wijzig de testgegevens zodat ze een scheidingsteken bevatten en een hoofdtekst met een paar nieuwe regels om te controleren of alle inhoud is vastgelegd.
 
 ```go
 	const (
@@ -722,7 +722,7 @@ M`
 	)
 ```
 
-Add to our assertion like the others
+Voeg toe aan onze bewering zoals de anderen
 
 ```go
 	assertPost(t, posts[0], blogposts.Post{
@@ -734,17 +734,17 @@ World`,
 	})
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./blogpost_test.go:60:3: unknown field 'Body' in struct literal of type blogposts.Post
 ```
 
-As we'd expect.
+Zoals we al verwachtte
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-Add `Body` to `Post` and the test should fail.
+Voeg `Body` toe aan `Post` en de test zou nu moeten falen.
 
 ```
 === RUN   TestNewBlogPosts
@@ -752,10 +752,10 @@ Add `Body` to `Post` and the test should fail.
         World}
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-1. Scan the next line to ignore the `---` separator.
-2. Keep scanning until there's nothing left to scan.
+1. Scan de volgende regel om het `---` scheidingsteken te negeren.
+2. Blijf scannen tot er niets meer is om te scannen.
 
 ```go
 func newPost(postBody io.Reader) (Post, error) {
@@ -787,13 +787,13 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-* `scanner.Scan()` returns a `bool` which indicates whether there's more data to scan, so we can use that with a `for` loop to keep reading through the data until the end.
-* After every `Scan()` we write the data into the buffer using `fmt.Fprintln`. We use the version that adds a newline because the scanner removes the newlines from each line, but we need to maintain them.
-* Because of the above, we need to trim the final newline, so we don't have a trailing one.
+* `scanner.Scan()` retourneert een `bool` die aangeeft of er nog meer gegevens zijn om te scannen, zodat we dit kunnen gebruiken met een `for`-lus om de gegevens tot het einde te blijven lezen.
+* Na elke `Scan()` schrijven we de gegevens naar de buffer met behulp van `fmt.Fprintln`. We gebruiken de versie die een nieuwe regel toevoegt, omdat de scanner de nieuwe regels uit elke regel verwijdert, maar we moeten ze behouden.
+* Om bovenstaande redenen moeten we de laatste nieuwe regel afkappen, zodat er geen nieuwe regel achteraan komt.
 
 ## Refactor
 
-Encapsulating the idea of getting the rest of the data into a function will help future readers quickly understand _what_ is happening in `newPost`, without having to concern themselves with implementation specifics.
+Door het idee om de rest van de gegevens in een functie te verwerken, begrijpen toekomstige lezers snel _wat_ er in `newPost` gebeurt, zonder dat ze zich druk hoeven te maken over de implementatiedetails.
 
 ```go
 func newPost(postBody io.Reader) (Post, error) {
@@ -822,28 +822,28 @@ func readBody(scanner *bufio.Scanner) string {
 }
 ```
 
-## Iterating further
+## Verder itereren
 
-We've made our "steel thread" of functionality, taking the shortest route to get to our happy path, but clearly there's some distance to go before it is production ready.
+We hebben onze 'rode draad' van functionaliteit gemaakt en nemen de kortste route om ons happy path te bereiken. Maar er moet uiteraard nog een lange weg worden afgelegd voordat dit pakket klaar is voor productie.
 
-We haven't handled:
+We hebben geen rekening gehouden met:
 
-* when the file's format is not correct
-* the file is not a `.md`
-* what if the order of the metadata fields is different? Should that be allowed? Should we be able to handle it?
+* wanneer de bestandsindeling niet correct is
+* het bestand geen `.md` bestand is
+* wat als de volgorde van de metadata velden anders is? Moet dat toegestaan ​​zijn? Moeten we ermee kunnen omgaan?
 
-Crucially though, we have working software, and we have defined our interface. The above are just further iterations, more tests to write and drive our behaviour. To support any of the above we shouldn't have to change our _design_, just implementation details.
+Cruciaal is echter dat we werkende software hebben en onze interface hebben gedefinieerd. Bovenstaande zijn slechts verdere iteraties, meer tests om te schrijven en het gedrag van de software te sturen. Om bovenstaande te ondersteunen, hoeven we ons ontwerp niet aan te passen, alleen de implementatiedetails.
 
-Keeping focused on the goal means we made the important decisions, and validated them against the desired behaviour, rather than getting bogged down on matters that won't affect the overall design.
+Door ons te blijven richten op het doel, nemen we de belangrijke beslissingen en toetsen we deze aan het gewenste gedrag. We raken niet te veel bezig met zaken die het algehele ontwerp niet beïnvloeden.
 
-## Wrapping up
+## Samenvattend
 
-`fs.FS`, and the other changes in Go 1.16 give us some elegant ways of reading data from file systems and testing them simply.
+`fs.FS` en de andere wijzigingen in Go 1.16 bieden ons een aantal elegante manieren om gegevens uit bestandssystemen te lezen en deze eenvoudig te testen.
 
-If you wish to try out the code "for real":
+Als je de code "echt" wilt uitproberen:
 
-* Create a `cmd` folder within the project, add a `main.go` file
-* Add the following code
+* Maak een `cmd`-map binnen het project en voeg een `main.go`-bestand toe
+* Voer daar de onderstaande code in
 
 ```go
 import (
@@ -861,35 +861,35 @@ func main() {
 }
 ```
 
-* Add some markdown files into a `posts` folder and run the program!
+* Voeg een aantal markdown-bestanden toe aan een `posts`-map en voer het programma uit!
 
-Notice the symmetry between the production code
+Let op de gelijkenis tussen de productiecode
 
 ```go
 posts, err := blogposts.NewPostsFromFS(os.DirFS("posts"))
 ```
 
-And the tests
+En de tests
 
 ```go
 posts, err := blogposts.NewPostsFromFS(fs)
 ```
 
-This is when consumer-driven, top-down TDD _feels correct_.
+Dan _voelt_ consument gestuurde, top-down TDD als de juiste keuze.
 
-A user of our package can look at our tests and quickly get up to speed with what it's supposed to do and how to use it. As maintainers, we can be _confident our tests are useful because they're from a consumer's point of view_. We're not testing implementation details or other incidental details, so we can be reasonably confident that our tests will help us, rather than hinder us when refactoring.
+Een gebruiker van ons pakket kan onze tests bekijken en snel op de hoogte raken van wat het moet doen en hoe het te gebruiken. Als beheerders kunnen we erop _vertrouwen dat onze tests nuttig zijn_, omdat ze vanuit het perspectief van de gebruiker zijn geschreven. We testen geen implementatiedetails of andere bijkomstige details, dus we kunnen er redelijk zeker van zijn dat onze tests ons zullen helpen in plaats van hinderen bij het refactoren.
 
-By relying on good software engineering practices like [**dependency injection**](dependency-injection.md) our code is simple to test and re-use.
+Door gebruik te maken van goede software engineering-praktijken, zoals [**dependency injection**](dependency-injection.md), is onze code eenvoudig te testen en hergebruiken.
 
-When you're creating packages, even if they're only internal to your project, prefer a top-down consumer driven approach. This will stop you over-imagining designs and making abstractions you may not even need and will help ensure the tests you write are useful.
+Geef bij het maken van pakketten, zelfs als ze alleen intern voor je project zijn, de voorkeur aan een top-down, consumentgerichte aanpak. Dit voorkomt dat je te veel nadenkt over ontwerpen en abstracties maakt die je misschien niet eens nodig hebt, en zorgt ervoor dat de tests die je schrijft nuttig zijn.
 
-The iterative approach kept every step small, and the continuous feedback helped us uncover unclear requirements possibly sooner than with other, more ad-hoc approaches.
+Dankzij de iteratieve aanpak bleef elke stap klein en de voortdurende feedback zorgde ervoor dat we onduidelijke vereisten mogelijk eerder ontdekten dan met andere, meer ad-hocbenaderingen.
 
-### Writing?
+### Schrijven?
 
-It's important to note that these new features only have operations for _reading_ files. If your work needs to do writing, you'll need to look elsewhere. Remember to keep thinking about what the standard library offers currently, if you're writing data you should probably look into leveraging existing interfaces such as `io.Writer` to keep your code loosely-coupled and re-usable.
+Het is belangrijk om te weten dat deze nieuwe functies alleen bewerkingen voor het lezen van bestanden bevatten. Als je werk schrijfwerk vereist, zul je elders moeten zoeken. Houd er rekening mee dat je moet blijven nadenken over wat de standaardbibliotheek momenteel biedt. Als je data schrijft, kun je waarschijnlijk beter gebruikmaken van bestaande interfaces zoals `io.Writer` om je code los gekoppeld en herbruikbaar te houden.
 
-### Further reading
+### Verder lezen
 
-* This was a light intro to `io/fs`. [Ben Congdon has done an excellent write-up](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which was a lot of help for writing this chapter.
-* [Discussion on the file system interfaces](https://github.com/golang/go/issues/41190)
+* Dit was een lichte introductie tot `io/fs`. [Ben Congdon heeft een uitstekende tekst geschreven](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) dat erg behulpzaam was bij het schrijven van dit hoofdstuk.
+* [Discussie over de bestandssysteem interfaces](https://github.com/golang/go/issues/41190)
