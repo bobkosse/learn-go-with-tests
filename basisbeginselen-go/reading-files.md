@@ -1,4 +1,4 @@
-# Reading files
+# Bestanden lezen
 
 * [**Je kunt hier alle code van dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/reading-files)
 * [Hier is een video waarin ik (Chris James) het probleem aanpak en vragen beantwoord uit de Twitch-stream](https://www.youtube.com/watch?v=nXts4dEJnkU)
@@ -93,11 +93,11 @@ var posts []blogposts.Post
 posts = blogposts.NewPostsFromFS(someFS)
 ```
 
-## Write the test first
+## Schrijf eerst je test
 
-We should keep scope as small and useful as possible. If we prove that we can read all the files in a directory, that will be a good start. This will give us confidence in the software we're writing. We can check that the count of `[]Post` returned is the same as the number of files in our fake file system.
+We moeten de scope zo klein en bruikbaar mogelijk houden. Als we bewijzen dat we alle bestanden in een directory kunnen lezen, is dat een goed begin. Dit geeft ons vertrouwen in de software die we schrijven. We kunnen controleren of het aantal geretourneerde `[]Post`-bestanden gelijk is aan het aantal bestanden in ons nepbestandssysteem.
 
-Create a new project to work through this chapter.
+Omdat dit project wat serieuzer wordt, gaan we dit als een nieuw project aanpakken.&#x20;
 
 * `mkdir blogposts`
 * `cd blogposts`
@@ -127,25 +127,25 @@ func TestNewBlogPosts(t *testing.T) {
 
 ```
 
-Notice that the package of our test is `blogposts_test`. Remember, when TDD is practiced well we take a _consumer-driven_ approach: we don't want to test internal details because _consumers_ don't care about them. By appending `_test` to our intended package name, we only access exported members from our package - just like a real user of our package.
+Merk op dat het pakket van onze test `blogposts_test` is. Onthoud dat wanneer TDD goed wordt toegepast, we een consumentgerichte aanpak hanteren: we willen geen interne details testen, omdat consumenten daar niets om geven. Door `_test` toe te voegen aan de beoogde pakketnaam, hebben we alleen toegang tot geëxporteerde onderdelen van ons pakket - net als een echte gebruiker van ons pakket.
 
-We've imported [`testing/fstest`](https://golang.org/pkg/testing/fstest/) which gives us access to the [`fstest.MapFS`](https://golang.org/pkg/testing/fstest/#MapFS) type. Our fake file system will pass `fstest.MapFS` to our package.
+We hebben [`testing/fstest`](https://golang.org/pkg/testing/fstest/) geïmporteerd, wat ons toegang geeft tot het [`fstest.MapFS`](https://golang.org/pkg/testing/fstest/#MapFS)-type. Ons nep-bestandssysteem zal `fstest.MapFS` aan ons pakket doorgeven.
 
-> A MapFS is a simple in-memory file system for use in tests, represented as a map from path names (arguments to Open) to information about the files or directories they represent.
+> Een MapFS is een eenvoudig in-memory bestandssysteem voor gebruik in tests. Het wordt weergegeven als een map van padnamen (argumenten voor Open) naar informatie over de bestanden of mappen die ze vertegenwoordigen.
 
-This feels simpler than maintaining a folder of test files, and it will execute quicker.
+Dit voelt eenvoudiger dan het bijhouden van een map met testbestanden en de test wordt sneller uitgevoerd.
 
-Finally, we codified the usage of our API from a consumer's point of view, then checked if it creates the correct number of posts.
+Ten slotte hebben we het gebruik van onze API vanuit het oogpunt van de consument vastgelegd en gecontroleerd of het het juiste aantal berichten genereert.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./blogpost_test.go:15:12: undefined: blogposts
 ```
 
-## Write the minimal amount of code for the test to run and _check the failing test output_
+## Schrijf de minimale hoeveelheid code om de test uit te voeren met een _falend test resultaat_
 
-The package doesn't exist. Create a new file `blogposts.go` and put `package blogposts` inside it. You'll need to then import that package into your tests. For me, the imports now look like:
+Het pakket bestaat niet. Maak een nieuw bestand `blogposts.go` aan en plaats het `package blogposts` in je testbestand. Je moet dat pakket vervolgens importeren in je tests. Voor mij zien de imports er nu zo uit (let op de github naamgeving):
 
 ```go
 import (
@@ -155,13 +155,13 @@ import (
 )
 ```
 
-Now the tests won't compile because our new package does not have a `NewPostsFromFS` function, that returns some kind of collection.
+De tests zullen nu weer niet worden gecompileerd, omdat ons nieuwe pakket geen `NewPostsFromFS`-functie heeft die een soort verzameling retourneert.
 
 ```
 ./blogpost_test.go:16:12: undefined: blogposts.NewPostsFromFS
 ```
 
-This forces us to make the skeleton of our function to make the test run. Remember not to overthink the code at this point; we're only trying to get a running test, and to make sure it fails as we'd expect. If we skip this step we may skip over assumptions and, write a test which is not useful.
+Dit dwingt ons om het skelet van onze functie te maken om de test uit te voeren. Denk er op dit punt niet te veel over na; we proberen alleen een test uit te voeren en ervoor te zorgen dat deze faalt zoals verwacht. Als we deze stap overslaan, doen we mogelijk aannames over de oplossing en schrijven we een test die niet nuttig is.
 
 ```go
 package blogposts
@@ -176,16 +176,16 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 }
 ```
 
-The test should now correctly fail
+De test zal nu correct falen:
 
 ```
 === RUN   TestNewBlogPosts
     blogposts_test.go:48: got 0 posts, wanted 2 posts
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-We _could_ ["slime"](https://deniseyu.github.io/leveling-up-tdd/) this to make it pass:
+We zouden dit kunnen '[slijmen](https://deniseyu.github.io/leveling-up-tdd/)' om het te laten slagen:
 
 ```go
 func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
@@ -193,13 +193,13 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 }
 ```
 
-But, as Denise Yu wrote:
+Maar, zoals Denise Yu schreef:
 
-> Sliming is useful for giving a “skeleton” to your object. Designing an interface and executing logic are two concerns, and sliming tests strategically lets you focus on one at a time.
+> Sliming is handig om je object een 'skelet' te geven. Het ontwerpen van een interface en het uitvoeren van logica zijn twee aspecten, en door sliming-tests strategisch te maken, kun je je op één aspect tegelijk concentreren.
 
-We already have our structure. So, what do we do instead?
+We hebben onze structuur al. Wat doen we dan in plaats daarvan?
 
-As we've cut scope, all we need to do is read the directory and create a post for each file we encounter. We don't have to worry about opening files and parsing them just yet.
+Omdat we de scope hebben beperkt, hoeven we alleen nog maar de directory te lezen en een bericht te maken voor elk bestand dat we tegenkomen. We hoeven ons nog geen zorgen te maken over het openen en parsen van bestanden.
 
 ```go
 func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
@@ -212,15 +212,15 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 }
 ```
 
-[`fs.ReadDir`](https://golang.org/pkg/io/fs/#ReadDir) reads a directory inside a given `fs.FS` returning [`[]DirEntry`](https://golang.org/pkg/io/fs/#DirEntry).
+[`fs.ReadDir`](https://golang.org/pkg/io/fs/#ReadDir) leest een directory in een gegeven `fs.FS` en retourneert [`[]DirEntry`](https://app.gitbook.com/u/0vinjXPm7bXI716vVEHCE1JF7q02).
 
-Already our idealised view of the world has been foiled because errors can happen, but remember now our focus is _making the test pass_, not changing design, so we'll ignore the error for now.
+Ons ideale wereldbeeld is al in duigen gevallen, omdat er fouten kunnen ontstaan die we hier niet afvangen. Maar bedenk dat we ons nu vooral richten op _het laten slagen van de test_, niet op het veranderen van het ontwerp. Daarom negeren we de fout voor nu.
 
-The rest of the code is straightforward: iterate over the entries, create a `Post` for each one and, return the slice.
+De rest van de code is eenvoudig: herhaal de stappen over de items, maak een `Post` voor elk item en retourneer de slice.
 
 ## Refactor
 
-Even though our tests are passing, we can't use our new package outside of this context, because it is coupled to a concrete implementation `fstest.MapFS`. But, it doesn't have to be. Change the argument to our `NewPostsFromFS` function to accept the interface from the standard library.
+Hoewel onze tests succesvol zijn, kunnen we ons nieuwe pakket niet buiten deze context gebruiken, omdat het gekoppeld is aan een concrete implementatie `fstest.MapFS`. Maar dat hoeft niet. Wijzig het argument in onze functie `NewPostsFromFS` om de interface van de standaardbibliotheek te accepteren.
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) []Post {
@@ -233,11 +233,11 @@ func NewPostsFromFS(fileSystem fs.FS) []Post {
 }
 ```
 
-Re-run the tests: everything should be working.
+Voer de tests opnieuw uit: alles zou moeten werken.
 
-### Error handling
+### Fout afhandeling
 
-We parked error handling earlier when we focused on making the happy-path work. Before continuing to iterate on the functionality, we should acknowledge that errors can happen when working with files. Beyond reading the directory, we can run into problems when we open individual files. Let's change our API (via our tests first, naturally) so that it can return an `error`.
+We hebben de foutafhandeling eerder geparkeerd toen we ons concentreerden op het werkend maken van het happy-path. Voordat we verder gaan met itereren op de functionaliteit, moeten we erkennen dat er fouten kunnen optreden bij het werken met bestanden. Naast het lezen van de directory kunnen we ook problemen tegenkomen bij het openen van individuele bestanden. Laten we onze API aanpassen (eerst via onze tests, uiteraard) zodat deze een `error` kan retourneren.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -258,7 +258,7 @@ func TestNewBlogPosts(t *testing.T) {
 }
 ```
 
-Run the test: it should complain about the wrong number of return values. Fixing the code is straightforward.
+Voer de test uit: er zou een foutmelding moeten verschijnen over het verkeerde aantal retourwaarden. Het is eenvoudig om de code te repareren.
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
@@ -274,7 +274,7 @@ func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
 }
 ```
 
-This will make the test pass. The TDD practitioner in you might be annoyed we didn't see a failing test before writing the code to propagate the error from `fs.ReadDir`. To do this "properly", we'd need a new test where we inject a failing `fs.FS` test-double to make `fs.ReadDir` return an `error`.
+Dit zorgt ervoor dat de test slaagt. De TDD-beoefenaar in jou zal zich misschien irriteren aan het feit dat we geen falende test zagen voordat we de code schreven om de fout vanuit `fs.ReadDir` uit te dragen. Om dit "correct" te doen, hebben we een nieuwe test nodig waarbij we een falende `fs.FS` test-dubbel injecteren om `fs.ReadDir` een `error` te laten retourneren.
 
 ```go
 type StubFailingFS struct {
@@ -290,17 +290,17 @@ func (s StubFailingFS) Open(name string) (fs.File, error) {
 _, err := blogposts.NewPostsFromFS(StubFailingFS{})
 ```
 
-This should give you confidence in our approach. The interface we're using has one method, which makes creating test-doubles to test different scenarios trivial.
+Dit zou vertrouwen moeten geven in onze aanpak. De interface die we gebruiken heeft één methode, waardoor het maken van test-dubbels om verschillende scenario's te testen eenvoudig is.
 
-In some cases, testing error handling is the pragmatic thing to do but, in our case, we're not doing anything _interesting_ with the error, we're just propagating it, so it's not worth the hassle of writing a new test.
+In sommige gevallen is het testen van foutbehandeling de meest praktische oplossing, maar in ons geval doen we niets _interessants_ met de fout; we propageren hem alleen maar. Het is dus niet de moeite waard om een ​​nieuwe test te schrijven.
 
-Logically, our next iterations will be around expanding our `Post` type so that it has some useful data.
+Logischerwijs zullen we in de volgende stappen ons `Post` type uitbreiden, zodat het bruikbare gegevens bevat.
 
-## Write the test first
+## Schrijf eerst je test
 
-We'll start with the first line in the proposed blog post schema, the title field.
+We beginnen met de eerste regel in het voorgestelde blogpostschema: het titelveld.
 
-We need to change the contents of the test files so they match what was specified, and then we can make an assertion that it is parsed correctly.
+We moeten de inhoud van de testbestanden aanpassen, zodat deze overeenkomt met wat is opgegeven. Pas dan kunnen we vaststellen dat de bestanden correct zijn geparseerd.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -309,7 +309,7 @@ func TestNewBlogPosts(t *testing.T) {
 		"hello-world2.md": {Data: []byte("Title: Post 2")},
 	}
 
-	// rest of test code cut for brevity
+	// rest van de testcode ingekort voor de overzicht
 	got := posts[0]
 	want := blogposts.Post{Title: "Post 1"}
 
@@ -319,15 +319,15 @@ func TestNewBlogPosts(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./blogpost_test.go:58:26: unknown field 'Title' in struct literal of type blogposts.Post
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-Add the new field to our `Post` type so that the test will run
+Voeg het nieuwe veld toe aan ons `Post`-type, zodat de test kan worden uitgevoerd
 
 ```go
 type Post struct {
@@ -335,7 +335,7 @@ type Post struct {
 }
 ```
 
-Re-run the test, and you should get a clear, failing test
+Voer de test opnieuw uit en je zou een duidelijke, falende test moeten krijgen
 
 ```
 === RUN   TestNewBlogPosts
