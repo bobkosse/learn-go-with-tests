@@ -343,9 +343,9 @@ Voer de test opnieuw uit en je zou een duidelijke, falende test moeten krijgen
     blogpost_test.go:61: got {Title:}, want {Title:Post 1}
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-We'll need to open each file and then extract the title
+We moeten elk bestand openen en vervolgens de titel eruit halen
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
