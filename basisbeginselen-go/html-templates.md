@@ -1,26 +1,26 @@
-# Templating
+# Templates
 
-[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/blogrenderer)
+[**Je kunt hier alle code van dit hoofdstuk vinden**](https://github.com/quii/learn-go-with-tests/tree/main/blogrenderer)
 
-We live in a world where everyone wants to build web applications with the latest flavour of the month frontend framework built upon gigabytes of transpiled JavaScript, working with a Byzantine build system; [but maybe that's not always necessary](https://quii.dev/The_Web_I_Want).
+We leven in een wereld waarin iedereen webapplicaties wil bouwen met het nieuwste frontend-framework, gebouwd op gigabytes aan getranspileerde JavaScript, werkend met een Byzantijns bouwsysteem; [maar misschien is dat niet altijd nodig](https://quii.dev/The_Web_I_Want).
 
-I'd say most Go developers value a simple, stable & fast toolchain but the frontend world frequently fails to deliver on this front.
+Ik denk dat de meeste Go-ontwikkelaars waarde hechten aan een eenvoudige, stabiele en snelle toolchain, maar de frontend-wereld schiet hier vaak tekort.
 
-Many websites do not need to be an [SPA](https://en.wikipedia.org/wiki/Single-page_application). **HTML and CSS are fantastic ways of delivering content** and you can use Go to make a website to deliver HTML.
+Veel websites hebben helemaal geen [SPA](https://en.wikipedia.org/wiki/Single-page_application) oplossing nodig. **HTML en CSS zijn fantastische manieren om content te leveren** en je kunt Go gebruiken om een website te bouwen die content in HTML levert.
 
-If you wish to still have some dynamic elements, you can still sprinkle in some client side JavaScript, or you may even want to try experimenting with [Hotwire](https://hotwired.dev) which allows you to deliver a dynamic experience with a server-side approach.
+Als je toch nog dynamische elementen wilt hebben, kun je er nog wat client-side JavaScript aan toevoegen. Je kunt ook experimenteren met [Hotwire](https://hotwired.dev), waarmee je een dynamische ervaring kunt bieden met een server-side benadering.
 
-You can generate your HTML in Go with elaborate usage of [`fmt.Fprintf`](https://pkg.go.dev/fmt#Fprintf), but in this chapter you'll learn that Go's standard library has some tools to generate HTML in a simpler and more maintainable way. You'll also learn more effective ways of testing this kind of code that you may not have run in to before.
+Je kunt je HTML in Go genereren met behulp van [`fmt.Fprintf`](https://pkg.go.dev/fmt#Fprintf), maar in dit hoofdstuk leer je dat de standaardbibliotheek van Go een aantal tools bevat om HTML op een eenvoudigere en beter te onderhouden manier te genereren. Je leert ook effectievere manieren om dit soort code te testen, die je misschien nog niet eerder bent tegengekomen.
 
-## What we're going to build
+## Wat we gaan bouwen
 
-In the [Reading Files](reading-files.md) chapter we wrote some code that would take an [`fs.FS`](https://pkg.go.dev/io/fs) (a file-system), and return a slice of `Post` for each markdown file it encountered.
+In het hoofdstuk [Bestanden lezen](reading-files.md) hebben we code geschreven die [`fs.FS`](https://pkg.go.dev/io/fs) (een bestandssysteem) gebruikt en een deel van `Post` retourneert voor elk markdown-bestand dat het tegenkomt.
 
 ```go
 posts, err := blogposts.NewPostsFromFS(os.DirFS("posts"))
 ```
 
-Here is how we defined `Post`
+Hier is hoe we `Post` definiëren
 
 ```go
 type Post struct {
@@ -29,7 +29,7 @@ type Post struct {
 }
 ```
 
-Here's an example of one of the markdown files that can be parsed.
+Hier is een voorbeeld van een van de markdown-bestanden die verwerkt kunnen worden.
 
 ```markdown
 Title: Welcome to my blog
@@ -40,32 +40,32 @@ Tags: cooking, family, live-laugh-love
 Welcome to my **amazing recipe blog**. I am going to write about my family recipes, and make sure I write a long, irrelevant and boring story about my family before you get to the actual instructions.
 ```
 
-If we continue our journey of writing blog software, we'd take this data and generate HTML from it for our web server to return in response to HTTP requests.
+Nu we onze blogsoftware verder ontwikkelen, gaan we deze data gebruiken om HTML te genereren die onze webserver kan retourneren als reactie op HTTP-verzoeken.
 
-For our blog, we want to generate two kinds of page:
+Voor onze blog willen we twee soorten pagina's genereren:
 
-1. **View post**. Renders a specific post. The `Body` field in `Post` is a string containing markdown so that should be converted to HTML.
-2. **Index**. Lists all of the posts, with hyperlinks to view the specific post.
+1. **View post**. Geeft een specifiek bericht weer. Het `Body`-veld in `Post` is een tekenreeks met markdown, dus die moet worden omgezet naar HTML.
+2. **Index**. Geeft een overzicht van alle berichten, met hyperlinks om het specifieke bericht te bekijken.
 
-We'll also want a consistent look and feel across our site, so for each page we'll have the usual HTML furniture like `<html>` and a `<head>` containing links to CSS stylesheets and whatever else we may want.
+We willen ook een consistente uitstraling op onze hele site. Daarom gebruiken we voor elke pagina de gebruikelijke HTML-elementen, zoals `<html>` en een `<head>` met links naar CSS-stijlblad en alles wat we verder nog nodig hebben.
 
-When you're building blog software you have a few options in terms of approach of how you build and send HTML to the user's browser.
+Wanneer je blogsoftware bouwt, heb je verschillende opties wat betreft de manier waarop je HTML opbouwt en naar de browser van de gebruiker verzendt.
 
-We'll design our code so it accepts an `io.Writer`. This means the caller of our code has the flexibility to:
+We ontwerpen onze code zo dat deze een `io.Writer` accepteert. Dit betekent dat de aanroeper van onze code de flexibiliteit heeft om:
 
-* Write them to an [os.File](https://pkg.go.dev/os#File) , so they can be statically served
-* Write out the HTML directly to a [`http.ResponseWriter`](https://pkg.go.dev/net/http#ResponseWriter)
-* Or just write them to anything really! So long as it implements `io.Writer` the user can generate some HTML from a `Post`
+* output naar een [os.File](https://pkg.go.dev/os#File) te schrijven, zodat deze statisch kunnen worden weergegeven.
+* De HTML rechtstreeks naar een [`http.ResponseWriter`](https://pkg.go.dev/net/http#ResponseWriter) te schrijven
+* Gewoon naar iets anders weg te schrijven! Zolang het `io.Writer` implementeert, kan de aanroeper HTML genereren uit een `Post`
 
-## Write the test first
+## Schrijf eerst je test
 
-As always, it's important to think about requirements before diving in too fast. How can we take this large-ish set of requirements and break it down in to a small, achievable step that we can focus on?
+Zoals altijd is het belangrijk om na te denken over de vereisten voordat je  te snel in de oplossing duikt. Hoe kunnen we deze vrij grote set vereisten opsplitsen in een kleine, haalbare stap waar we ons eerst op kunnen richten?
 
-In my view, actually viewing content is higher priority than an index page. We could launch this product and share direct links to our wonderful content. An index page which can't link to the actual content isn't useful.
+Naar mijn mening heeft het daadwerkelijk bekijken van content een hogere prioriteit dan een indexpagina. We zouden dit product kunnen lanceren en directe links naar onze fantastische content kunnen delen. Een indexpagina die niet naar de daadwerkelijke content kan linken, is niet nuttig.
 
-Still, rendering a post as described earlier still feels big. All the HTML furniture, converting the body markdown into HTML, listing tags, e.t.c.
+Toch voelt het renderen van een bericht zoals eerder beschreven nog steeds groot aan. Al het HTML-materiaal, het omzetten van de body-markdown naar HTML, het weergeven van tags, enzovoort.
 
-At this stage I'm not overly concerned with the specific markup, and an easy first step would be just to check we can render the post's title as an `<h1>`. This _feels_ like the smallest first step that can move us forward a bit.
+Op dit moment maak ik me niet al te druk om de specifieke markup, en een eenvoudige eerste stap zou zijn om te controleren of we de titel van het bericht als een `<h1>` kunnen weergeven. Dit _voelt_ als die kleinste eerste stap die ons een stap verder kan brengen.
 
 ```go
 package blogrenderer_test
@@ -103,17 +103,17 @@ func TestRender(t *testing.T) {
 }
 ```
 
-Our decision to accept an `io.Writer` also makes testing simple, in this case we're writing to a [`bytes.Buffer`](https://pkg.go.dev/bytes#Buffer) which we can then later inspect the contents.
+Doordat we ervoor hebben gekozen om een ​​`io.Writer` te gebruiken, wordt testen ook eenvoudiger. In dit geval schrijven we naar een [`bytes.Buffer`](https://pkg.go.dev/bytes#Buffer) waarvan we de inhoud later kunnen bekijken.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
-If you've read the previous chapters of this book you should be well-practiced at this now. You won't be able to run the test because we don't have the package defined or the `Render` function. Try and follow the compiler messages yourself and get to a state where you can run the test and see that it fails with a clear message.
+Als je de voorgaande hoofdstukken van dit boek hebt gelezen, zou je hier nu goed in geoefend moeten zijn. Je zult de test niet kunnen uitvoeren omdat we het pakket of de `Render`-functie niet hebben gedefinieerd. Probeer zelf de compilermeldingen te volgen en bereik een staat waarin je de test kunt uitvoeren en ziet dat deze faalt met een duidelijke melding.
 
-It's really important that you exercise your tests failing, you'll thank yourself when you accidentally make a test fail 6 months later that you put in the effort _now_ to check it fails with a clear message.
+Het is erg belangrijk dat je je tests oefent met falen. Je zult jezelf dankbaar zijn als je 6 maanden later per ongeluk een test laat falen, omdat je _nu_ de moeite hebt genomen om te controleren of deze faalt met een duidelijke melding.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-This is the minimal code to get the test running
+Dit is de minimale code om de test uit te voeren.
 
 ```go
 package blogrenderer
@@ -129,9 +129,9 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-The test should complain that an empty string doesn't equal what we want.
+De test moet aangeven dat een lege string niet gelijk is aan wat we willen.
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -140,17 +140,17 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-Remember, software development is primarily a learning activity. In order to discover and learn as we work, we need to work in a way that gives us frequent, high-quality feedback loops, and the easiest way to do that is work in small steps.
+Vergeet niet dat softwareontwikkeling in de eerste plaats een leeractiviteit is. Om te ontdekken en te leren terwijl we werken, moeten we op een manier werken die ons regelmatige, hoogwaardige feedback oplevert. De makkelijkste manier om dat te doen, is door in kleine stapjes te werken.
 
-So we're not worrying about using any templating libraries right now. You can make HTML just with "normal" string templating just fine, and by skipping the template part we can validate a small bit of useful behaviour and we've done a small bit of design work for our package's API.
+We maken ons dus op dit moment geen zorgen over het gebruik van templatebibliotheken. Je kunt prima HTML genereren met "normale" stringtemplates. Door het templategedeelte over te slaan, kunnen we een klein beetje bruikbaar gedrag valideren en hebben we een klein beetje ontwerpwerk gedaan voor de API van ons pakket.
 
 ## Refactor
 
-Not much to refactor yet, so let's move to the next iteration
+Er valt nog niet veel te refactoren, dus laten we doorgaan naar de volgende iteratie
 
-## Write the test first
+## Schrijf eerst je test
 
-Now we have a very basic version working, we can now iterate on the test to expand on the functionality. In this case, rendering more information from the `Post`.
+Nu we een zeer basale versie hebben die werkt, kunnen we itereren op de test om de functionaliteit uit te breiden. In dit geval door meer informatie uit de `Post` te renderen.
 
 ```go
 	t.Run("it converts a single post into HTML", func(t *testing.T) {
@@ -172,17 +172,17 @@ Tags: <ul><li>go</li><li>tdd</li></ul>`
 	})
 ```
 
-Notice that writing this, _feels_ awkward. Seeing all that markup in the test feels bad, and we haven't even put the body in, or the actual HTML we'd want with all of the `<head>` content and whatever page furniture we need.
+Merk op dat het schrijven hiervan _onhandig_ aanvoelt. Het zien van al die markup in de test voelt niet fijn, en we hebben nog niet eens de body toegevoegd, of de HTML die we nodig hebben met alle `<head>`-content en alle pagina-indelingen die we nodig hebben.
 
-Nonetheless, let's put up with the pain _for now_.
+Laten we de pijn desondanks _voorlopig_ maar accepteren.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
-It should fail, complaining it doesn't have the string we expect, as we're not rendering the description and tags.
+Er zou een foutmelding moeten verschijnen, met de melding dat de string die we verwachten niet aanwezig is. De beschrijving en tags worden namelijk niet weergegeven.
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-Try and do this yourself rather than copying the code. What you should find is that making this test pass _is a bit annoying_! When I tried, my first attempt got this error
+Probeer dit zelf te doen in plaats van de code te kopiëren. Je zult merken dat het _een beetje vervelend_ is om deze test te laten slagen! Toen ik het probeerde, kreeg ik deze foutmelding.
 
 ```
 === RUN   TestRender
@@ -192,7 +192,7 @@ Try and do this yourself rather than copying the code. What you should find is t
         Tags: <ul><li>go</li><li></li></ul>'
 ```
 
-New lines! Who cares? Well, our test does, because it's matching on an exact string value. Should it? I removed the newlines for now just to get the test passing.
+Nieuwe regels! Wat maakt het uit? Nou, onze test wel, omdat hij een exacte stringwaarde vergelijkt. Zou dat moeten? Ik heb de nieuwe regels voorlopig verwijderd, gewoon om de test te laten slagen.
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -222,15 +222,15 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-**Yikes**. Not the nicest code i've written, and we're still only at a very early implementation of our markup. We'll need so much more content and things on our page, we're quickly seeing that this approach is not appropriate.
+**Oei**. Niet de mooiste code die ik ooit geschreven heb, en we zitten nog maar in een heel vroeg stadium van de implementatie van onze markup. We hebben zoveel meer content en dingen op onze pagina nodig, dat we snel inzien dat deze aanpak niet geschikt is.
 
-Crucially though, we have a passing test; we have working software.
+Belangrijk is echter dat we een voldoende hebben gehaald en dat de software werkt.
 
 ## Refactor
 
-With the safety-net of a passing test for working code, we can now think about changing our implementation approach at the refactoring stage.
+Nu we het vangnet hebben van een geslaagde test voor werkende code, kunnen we nadenken over het wijzigen van onze implementatieaanpak in de refactoringfase.
 
-### Introducing templates
+### Introductie tot templates
 
 Go has two templating packages [text/template](https://pkg.go.dev/text/template) and [html/template](https://pkg.go.dev/html/template) and they share the same interface. What they both do is allow you to combine a template and some data to produce a string.
 
