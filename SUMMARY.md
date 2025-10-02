@@ -22,7 +22,7 @@
 * [Inleiding tot property based testen](basisbeginselen-go/roman-numerals.md)
 * [Wiskunde](basisbeginselen-go/math.md)
 * [Bestanden lezen](basisbeginselen-go/reading-files.md)
-* [Templating](basisbeginselen-go/html-templates.md)
+* [Templates](basisbeginselen-go/html-templates.md)
 * [Generics](basisbeginselen-go/generics.md)
 * [Revisiting arrays and slices with generics](basisbeginselen-go/revisiting-arrays-and-slices-with-generics.md)
 
