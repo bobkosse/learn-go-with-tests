@@ -361,15 +361,15 @@ Maar als we dit doen, mislukt onze test. Dit komt doordat onze test een heel spe
 
 Maar eigenlijk maakt witruimte ons niet zoveel uit. Het onderhouden van deze test wordt een nachtmerrie als we de assertion string nauwgezet moeten blijven bijwerken telkens wanneer we kleine wijzigingen in de markup aanbrengen. Naarmate de template groeit, worden dit soort bewerkingen moeilijker te beheren en lopen de kosten ervan uit de hand.
 
-## Introducing Approval Tests
+## Introductie van Approval Tests
 
 [Go Approval Tests](https://github.com/approvals/go-approval-tests)
 
-> ApprovalTests allows for easy testing of larger objects, strings and anything else that can be saved to a file (images, sounds, CSV, etc...)
+> Met ApprovalTests kun je eenvoudig grotere objecten, strings en alles wat in een bestand kan worden opgeslagen (afbeeldingen, geluiden, CSV, enz.) testen.
 
-The idea is similar to "golden" files, or snapshot testing. Rather than awkwardly maintaining strings within a test file, the approval tool can compare the output for you with an "approved" file you created. You then simply copy over the new version if you approve it. Re-run the test and you're back to green.
+Het idee is vergelijkbaar met "gouden" bestanden, of snapshot-testen. In plaats van het onhandig bijhouden van strings in een testbestand, kan de goedkeuringstool de uitvoer voor je vergelijken met een "goedgekeurd" bestand dat je hebt gemaakt. Je kopieert vervolgens eenvoudig de nieuwe versie als je deze goedkeurt. Voer de test opnieuw uit en je bent weer helemaal up-to-date.
 
-Add a dependency to `"github.com/approvals/go-approval-tests"` to your project and edit the test to the following
+Voeg een afhankelijkheid toe met `"github.com/approvals/go-approval-tests"` aan je project en bewerk de test als volgt:
 
 ```go
 func TestRender(t *testing.T) {
@@ -394,7 +394,7 @@ func TestRender(t *testing.T) {
 }
 ```
 
-The first time you run it, it will fail because we haven't approved anything yet
+De eerste keer dat je de test uitvoert, zal deze mislukken omdat we nog niets hebben goedgekeurd
 
 ```
 === RUN   TestRender
@@ -402,16 +402,16 @@ The first time you run it, it will fail because we haven't approved anything yet
     renderer_test.go:29: Failed Approval: received does not match approved.
 ```
 
-It will have created two files, that look like the following
+Er worden twee bestanden aangemaakt die er als volgt uitzien
 
 * `renderer_test.TestRender.it_converts_a_single_post_into_HTML.received.txt`
 * `renderer_test.TestRender.it_converts_a_single_post_into_HTML.approved.txt`
 
-The received file has the new, unapproved version of the output. Copy that into the empty approved file and re-run the test.
+Het ontvangen bestand bevat de nieuwe, niet-goedgekeurde versie van de uitvoer. Kopieer deze naar het lege, goedgekeurde bestand en voer de test opnieuw uit.
 
-By copying the new version you have "approved" the change, and the test now passes.
+Door de nieuwe versie te kopiëren, heb je de wijziging "goedgekeurd" en is de test geslaagd.
 
-To see the workflow in action, edit the template to how we discussed to make it easier to read (but semantically, it's the same).
+Om de workflow in actie te zien, bewerk je de sjabloon zoals we hebben besproken om deze leesbaarder te maken (maar die semantisch gezien hetzelfde is).
 
 ```handlebars
 <h1>{{.Title}}</h1>
@@ -421,41 +421,41 @@ To see the workflow in action, edit the template to how we discussed to make it 
 Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 ```
 
-Re-run the test. A new "received" file will be generated because the output of our code differs to the approved version. Give them a look, and if you're happy with the changes, simply copy over the new version and re-run the test. Be sure to commit the approved files to source control.
+Voer de test opnieuw uit. Er wordt een nieuw "received" bestand gegenereerd omdat de uitvoer van onze code afwijkt van de goedgekeurde versie. Bekijk ze eens en als je tevreden bent met de wijzigingen, kopieer dan de nieuwe versie en voer de test opnieuw uit. Zorg ervoor dat je de goedgekeurde bestanden commit naar de broncode.
 
-This approach makes managing changes to big ugly things like HTML far simpler. You can use a diff tool to view and manage the differences, and it keeps your test code cleaner.
+Deze aanpak maakt het beheren van wijzigingen in grote, lelijke dingen zoals HTML veel eenvoudiger. Je kunt een diff-tool gebruiken om de verschillen te bekijken en te beheren, en het houd je testcode overzichtelijker.
 
-![Use diff tool to manage changes](https://i.imgur.com/0MoNdva.png)
+![Gebruik een diff tool om veranderingen te beheren](https://i.imgur.com/0MoNdva.png)
 
-This is actually a fairly minor usage of approval tests, which are an extremely useful tool in your testing arsenal. [Emily Bache](https://twitter.com/emilybache) has an [interesting video where she uses approval tests to add an incredibly extensive set of tests to a complicated codebase that has zero tests](https://www.youtube.com/watch?v=zyM2Ep28ED8). "Combinatorial Testing" is definitely something worth looking into.
+Dit is eigenlijk een vrij beperkte toepassing van goedkeuringstests, die een uiterst nuttig hulpmiddel zijn in je testarsenaal. [Emily Bache](https://twitter.com/emilybache) heeft een [interessante video waarin ze goedkeuringstests gebruikt om een ​​ongelooflijk uitgebreide set tests toe te voegen aan een complexe codebase die nul tests bevat](https://www.youtube.com/watch?v=zyM2Ep28ED8). "Combinatorial Testing" is zeker de moeite waard om te onderzoeken.
 
-Now that we have made this change, we still benefit from having our code well-tested, but the tests won't get in the way too much when we're tinkering with the markup.
+Nu we deze wijziging hebben doorgevoerd, hebben we nog steeds baat bij goed geteste code, maar de tests zullen niet al te veel in de weg zitten wanneer we aan de markup sleutelen.
 
-### Are we still doing TDD?
+### Doen we eigenlijk nog steeds TDD?
 
-An interesting side-effect of this approach is it takes us away from TDD. Of course you _could_ manually edit the approved files to the state you want, run your tests and then fix the templates so they output what you defined.
+Een interessant neveneffect van deze aanpak is dat het ons afleidt van TDD. Natuurlijk _zou_ je de goedgekeurde bestanden handmatig kunnen bewerken naar de gewenste staat, je tests kunnen uitvoeren en vervolgens de sjablonen kunnen aanpassen zodat ze de resultaten opleveren die je hebt gedefinieerd.
 
-But that's just silly! TDD is a method for doing work, specifically designing; but that doesn't mean we have to dogmatically use it for **everything**.
+Maar dat is gewoon onzin! TDD is een methode om werk te doen, met name ontwerpen; maar dat betekent niet dat we het dogmatisch voor **alles** moeten gebruiken.
 
-The important thing is, we've done the right thing and used TDD as a **design tool** to design our package's API. For templates changes our process can be:
+Het belangrijkste is dat we het juiste hebben gedaan en TDD als een **ontwerptool** hebben gebruikt om de API van ons pakket te ontwerpen. Voor wijzigingen in sjablonen kan ons proces als volgt zijn:
 
-* Make a small change to the template
-* Run the approval test
-* Eyeball the output to check it looks correct
-* Make the approval
-* Repeat
+* Een kleine wijziging in het sjabloon aanbrengen
+* De goedkeuringstest uitvoeren
+* De uitvoer visueel bekijken om te controleren of deze correct is
+* De goedkeuring uitvoeren
+* Herhalen
 
-We still shouldn't give up the value of working in small achievable steps. Try to find ways to make the changes small and keep re-running the tests to get real feedback on what you're doing.
+We moeten de waarde van werken in kleine, haalbare stappen echter niet opgeven. Probeer manieren te vinden om de wijzigingen klein te houden en blijf de tests opnieuw uitvoeren om echte feedback te krijgen op wat je doet.
 
-If we start doing things like changing the code _around_ the templates, then of course that may warrant going back to our TDD method of work.
+Als we bijvoorbeeld de code _rondom_ de sjablonen gaan veranderen, kan dat natuurlijk een reden zijn om terug te gaan naar onze TDD-werkmethode.
 
-## Expand the markup
+## De markup uitbreiden
 
-Most websites have richer HTML than we have right now. For starters, a `html` element, along with a `head`, perhaps some `nav` too. Usually there's an idea of a footer too.
+De meeste websites hebben rijkere HTML dan wij nu hebben. Om te beginnen een `html`-element, samen met een `head`, misschien ook wat `nav`. Meestal is er ook een idee voor een footer.
 
-If our site is going to have different pages, we'd want to define these things in one place to keep our site looking consistent. Go templates support us defining sections which we can then import in to other templates.
+Als onze site verschillende pagina's gaat bevatten, willen we deze zaken op één plek definiëren om ervoor te zorgen dat onze site er consistent uitziet. Go-sjablonen ondersteunen ons bij het definiëren van secties die we vervolgens in andere sjablonen kunnen importeren.
 
-Edit our existing template to import a top and bottom template
+Bewerk onze bestaande sjabloon om een `top` en `bottom` sjabloon te importeren.
 
 ```handlebars
 {{template "top" .}}
@@ -467,7 +467,7 @@ Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 {{template "bottom" .}}
 ```
 
-Then create `top.gohtml` with the following
+Maak vervolgens `top.gohtml` aan met de volgende code
 
 ```handlebars
 {{define "top"}}
@@ -493,7 +493,7 @@ Then create `top.gohtml` with the following
 {{end}}
 ```
 
-And `bottom.gohtml`
+En `bottom.gohtml`
 
 ```handlebars
 {{define "bottom"}}
@@ -509,9 +509,9 @@ And `bottom.gohtml`
 {{end}}
 ```
 
-(Obviously, feel free to put whatever markup you like!)
+(Natuurlijk, voel je vrij om elke gewenste opmaak te gebruiken!)
 
-We now need to specify a specific template to run. In the blog renderer, change the `Execute` command to `ExecuteTemplate`
+We moeten nu een specifieke sjabloon specificeren die moet worden uitgevoerd. Wijzig in de blogrenderer de opdracht `Execute` in `ExecuteTemplate`.
 
 ```go
 if err := templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
@@ -519,11 +519,12 @@ if err := templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
 }
 ```
 
-Re-run your test. A new "received" file should be made and the test will fail. Check it over and if you're happy, approve it by copying it over the old version. Re-run the test again and it should pass.
+Voer je test opnieuw uit. Er moet een nieuw "ontvangen" bestand worden aangemaakt en de test zal mislukken. Controleer het en als je tevreden bent, keur het goed door het over de oude versie heen te kopiëren (en plakken). Voer de test opnieuw uit en deze zou moeten slagen.
 
-## An excuse to mess around with Benchmarking
+## Een excuus om te rommelen met benchmarking
 
-Before pressing on, let's consider what our code does.
+Laten we, voordat we verdergaan, eens kijken wat onze code doet.
+
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -540,12 +541,12 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-* Parse the templates
-* Use the template to render a post to an `io.Writer`
+* De sjablonen parsen
+* Gebruik het sjabloon om een ​​bericht te renderen naar een `io.Writer`
 
-Whilst the performance impact of re-parsing the templates for each post in most cases will be fairly negligible, the effort to _not_ do this is also pretty negligible and should tidy the code up a bit too.
+Hoewel de prestatie-impact van het opnieuw parsen van de sjablonen voor elk bericht in de meeste gevallen vrijwel verwaarloosbaar zal zijn, is de moeite om dit _niet_ te doen ook vrijwel verwaarloosbaar en zou de code ook wat op orde moeten brengen.
 
-To see the impact of not doing this parsing over and over, we can use the benchmarking tool to see how fast our function is.
+Om de impact te zien van het niet steeds opnieuw parsen, kunnen we de benchmarktool gebruiken om te kijken hoe snel onze functie is.
 
 ```go
 func BenchmarkRender(b *testing.B) {
@@ -564,13 +565,13 @@ func BenchmarkRender(b *testing.B) {
 }
 ```
 
-On my computer, here are the results
+Op mijn computer zijn dit de resultaten
 
 ```
 BenchmarkRender-8 22124 53812 ns/op
 ```
 
-To stop us having to re-parse the templates over and over, we'll create a type that'll hold the parsed template, and that'll have a method to do the rendering
+Om te voorkomen dat we de sjablonen steeds opnieuw moeten parsen, maken we een type dat het geparsed sjabloon bevat en dat een methode heeft om de rendering uit te voeren
 
 ```go
 type PostRenderer struct {
@@ -596,7 +597,7 @@ func (r *PostRenderer) Render(w io.Writer, p Post) error {
 }
 ```
 
-This does change the interface of our code, so we'll need to update our test
+Dit verandert de interface van onze code, dus we zullen onze test moeten bijwerken
 
 ```go
 func TestRender(t *testing.T) {
@@ -627,7 +628,7 @@ func TestRender(t *testing.T) {
 }
 ```
 
-And our benchmark
+En onze benchmark
 
 ```go
 func BenchmarkRender(b *testing.B) {
@@ -652,33 +653,33 @@ func BenchmarkRender(b *testing.B) {
 }
 ```
 
-The test should continue to pass. How about our benchmark?
+De test zou moeten slagen. Hoe zit het met onze benchmark?
 
-`BenchmarkRender-8 362124 3131 ns/op`. The old NS per op were `53812 ns/op`, so this is a decent improvement! As we add other methods to render, say an Index page, it should simplify the code as we don't need to duplicate the template parsing.
+`BenchmarkRender-8 362124 3131 ns/op`. De oude NS per op waren `53812 ns/op`, dus dit is een behoorlijke verbetering! Naarmate we andere methoden toevoegen om te renderen, bijvoorbeeld een indexpagina, zou dit de code moeten vereenvoudigen, omdat we de template-parsing niet hoeven te dupliceren.
 
-## Back to the real work
+## Terug naar het echte werk
 
-In terms of rendering posts, the important part left is actually rendering the `Body`. If you recall, that should be markdown that the author has written, so it'll need converting to HTML.
+Wat het renderen van berichten betreft, is het belangrijkste dat overblijft het renderen van de `Body`. Zoals je je herinnert, zou dat markdown moeten zijn die de auteur heeft geschreven, dus die moet naar HTML worden omgezet.
 
-We'll leave this as an exercise for you, the reader. You should be able to find a Go library to do this for you. Use the approval test to validate what you're doing.
+We laten dit als oefening over aan jou, de lezer. Je zou een Go-bibliotheek moeten kunnen vinden die dit voor je kan doen. Gebruik de goedkeuringstest om te valideren wat je doet.
 
-### On testing 3rd-party libraries
+### Over het testen van bibliotheken van derden
 
-**Note**. Be careful not to worry too much about explicitly testing how a 3rd party library behaves in unit tests.
+**Opmerking**. Maak je niet te veel zorgen over het expliciet testen van hoe een externe bibliotheek zich gedraagt ​​in unit tests.
 
-Writing tests against code you don't control is wasteful and adds maintenance overhead. Sometimes you may wish to use [dependency injection](dependency-injection.md) to control a dependency and mock its behaviour for a test.
+Het schrijven van tests tegen code die je niet zelf beheert, is verspilling en verhoogt de onderhoudskosten. Soms kun je [dependency injection](dependency-injection.md) gebruiken om een ​​afhankelijkheid te controleren en het gedrag ervan te simuleren voor een test.
 
-In this case though, I view converting the markdown into HTML as implementation detail of rendering, and our approval tests should give us enough confidence.
+In dit geval beschouw ik het omzetten van de markdown naar HTML echter als een implementatiedetail van de rendering, en onze goedkeuringstests zouden ons voldoende vertrouwen moeten geven.
 
 ### Render index
 
-The next bit of functionality we're going to do is rendering an Index, listing the posts as a HTML ordered list.
+De volgende functionaliteit die we gaan ontwikkelen, is het weergeven van een index, waarbij de berichten worden weergegeven als een geordende HTML-lijst.
 
-We're expanding upon our API, so we'll put our TDD hat back on.
+We breiden onze API uit, dus we zetten onze TDD-hoed weer op.
 
-## Write the test first
+## Schrijf eerst je test
 
-On the face of it an index page seems simple, but writing the test still prompts us to make some design choices
+Op het eerste gezicht lijkt een indexpagina eenvoudig, maar het schrijven van de test zet ons toch aan tot het maken van een aantal ontwerpkeuzes
 
 ```go
 t.Run("it renders an index of posts", func(t *testing.T) {
@@ -698,18 +699,18 @@ t.Run("it renders an index of posts", func(t *testing.T) {
 })
 ```
 
-1. We're using the `Post`'s title field as a part of the path of the URL, but we don't really want spaces in the URL so we're replacing them with hyphens.
-2. We've added a `RenderIndex` method to our `PostRenderer` that again takes an `io.Writer` and a slice of `Post`.
+1. We gebruiken het titelveld van `Post` als onderdeel van het pad van de URL, maar we willen eigenlijk geen spaties in de URL, dus vervangen we ze door koppeltekens.
+2. We hebben een `RenderIndex`-methode toegevoegd aan onze `PostRenderer` die wederom een ​`io.Writer` en een deel van `Post` gebruikt.
 
-If we had stuck with a test-after, approval tests approach here we would not be answering these questions in a controlled environment. **Tests give us space to think**.
+Als we hier een test-after-goedkeuringstestaanpak hadden aangehouden, zouden we deze vragen niet in een gecontroleerde omgeving beantwoorden. **Tests geven ons ruimte om na te denken**.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./renderer_test.go:41:13: undefined: blogrenderer.RenderIndex
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -717,7 +718,7 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-The above should get the following test failure
+Het bovenstaande zou de volgende testfout moeten opleveren
 
 ```
 === RUN   TestRender
@@ -726,9 +727,9 @@ The above should get the following test failure
 --- FAIL: TestRender (0.00s)
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-Even though this _feels_ like it should be easy, it is a bit awkward. I did it in multiple steps
+Hoewel dit _voelt_ alsof het makkelijk zou moeten zijn, is het toch een beetje lastig. Ik heb het in meerdere stappen gedaan.
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -747,9 +748,9 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-I didn't want to bother with separate template files at first, I just wanted to get it working. I view the upfront template parsing and separation as refactoring I can do later.
+Ik wilde in eerste instantie geen gedoe met aparte templatebestanden, ik wilde het gewoon werkend krijgen. Ik zie het parsen en scheiden van templates vooraf als een refactoring die ik later kan doen.
 
-This doesn't pass, but it's close.
+Dit lukt niet, maar het komt in de buurt.
 
 ```
 === RUN   TestRender
@@ -759,11 +760,11 @@ This doesn't pass, but it's close.
     --- FAIL: TestRender/it_renders_an_index_of_posts (0.00s)
 ```
 
-You can see that the templating code is escaping the spaces in the `href` attributes. We need a way to do a string replace of spaces with hyphens. We can't just loop through the `[]Post` and replace them in-memory because we still want the spaces displayed to the user in the anchors.
+Je ziet dat de templatecode de spaties in de `href`-attributen 'escaped'. We hebben een manier nodig om spaties door koppeltekens te vervangen. We kunnen niet zomaar door de `[]Post` heen loopen en ze in het geheugen vervangen, omdat we de spaties in de links nog steeds aan de gebruiker willen laten zien.
 
-We have a few options. The first one we'll explore is passing a function in to our template.
+We hebben een paar opties. De eerste die we zullen verkennen, is het doorgeven van een functie aan onze template.
 
-### Passing functions into templates
+### Functies doorgeven aan sjablonen
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -786,33 +787,33 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-_Before you parse a template_ you can add a `template.FuncMap` into your template, which allows you to define functions that can be called within your template. In this case we've made a `sanitiseTitle` function which we then call inside our template with `{{sanitiseTitle .Title}}`.
+_Voordat je een template parsed_ kun je een `template.FuncMap` aan je template toevoegen, waarmee je functies kunt definiëren die binnen je template kunnen worden aangeroepen. In dit geval hebben we een `sanitiseTitle`-functie gemaakt die we vervolgens binnen onze template aanroepen met `{{sanitiseTitle .Title}}`.
 
-This is a powerful feature, being able to send functions in to your template will allow you to do some very cool things, but, should you? Going back to the principles of Mustache and logic-less templates, why did they advocate for logic-less? **What is wrong with logic in templates?**
+Dit is een krachtige functie. Door functies naar je template te sturen, kun je een aantal hele coole dingen doen, maar is dat wel de moeite waard? Terug naar de principes van Mustache en logica-loze templates: waarom pleitten ze voor logica-loze templates? **Wat is er mis met logica in templates?**
 
-As we've shown, in order to test our templates, _we've had to introduce a whole different kind of testing_.
+Zoals we hebben aangetoond, moesten we om onze templates te testen, _een heel ander soort testen introduceren_.
 
-Imagine you introduce a function into a template which has a few different permutations of behaviour and edge cases, **how will you test it**? With this current design, your only means of testing this logic is by _rendering HTML and comparing strings_. This is not an easy or sane way of testing logic, and definitely not what you'd want for _important_ business logic.
+Stel je voor dat je een functie in een template introduceert met een paar verschillende permutaties van gedrag en randgevallen, **hoe ga je die dan testen**? Met dit huidige ontwerp kun je deze logica alleen testen door HTML te _renderen en strings te vergelijken_. Dit is geen gemakkelijke of verstandige manier om logica te testen, en zeker niet wat je zou willen voor _belangrijke_ business logic.
 
-Even though the approval tests technique has reduced the cost of maintaining these tests, they're still more expensive to maintain than most unit tests you'll write. They're still sensitive to any minor markup changes you might make, it's just we've made it easier to manage. We should still strive to architect our code so we don't have to write many tests around our templates, and try and separate concerns so any logic that doesn't need to live inside our rendering code is properly separated.
+Hoewel de goedkeuringstesttechniek de onderhoudskosten van deze tests heeft verlaagd, zijn ze nog steeds duurder in onderhoud dan de meeste unittests die je schrijft. Ze zijn nog steeds gevoelig voor kleine markupwijzigingen die je aanbrengt, maar we hebben het beheer ervan eenvoudiger gemaakt. We moeten er nog steeds naar streven om onze code zo te ontwerpen dat we niet veel tests rond onze templates hoeven te schrijven, en proberen om aandachtspunten te scheiden, zodat alle logica die niet in onze renderingcode hoeft te zitten, goed gescheiden is.
 
-What Mustache-influenced templating engines give you is a useful constraint, don't try to circumvent it too often; **don't go against the grain**. Instead, embrace the idea of [view models](https://stackoverflow.com/a/11074506/3193), where you construct specific types that contain the data you need to render, in a way that's convenient for the templating language.
+Wat door Mustache beïnvloede template engines je bieden, is een nuttige beperking; probeer deze niet te vaak te omzeilen; **ga niet tegen de stroom in**. Omarm in plaats daarvan het idee van [view models](https://stackoverflow.com/a/11074506/3193), waarbij je specifieke typen construeert die de data bevatten die je moet renderen, op een manier die geschikt is voor de templatetaal.
 
-This way, whatever important business logic you use to generate that bag of data can be unit tested separately, away from the messy world of HTML and templating.
+Op deze manier kan alle belangrijke business logic die je gebruikt om die data te genereren, afzonderlijk worden getest, los van de rommelige wereld van HTML en templates.
 
-### Separating concerns
+### Scheiding van belangen
 
-So what could we do instead?
+Dus, wat kunnen dan doen?
 
-#### Add a method to `Post` and then call that in the template
+#### Voeg een methode toe aan `Post` en roep die vervolgens aan in de template.
 
-We can call methods in our templating code on the types we send, so we could add a `SanitisedTitle` method to `Post`. This would simplify the template and we could easily unit test this logic separately if we wish. This is probably the easiest solution, although not necessarily the simplest.
+We kunnen methoden aanroepen in onze templatecode voor de typen die we verzenden, dus we zouden een `SanitisedTitle`-methode kunnen toevoegen aan `Post`. Dit zou de template vereenvoudigen en we zouden deze logica desgewenst eenvoudig apart kunnen testen. Dit is waarschijnlijk de makkelijkste oplossing, hoewel niet per se de eenvoudigste.
 
-A downside to this approach is that this is still _view_ logic. It's not interesting to the rest of the system but it now becomes a part of the API for a core domain object. This kind of approach over time can lead to you creating [God Objects](https://en.wikipedia.org/wiki/God_object).
+Een nadeel van deze aanpak is dat dit nog steeds _view_ logica is. Het is niet interessant voor de rest van het systeem, maar het wordt nu onderdeel van de API voor een kerndomeinobject. Deze aanpak kan er na verloop van tijd toe leiden dat je [God Objects](https://en.wikipedia.org/wiki/God_object) creëert.
 
-#### Create a dedicated view model type, such as `PostViewModel` with exactly the data we need
+#### Maak een speciaal weergavemodeltype, zoals `PostViewModel`, met precies de gegevens die we nodig hebben.
 
-Rather than our rendering code being coupled to the domain object, `Post`, it instead takes a view model.
+In plaats van dat onze renderingcode gekoppeld is aan het domeinobject `Post`, gebruikt deze een weergavemodel.
 
 ```go
 type PostViewModel struct {
@@ -821,13 +822,14 @@ type PostViewModel struct {
 }
 ```
 
-Callers of our code would have to map from `[]Post` to `[]PostView`, generating the `SanitizedTitle`. A way to keep this clean would be to have a `func NewPostView(p Post) PostView` which would encapsulate the mapping.
+Aanroepers van onze code zouden een mapping moeten maken van `[]Post` naar `[]PostView`, waarmee de `SanitizedTitle` wordt gegenereerd. Een manier om dit overzichtelijk te houden, is door een `func NewPostView(p Post) PostView` te gebruiken die de mapping inkapselt.
 
-This would keep our rendering code logic-less and is probably the strictest separation of concerns we could do, but the trade-off is a slightly more convoluted process to get our posts rendered.
+Dit zou onze renderingcode logischer maken en is waarschijnlijk de striktste scheiding van taken die we konden doen, maar het nadeel is een iets ingewikkelder proces om onze berichten te renderen.
 
-Both options are fine, in this case I am tempted to go with the first. As you evolve the system you should be wary of adding more and more ad-hoc methods just to grease the wheels of rendering; dedicated view models become more useful when the transformation between the domain object and view becomes more involved.
+Beide opties zijn prima, in dit geval ben ik geneigd om voor de eerste te kiezen. Naarmate het systeem zich verder ontwikkelt, moet je voorzichtig zijn met het toevoegen van steeds meer ad-hocmethoden om het renderen soepeler te laten verlopen; speciale weergavemodellen worden nuttiger wanneer de transformatie tussen het domeinobject en de weergave complexer wordt.
 
-So we can add our method to `Post`
+We kunnen onze methode dus toevoegen aan `Post`
+
 
 ```go
 func (p Post) SanitisedTitle() string {
@@ -835,7 +837,7 @@ func (p Post) SanitisedTitle() string {
 }
 ```
 
-And then we can go back to a simpler world in our rendering code
+En dan kunnen we teruggaan naar een eenvoudigere wereld in onze renderingcode
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -856,7 +858,7 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 
 ## Refactor
 
-Finally the test should be passing. We can now move our template into a file (`templates/index.gohtml`) and load it once, when we construct our renderer.
+De test zou eindelijk moeten slagen. We kunnen onze template nu naar een bestand verplaatsen (`templates/index.gohtml`) en deze één keer laden wanneer we onze renderer construeren.
 
 ```go
 package blogrenderer
@@ -894,11 +896,11 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-By parsing more than one template into `templ` we now have to call `ExecuteTemplate` and specify _which_ template we wish to render as appropriate, but hopefully you'll agree the code we've arrived at looks great.
+Door meer dan één template in `templ` te parsen, moeten we nu `ExecuteTemplate` aanroepen en specificeren welke template we willen renderen. Hopelijk ben je het ermee eens dat de code die we hebben samengesteld er geweldig uitziet.
 
-There is a _slight_ risk if someone renames one of the template files, it would introduce a bug, but our fast to run unit tests would catch this quickly.
+Er is een klein risico dat een bug ontstaat als iemand een van de templatebestanden hernoemt, maar onze snel uit te voeren unittests zouden dit snel opsporen.
 
-Now we're happy with our package's API design and got some basic behaviour driven out with TDD, let's change our test to use approvals.
+Nu we tevreden zijn met het API-ontwerp van ons pakket en een aantal basisgedragingen hebben ontwikkeld met TDD, kunnen we onze test aanpassen om goedkeuringen te gebruiken.
 
 ```go
 	t.Run("it renders an index of posts", func(t *testing.T) {
@@ -913,9 +915,9 @@ Now we're happy with our package's API design and got some basic behaviour drive
 	})
 ```
 
-Remember to run the test to see it fail, and then approve the change.
+Vergeet niet de test uit te voeren om te zien of het mislukt en keur de wijziging vervolgens goed.
 
-Finally we can add our page furniture to our index page:
+Ten slotte kunnen we onze pagina-indeling toevoegen aan onze indexpagina:
 
 ```handlebars
 {{template "top" .}}
@@ -923,11 +925,11 @@ Finally we can add our page furniture to our index page:
 {{template "bottom" .}}
 ```
 
-Re-run the test, approve the change and we're done with the index!
+Voer de test opnieuw uit, keur de wijziging goed en de index is klaar!
 
-## Rendering the markdown body
+## De markdown-body renderen
 
-I encouraged you to try it yourself, here's the approach I ended up taking.
+Ik heb je aangemoedigd om het zelf te proberen. Dit is de aanpak die ik uiteindelijk heb gekozen.
 
 ```go
 package blogrenderer
@@ -982,44 +984,44 @@ func newPostVM(p Post, r *PostRenderer) postViewModel {
 }
 ```
 
-I used the excellent [gomarkdown](https://github.com/gomarkdown/markdown) library which worked exactly how I'd hope.
+Ik heb de uitstekende bibliotheek [gomarkdown](https://github.com/gomarkdown/markdown) gebruikt, die precies werkte zoals ik had gehoopt.
 
-If you tried to do this yourself you may have found that your body render had the HTML escaped. This is a security feature of Go's html/template package to stop malicious 3rd-party HTML being outputted.
+Als je dit zelf hebt geprobeerd, heb je mogelijk gemerkt dat de HTML in je body-render is 'escaped'. Dit is een beveiligingsfunctie van Go's html/template-pakket om te voorkomen dat schadelijke HTML van derden wordt uitgevoerd.
 
-To circumvent this, in the type you send to the render, you'll need to wrap your trusted HTML in [template.HTML](https://pkg.go.dev/html/template#HTML)
+Om dit te omzeilen, moet je in het type dat je naar de render stuurt, je vertrouwde HTML omsluiten in [template.HTML](https://pkg.go.dev/html/template#HTML)
 
-> HTML encapsulates a known safe HTML document fragment. It should not be used for HTML from a third-party, or HTML with unclosed tags or comments. The outputs of a sound HTML sanitiser and a template escaped by this package are fine for use with HTML.
+> HTML omsluit een bekend, veilig HTML-documentfragment. Het mag niet worden gebruikt voor HTML van derden, of HTML met niet-afgesloten tags of opmerkingen. De uitvoer van een degelijke HTML-sanitiser en een sjabloon die door dit pakket wordt geëscapete, zijn prima voor gebruik met HTML.
 >
-> Use of this type presents a security risk: the encapsulated content should come from a trusted source, as it will be included verbatim in the template output.
+> Gebruik van dit type brengt een beveiligingsrisico met zich mee: de ingesloten content moet afkomstig zijn van een vertrouwde bron, aangezien deze letterlijk in de sjabloonuitvoer wordt opgenomen.
 
-So I created an **unexported** view model (`postViewModel`), because I still viewed this as internal implementation detail to rendering. I have no need to test this separately and I don't want it polluting my API.
+Dus maakte ik een **niet-geëxporteerd** viewmodel (`postViewModel`), omdat ik dit nog steeds zag als een intern implementatiedetail voor de rendering. Ik hoef dit niet apart te testen en ik wil niet dat het mijn API vervuilt.
 
-I construct one when rendering so I can parse the `Body` into `HTMLBody` and then I use that field in the template to render the HTML.
+Ik maak er een tijdens het renderen, zodat ik de `Body` kan parsen naar `HTMLBody` en vervolgens gebruik ik dat veld in de template om de HTML te renderen.
 
-## Wrapping up
+## Samenvattend
 
-If you combine your learnings of the [reading files](reading-files.md) chapter and this one, you can comfortably make a well-tested, simple, static site generator and spin up a blog of your own. Find some CSS tutorials and you can make it look nice too.
+Als je de kennis uit het hoofdstuk [Bestanden lezen](reading-files.md) combineert met dit hoofdstuk, kun je gemakkelijk een goed geteste, eenvoudige, statische sitegenerator maken en je eigen blog beginnen. Zoek een paar CSS-tutorials en je kunt het er ook nog eens mooi uit laten zien.
 
-This approach extends beyond blogs. Taking data from any source, be it a database, an API or a file-system and converting it into HTML and returning it from a server is a simple technique spanning many decades. People like to bemoan the complexity of modern web development but are you sure you're not just inflicting the complexity on yourself?
+Deze aanpak gaat verder dan blogs. Gegevens uit elke bron halen, of het nu een database, een API of een bestandssysteem is, en deze converteren naar HTML en terugsturen vanaf een server, is een eenvoudige techniek die al tientallen jaren bestaat. Mensen klagen graag over de complexiteit van moderne webontwikkeling, maar weet je zeker dat je jezelf die complexiteit niet alleen maar bezorgt?
 
-Go is wonderful for web development, especially when you think clearly about what your real requirements are for the website you're making. Generating HTML on the server is often a better, simpler and more performant approach than creating a "web application" with technologies like React.
+Go is geweldig voor webontwikkeling, vooral als je goed nadenkt over wat je werkelijke vereisten zijn voor de website die je maakt. Het genereren van HTML op de server is vaak een betere, eenvoudigere en efficiëntere aanpak dan het maken van een "webapplicatie" met technologieën zoals React.
 
-### What we've learned
+### Wat we geleerd hebben
 
-* How to create and render HTML templates.
-* How to compose templates together and [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself) up related markup and help us keep a consistent look and feel.
-* How to pass functions into templates, and why you should think twice about it.
-* How to write "Approval Tests", which help us test the big ugly output of things like template renderers.
+* Hoe je HTML-sjablonen maakt en rendert.
+* Hoe je sjablonen samenstelt en gerelateerde markup [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself) toevoegt en ons helpt een consistente look-and-feel te behouden.
+* Hoe je functies in sjablonen opneemt en waarom je daar nog eens goed over na moet denken.
+* Hoe je "goedkeuringstests" schrijft, waarmee we de grote, lelijke output van bijvoorbeeld sjabloonrenderers kunt testen.
 
-### On logic-less templates
+### Over sjablonen zonder logica
 
-As always, this is all about **separation of concerns**. It's important we consider what the responsibilities are of the various parts of our system. Too often people leak important business logic into templates, mixing up concerns and making systems difficult to understand, maintain and test.
+Zoals altijd draait het hier om **scheiding van belangen**. Het is belangrijk dat we nadenken over de verantwoordelijkheden van de verschillende onderdelen van ons systeem. Te vaak lekken mensen belangrijke business logic in sjablonen, waardoor belangen door elkaar raken en systemen moeilijk te begrijpen, onderhouden en testen zijn.
 
-### Not just for HTML
+### Niet alleen voor HTML
 
-Remember that go has `text/template` to generate other kinds of data from a template. If you find yourself needing to transform data into some kind of structured output, the techniques laid out in this chapter can be useful.
+Onthoud dat go `text/template` heeft om andere soorten gegevens uit een sjabloon te genereren. Als je gegevens moet omzetten in een gestructureerde uitvoer, kunnen de technieken die in dit hoofdstuk worden beschreven nuttig zijn.
 
-### References and further material
+### Referenties en verder materiaal
 
-* [John Calhoun's 'Learn Web Development with Go'](https://www.calhoun.io/intro-to-templates-p1-contextual-encoding/) has a number of excellent articles on templating.
-* [Hotwire](https://hotwired.dev) - You can use these techniques to create Hotwire web applications. It has been built by Basecamp who are primarily a Ruby on Rails shop, but because it is server-side, we can use it with Go.
+* [John Calhoun's 'Learn Web Development with Go'](https://www.calhoun.io/intro-to-templates-p1-contextual-encoding/) bevat een aantal uitstekende artikelen over templates.
+* [Hotwire](https://hotwired.dev) - Je kunt deze technieken gebruiken om Hotwire-webapplicaties te maken. Het is gebouwd door Basecamp/37Signals, dat voornamelijk Ruby-on-Rails apps bouwt, maar omdat het server-side is, kunnen we het met Go gebruiken.
