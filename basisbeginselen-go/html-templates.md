@@ -232,23 +232,23 @@ Nu we het vangnet hebben van een geslaagde test voor werkende code, kunnen we na
 
 ### Introductie tot templates
 
-Go has two templating packages [text/template](https://pkg.go.dev/text/template) and [html/template](https://pkg.go.dev/html/template) and they share the same interface. What they both do is allow you to combine a template and some data to produce a string.
+Go heeft twee templatepakketten: [text/template](https://pkg.go.dev/text/template) en [html/template](https://pkg.go.dev/html/template) en ze delen dezelfde interface. Beide maken het mogelijk om een ​​template en wat data te combineren tot een string.
 
-What's the difference with the HTML version?
+Wat is het verschil tussen de text- en HTML-versie?
 
-> Package template (html/template) implements data-driven templates for generating HTML output safe against code injection. It provides the same interface as package text/template and should be used instead of text/template whenever the output is HTML.
+> Pakkettemplate (html/template) implementeert datagestuurde templates voor het genereren van HTML-uitvoer die veilig is tegen code-injectie. Het biedt dezelfde interface als pakket text/template en dient in plaats van text/template te worden gebruikt wanneer de uitvoer HTML is. 
 
-The templating language is very similar to [Mustache](https://mustache.github.io) and allows you to dynamically generate content in a very clean fashion with a nice separation of concerns. Compared to other templating languages you may have used, it is very constrained or "logic-less" as Mustache likes to say. This is an important, **and deliberate** design decision.
+De templatetaal lijkt sterk op [Mustache](https://mustache.github.io) en stelt je in staat om dynamisch content te genereren op een zeer overzichtelijke manier, met een goede scheiding van aandachtspunten. Vergeleken met andere templatetalen die je mogelijk hebt gebruikt, is het erg beperkt of "logicaloos", zoals Mustache het graag noemt. Dit is een belangrijke, **en bewuste** ontwerpbeslissing.
 
-Whilst we're focusing on generating HTML here, if your project is doing complex string concatenations and incantations, you might want to reach for `text/template` to clean up your code.
+Hoewel we ons hier richten op het genereren van HTML, kun je, als je project complexe string-concatenaties en incantaties gebruikt, beter `text/template` gebruiken om je code schoon te houden.
 
-### Back to the code
+### Terug naar de code
 
-Here is a template for our blog:
+Hier is een sjabloon voor onze blog:
 
 `<h1>{{.Title}}</h1><p>{{.Description}}</p>Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>`
 
-Where do we define this string? Well, we have a few options, but to keep the steps small, let's just start with a plain old string
+Waar definiëren we deze string? Nou, we hebben een paar opties, maar om de stappen klein te houden, beginnen we gewoon met een gewone string.
 
 ```go
 package blogrenderer
@@ -276,27 +276,28 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-We create a new template with a name, and then parse our template string. We can then use the `Execute` method on it, passing in our data, in this case the `Post`.
+We maken een nieuwe template met een naam en parseren vervolgens onze templatestring. We kunnen er vervolgens de `Execute`-methode op gebruiken en onze data doorgeven, in dit geval de `Post`.
 
-The template will substitute things like `{{.Description}}` with the content of `p.Description`. Templates also give you some programming primitives like `range` to loop over values, and `if`. You can find more details in the [text/template documentation](https://pkg.go.dev/text/template).
+De template vervangt zaken als `{{.Description}}` door de inhoud van `p.Description`. Templates bieden je ook een aantal programmeerprimitieven zoals `range` om waarden te loopen, en `if`. Je vindt meer informatie in de [text/template documentatie](https://pkg.go.dev/text/template).
 
-_This should be a pure refactor._ We shouldn't need to change our tests and they should continue to pass. Importantly, our code is easier to read and has far less annoying error handling to contend with.
+_Dit zou een pure refactoring moeten zijn._ We zouden onze tests niet hoeven te wijzigen en ze zouden moeten blijven slagen. Belangrijk is dat onze code gemakkelijker te lezen is en veel minder vervelende foutafhandeling heeft.
 
-Frequently people complain about the verbosity of error handling in Go, but you might find you can find better ways to write your code so it's less error-prone in the first place, like here.
+Mensen klagen vaak over de omslachtigheid van foutafhandeling in Go, maar je zult merken dat je betere manieren kunt vinden om je code te schrijven zodat deze in de eerste plaats minder foutgevoelig is, zoals hier.
 
-### More refactoring
+### Meer refactor werk
 
-Using the `html/template` has definitely been an improvement, but having it as a string constant in our code isn't great:
+Het gebruik van `html/template` is zeker een verbetering, maar het als stringconstante in onze code gebruiken is niet geweldig:
 
-* It's still quite difficult to read.
-* It's not IDE/editor friendly. No syntax highlighting, ability to reformat, refactor, e.t.c.
-* It looks like HTML, but you can't really work with it like you could a "normal" HTML file
+* Het is nog steeds vrij moeilijk te lezen.
+* Het is niet IDE/editor-vriendelijk. Geen syntax highlighting, mogelijkheid tot herformatteren, refactoren, enz.
+* Het lijkt op HTML, maar je kunt er niet echt mee werken zoals met een "normaal" HTML-bestand.
 
-What we'd like to do is have our templates live in separate files so we can better organise them, and work with them as if they're HTML files.
+Wat we willen, is onze templates in aparte bestanden plaatsen, zodat we ze beter kunnen ordenen en ermee kunnen werken alsof het HTML-bestanden zijn.
 
-Create a folder called "templates" and inside it make a file called `blog.gohtml`, paste our template into the file.
+Maak een map aan met de naam "templates" en maak daarin een bestand aan met de naam `blog.gohtml`. Plak onze template in het bestand.
 
-Now change our code to embed the file systems using the [embedding functionality included in go 1.16](https://pkg.go.dev/embed).
+Wijzig nu onze code om de bestandssystemen te embedden met behulp van de [embeddingfunctionaliteit in go 1.16](https://pkg.go.dev/embed).
+
 
 ```go
 package blogrenderer
@@ -326,27 +327,27 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-By embedding a "file system" into our code, we can load multiple templates and combine them freely. This will become useful when we want to share rendering logic across different templates, such as a header for the top of the HTML page and a footer.
+Door een "bestandssysteem" in onze code te integreren, kunnen we meerdere sjablonen laden en vrij combineren. Dit is handig wanneer we renderinglogica willen delen tussen verschillende sjablonen, zoals een header bovenaan de HTML-pagina en een footer.
 
 ### Embed?
 
-Embed was lightly touched on in [reading files](reading-files.md). The [documentation from the standard library explains](https://pkg.go.dev/embed)
+Embed werd terloops aangestipt in [Bestanden lezen](reading-files.md). De [documentatie van de standaardbibliotheek legt dit verder uit](https://pkg.go.dev/embed)
 
-> Package embed provides access to files embedded in the running Go program.
+> Pakket embed biedt toegang tot bestanden die zijn ingesloten in het actieve Go-programma.
 >
-> Go source files that import "embed" can use the //go:embed directive to initialize a variable of type string, \[]byte, or FS with the contents of files read from the package directory or subdirectories at compile time.
+> Go-bronbestanden die "embed" importeren, kunnen de //go:embed-richtlijn gebruiken om een ​​variabele van het type string, \[]byte of FS te initialiseren met de inhoud van bestanden die tijdens het compileren uit de pakketdirectory of subdirectory's worden gelezen.
 
-Why would we want to use this? Well the alternative is that we _can_ load our templates from a "normal" file system. However this means we'd have to make sure that the templates are in the correct file path wherever we want to use this software. In your job you may have various environments like development, staging and live. For this to work, you'd need to make sure your templates are copied to the correct place.
+Waarom zouden we dit willen gebruiken? Het alternatief is dat we onze sjablonen _kunnen_ laden vanuit een "normaal" bestandssysteem. Dit betekent echter dat we ervoor moeten zorgen dat de sjablonen zich in het juiste bestandspad bevinden, waar we deze software ook willen gebruiken. In jouw werk heb je mogelijk verschillende omgevingen, zoals ontwikkeling, staging en live. Om dit te laten werken, moet je ervoor zorgen dat je sjablonen naar de juiste locatie worden gekopieerd.
 
-With embed, the files are included in your Go program when you build it. This means once you've built your program (which you should only do once), the files are always available to you.
+Met embed worden de bestanden opgenomen in je Go-programma wanneer je het bouwt. Dit betekent dat zodra je je programma hebt gebouwd (wat je maar één keer zou moeten doen), de bestanden altijd voor je beschikbaar zijn.
 
-What's handy is you can not only embed individual files, but also file systems; and that filesystem implements [io/fs](https://pkg.go.dev/io/fs) which means your code doesn't need to care what kind of file system it is working with.
+Het handige is dat je niet alleen individuele bestanden kunt embedden, maar ook bestandssystemen; en dat bestandssysteem implementeert [io/fs](https://pkg.go.dev/io/fs), wat betekent dat je code zich geen zorgen hoeft te maken over het type bestandssysteem waarmee het werkt.
 
-If you wish to use different templates depending on configuration though, you may wish to stick to loading templates from disk in the more conventional way.
+Als je echter verschillende sjablonen wilt gebruiken, afhankelijk van de configuratie, kun je ervoor kiezen om sjablonen op de meer conventionele manier vanaf schijf te laden.
 
-## Next: Make the template "nice"
+## Volgende: Maak de sjabloon "leuk"
 
-We don't really want our template to be defined as a one line string. We want to be able to space it out to make it easier to read and work with, something like this:
+We willen niet dat onze template wordt gedefinieerd als een string van één regel. We willen hem kunnen uitspreiden om hem leesbaarder en gebruiksvriendelijker te maken, bijvoorbeeld:
 
 ```handlebars
 <h1>{{.Title}}</h1>
@@ -356,9 +357,9 @@ We don't really want our template to be defined as a one line string. We want to
 Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 ```
 
-But if we do this, our test fails. This is because our test is expecting a very specific string to be returned.
+Maar als we dit doen, mislukt onze test. Dit komt doordat onze test een heel specifieke string verwacht.
 
-But really, we don't actually care about whitespace. Maintaining this test will become a nightmare if we have to keep painstakingly updating the assertion string every time we make minor changes to the markup. As the template grows, these kind of edits become harder to manage and the costs of work will spiral out of control.
+Maar eigenlijk maakt witruimte ons niet zoveel uit. Het onderhouden van deze test wordt een nachtmerrie als we de assertion string nauwgezet moeten blijven bijwerken telkens wanneer we kleine wijzigingen in de markup aanbrengen. Naarmate de template groeit, worden dit soort bewerkingen moeilijker te beheren en lopen de kosten ervan uit de hand.
 
 ## Introducing Approval Tests
 
