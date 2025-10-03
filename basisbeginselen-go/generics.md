@@ -1,20 +1,20 @@
 # Generics
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/generics)**
+**[Je kunt hier alle code van dit hoofdstuk vinden](https://github.com/quii/learn-go-with-tests/tree/main/generics)**
 
-This chapter will give you an introduction to generics, dispel reservations you may have about them, and give you an idea how to simplify some of your code in the future. After reading this you'll know how to write:
+Dit hoofdstuk geeft je een introductie tot generieke functies (generics), neemt eventuele bedenkingen erover weg en geeft je een idee hoe je in de toekomst een deel van je code kunt vereenvoudigen. Na het lezen hiervan weet je hoe je het volgende schrijft:
 
-- A function that takes generic arguments
-- A generic data-structure
+- Een functie die generieke argumenten accepteert
+- Een generieke datastructuur
 
 
-## Our own test helpers (`AssertEqual`, `AssertNotEqual`)
+## Onze eigen test helpers (`AssertEqual`, `AssertNotEqual`)
 
-To explore generics we'll write some test helpers.
+Om generics te verkennen, schrijven we een aantal testhelpers.
 
-### Assert on integers
+### Bevestigen over gehele getallen
 
-Let's start with something basic and iterate toward our goal
+Laten we beginnen met iets eenvoudigs en itereren naar ons doel
 
 ```go
 import "testing"
@@ -42,9 +42,9 @@ func AssertNotEqual(t *testing.T, got, want int) {
 ```
 
 
-### Assert on strings
+### Beweringen over strings
 
-Being able to assert on the equality of integers is great but what if we want to assert on `string` ?
+Het is geweldig om te kunnen asserteren op de gelijkheid van gehele getallen, maar wat als we een assert willen uitvoeren op een string?
 
 ```go
 t.Run("asserting on strings", func(t *testing.T) {
@@ -53,7 +53,7 @@ t.Run("asserting on strings", func(t *testing.T) {
 })
 ```
 
-You'll get an error
+Je zult een foutmelding krijgen
 
 ```
 # github.com/quii/learn-go-with-tests/generics [github.com/quii/learn-go-with-tests/generics.test]
@@ -62,26 +62,27 @@ You'll get an error
 ./generics_test.go:13:30: cannot use "Grace" (untyped string constant) as int value in argument to AssertNotEqual
 ```
 
-If you take your time to read the error, you'll see the compiler is complaining that we're trying to pass a `string` to a function that expects an `integer`.
+Als je de tijd neemt om de fout te lezen, zul je zien dat de compiler klaagt dat we proberen een `string` door te geven aan een functie die een `integer` verwacht.
 
-#### Recap on type-safety
+#### Korte samenvatting van typeveiligheid (type-safety)
 
-If you've read the previous chapters of this book, or have experience with statically typed languages, this should not surprise you. The Go compiler expects you to write your functions, structs e.t.c. by describing what types you wish to work with.
+Als je de voorgaande hoofdstukken van dit boek hebt gelezen of ervaring hebt met statisch getypeerde talen, zal dit je niet verbazen. De Go-compiler verwacht dat je je functies, structs, enz. schrijft door te beschrijven met welke typen je wilt werken.
 
-You can't pass a `string` to a function that expects an `integer`.
+Je kunt geen `string` doorgeven aan een functie die een `integer` verwacht.
 
-Whilst this can feel like ceremony, it can be extremely helpful. By describing these constraints you,
+Hoewel dit misschien als overdreven aanvoelt, kan het enorm nuttig zijn. Door deze beperkingen te beschrijven,
 
-- Make function implementation simpler. By describing to the compiler what types you work with, you **constrain the number of possible valid implementations**. You can't "add" a `Person` and a `BankAccount`. You can't capitalise an `integer`. In software, constraints are often extremely helpful.
-- Are prevented from accidentally passing data to a function you didn't mean to.
+- Maak je de functie-implementatie eenvoudiger. Door aan de compiler te beschrijven met welke typen je werkt, **beperk je het aantal mogelijke geldige implementaties**. Je kunt geen `Persoon` en een `Bankrekening` "toevoegen". Je kunt een `integer` niet met een hoofdletter schrijven. In software zijn beperkingen vaak enorm nuttig.
+- Worden ze voorkomen dat er per ongeluk gegevens aan een functie worden doorgegeven die je niet wilde.
 
-Go offers you a way to be more abstract with your types with [interfaces](./structs-methods-and-interfaces.md), so that you can design functions that do not take concrete types but instead, types that offer the behaviour you need. This gives you some flexibility whilst maintaining type-safety.
+Go biedt je een manier om abstracter te zijn met je typen met [interfaces](./structs-methods-and-interfaces.md), zodat je functies kunt ontwerpen die geen concrete typen gebruiken, maar typen die het gewenste gedrag bieden. Dit geeft je enige flexibiliteit, terwijl de typesafety behouden blijft.
 
-### A function that takes a string or an integer? (or indeed, other things)
+### Een functie die een string of een integer gebruikt? (of eigenlijk andere dingen)
 
-Another option Go has to make your functions more flexible is by declaring the type of your argument as `interface{}` which means "anything".
+Een andere optie die Go heeft om je functies flexibeler te maken, is door het type van je argument te declareren als `interface{}`, wat "alles" betekent.
 
-Try changing the signatures to use this type instead.
+Probeer de aanroep parameters aan te passen om in plaats van het 'vaste' type, dit type te gebruiken.
+
 
 ```go
 func AssertEqual(got, want interface{})
@@ -90,37 +91,37 @@ func AssertNotEqual(got, want interface{})
 
 ```
 
-The tests should now compile and pass. If you try making them fail you'll see the output is a bit ropey because we're using the integer `%d` format string to print our messages, so change them to the general `%+v` format for a better output of any kind of value.
+De tests zouden nu moeten compileren en slagen. Als je ze probeert te laten mislukken, zul je zien dat de uitvoer wat zwak is, omdat we de integer `%d`-opmaak gebruiken om onze berichten weer te geven. Verander ze daarom naar de algemene `%+v`-opmaak voor een betere uitvoer van elke waarde.
 
-### The problem with `interface{}`
+### Het probleem met `interface{}`
 
-Our `AssertX` functions are quite naive but conceptually aren't too different to how other [popular libraries offer this functionality](https://github.com/matryer/is/blob/master/is.go#L150)
+Onze `AssertX`-functies zijn vrij naïef, maar verschillen conceptueel niet veel van de manier waarop andere [populaire bibliotheken deze functionaliteit bieden](https://github.com/matryer/is/blob/master/is.go#L150)
 
 ```go
 func (is *I) Equal(a, b interface{})
 ```
 
-So what's the problem?
+Wat is dan het probleem?
 
-By using `interface{}` the compiler can't help us when writing our code, because we're not telling it anything useful about the types of things passed to the function. Try comparing two different types.
+Door `interface{}` te gebruiken, kan de compiler ons niet helpen bij het schrijven van onze code, omdat we hem niets nuttigs vertellen over de typen dingen die aan de functie worden doorgegeven. Probeer twee verschillende typen te vergelijken.
 
 ```go
 AssertEqual(1, "1")
 ```
 
-In this case, we get away with it; the test compiles, and it fails as we'd hope, although the error message `got 1, want 1` is unclear; but do we want to be able to compare strings with integers? What about comparing a `Person` with an `Airport`?
+In dit geval komen we ermee weg; de test compileert en mislukt zoals we hadden gehoopt, hoewel de foutmelding `got 1, want 1` onduidelijk is. Maar willen we strings met integers kunnen vergelijken? Hoe zit het met het vergelijken van een `Person` met een `Airport`?
 
-Writing functions that take `interface{}` can be extremely challenging and bug-prone because we've _lost_ our constraints, and we have no information at compile time as to what kinds of data we're dealing with.
+Het schrijven van functies die 'interface{}' gebruiken, kan extreem uitdagend en foutgevoelig zijn, omdat we onze beperkingen _kwijt_ zijn en we tijdens het compileren geen informatie hebben over het soort gegevens waarmee we te maken hebben.
 
-This means **the compiler can't help us** and we're instead more likely to have **runtime errors** which could affect our users, cause outages, or worse.
+Dit betekent dat **de compiler ons niet kan helpen** en dat we in plaats daarvan eerder **runtime-fouten** krijgen die onze gebruikers kunnen beïnvloeden, storingen kunnen veroorzaken of erger.
 
-Often developers have to use reflection to implement these *ahem* generic functions, which can get complicated to read and write, and can hurt the performance of your program.
+Vaak moeten ontwikkelaars reflectie gebruiken om deze *ehm* generieke functies te implementeren, wat ingewikkeld kan zijn om te lezen en te schrijven en de prestaties van je programma kan schaden.
 
-## Our own test helpers with generics
+## Onze eigen testhelpers met generieke functies
 
-Ideally, we don't want to have to make specific `AssertX` functions for every type we ever deal with. We'd like to be able to have _one_ `AssertEqual` function that works with _any_ type but does not let you compare [apples and oranges](https://en.wikipedia.org/wiki/Apples_and_oranges).
+Idealiter willen we geen specifieke `AssertX`-functies hoeven te maken voor elk type waarmee we te maken hebben. We willen _één_ `AssertEqual`-functie die met _elk_ type werkt, maar waarmee je geen [appels met peren](https://en.wikipedia.org/wiki/Apples_and_oranges) kunt vergelijken.
 
-Generics offer us a way to make abstractions (like interfaces) by letting us **describe our constraints**. They allow us to write functions that have a similar level of flexibility that `interface{}` offers but retain type-safety and provide a better developer experience for callers.
+Generieke functies bieden ons een manier om abstracties (zoals interfaces) te maken door ons in staat te stellen **onze beperkingen te beschrijven**. Ze stellen ons in staat om functies te schrijven die een vergelijkbare flexibiliteit hebben als `interface{}`, maar die typesafety behouden en een betere ontwikkelaarservaring bieden voor aanroepers.
 
 ```go
 func TestAssertFunctions(t *testing.T) {
@@ -152,27 +153,29 @@ func AssertNotEqual[T comparable](t *testing.T, got, want T) {
 }
 ```
 
-To write generic functions in Go, you need to provide "type parameters" which is just a fancy way of saying "describe your generic type and give it a label".
+Om generieke functies in Go te schrijven, moet je "typeparameters" opgeven, wat gewoon een mooie manier is om te zeggen: "beschrijf je generieke type en geef het een label".
 
-In our case the type of our type parameter is `comparable` and we've given it the label of `T`. This label then lets us describe the types for the arguments to our function (`got, want T`).
+In ons geval is het type van onze typeparameter `comparable` en hebben we het label `T` gegeven. Met dit label kunnen we vervolgens de typen van de argumenten van onze functie beschrijven (`got, want T`).
 
-We're using `comparable` because we want to describe to the compiler that we wish to use the `==` and `!=` operators on things of type `T` in our function, we want to compare! If you try changing the type to `any`,
+We gebruiken `comparable` omdat we aan de compiler willen laten weten dat we de operatoren `==` en `!=` willen gebruiken voor dingen van het type `T` in onze functie, we willen vergelijken! Als je het type probeert te wijzigen naar `any`,
+
 
 ```go
 func AssertNotEqual[T any](got, want T)
 ```
 
-You'll get the following error:
+Krijg je de volgende foutmelding:
 
 ```
 prog.go2:15:5: cannot compare got != want (operator != not defined for T)
 ```
 
-Which makes a lot of sense, because you can't use those operators on every (or `any`) type.
+Dat is heel logisch, want je kunt die operatoren niet op elk (of `any`) type gebruiken.
 
-### Is a generic function with [`T any`](https://go.googlesource.com/proposal/+/refs/heads/master/design/go2draft-type-parameters.md#the-constraint) the same as `interface{}` ?
+### Is een generieke functie met [`T any`](https://go.googlesource.com/proposal/+/refs/heads/master/design/go2draft-type-parameters.md#the-constraint) hetzelfde als `interface{}`?
 
-Consider two functions
+Bekijk deze twee functies:
+
 
 ```go
 func GenericFoo[T any](x, y T)
@@ -182,33 +185,34 @@ func GenericFoo[T any](x, y T)
 func InterfaceyFoo(x, y interface{})
 ```
 
-What's the point of generics here? Doesn't `any` describe... anything?
+Wat is hier het nut van generieke functies? Beschrijft `any` niet... alles?
 
-In terms of constraints, `any` does mean "anything" and so does `interface{}`. In fact, `any` was added in 1.18 and is _just an alias for `interface{}`_.
+In termen van beperkingen betekent `any` wel degelijk "alles", net als `interface{}`. Sterker nog, `any` werd toegevoegd in 1.18 en is _gewoon een alias voor `interface{}`_.
 
-The difference with the generic version is _you're still describing a specific type_ and what that means is we've still constrained this function to only work with _one_ type.
+Het verschil met de generieke versie is dat je _nog steeds een specifiek type beschrijft_ en dat betekent dat we deze functie nog steeds hebben beperkt tot slechts _één_ type.
 
-What this means is you can call `InterfaceyFoo` with any combination of types (e.g `InterfaceyFoo(apple, orange)`). However `GenericFoo` still offers some constraints because we've said that it only works with _one_ type, `T`.
+Dit betekent dat je `InterfaceyFoo` kunt aanroepen met elke combinatie van typen (bijv. `InterfaceyFoo(apple, orange)`). `GenericFoo` biedt echter nog steeds enkele beperkingen, omdat we hebben aangegeven dat het slechts met _één_ type werkt, `T`.
 
-Valid:
+Geldig:
 
 - `GenericFoo(apple1, apple2)`
 - `GenericFoo(orange1, orange2)`
 - `GenericFoo(1, 2)`
 - `GenericFoo("one", "two")`
 
-Not valid (fails compilation):
+Niet geldig (faalt bij compilatie):
 
 - `GenericFoo(apple1, orange1)`
 - `GenericFoo("1", 1)`
 
-If your function returns the generic type, the caller can also use the type as it was, rather than having to make a type assertion because when a function returns `interface{}` the compiler cannot make any guarantees about the type.
+Als je functie het generieke type retourneert, kan de aanroeper het type ook gebruiken zoals het was, in plaats van dat er een typebevestiging moet worden gemaakt. Als een functie `interface{}` retourneert, kan de compiler namelijk geen garanties geven over het type.
 
-## Next: Generic data types
+## Volgende: Generieke gegevenstypen
 
-We're going to create a [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) data type. Stacks should be fairly straightforward to understand from a requirements point of view. They're a collection of items where you can `Push` items to the "top" and to get items back again you `Pop` items from the top (LIFO - last in, first out).
+We gaan een [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))-gegevenstype aanmaken. Stacks zouden vanuit het oogpunt van vereisten vrij eenvoudig te begrijpen moeten zijn. Het zijn een verzameling items waarbij je items naar de "top" kunt pushen en om items weer terug te krijgen, kun je items van bovenaf "poppen" (LIFO - last in, first out).
 
-For the sake of brevity I've omitted the TDD process that arrived me at the following code for a stack of `int`s, and a stack of `string`s.
+Om het kort te houden, heb ik het TDD-proces weggelaten dat me tot de volgende code voor een stack van `int`s en een stack van `string`s opleverde.
+
 
 ```go
 type StackOfInts struct {
@@ -258,7 +262,7 @@ func (s *StackOfStrings) Pop() (string, bool) {
 }
 ```
 
-I've created a couple of other assertion functions to help out
+Ik heb een aantal andere assertiefuncties gemaakt om je vooruit te helpen
 
 ```go
 func AssertTrue(t *testing.T, got bool) {
@@ -276,7 +280,7 @@ func AssertFalse(t *testing.T, got bool) {
 }
 ```
 
-And here's the tests
+En hier zijn de tests
 
 ```go
 func TestStack(t *testing.T) {
@@ -320,14 +324,15 @@ func TestStack(t *testing.T) {
 }
 ```
 
-### Problems
+### Problemen
 
-- The code for both `StackOfStrings` and `StackOfInts` is almost identical. Whilst duplication isn't always the end of the world, it's more code to read, write and maintain.
-- As we're duplicating the logic across two types, we've had to duplicate the tests too.
+- De code voor zowel `StackOfStrings` als `StackOfInts` is vrijwel identiek. Hoewel duplicatie niet altijd het einde van de wereld is, is het wel meer code om te lezen, schrijven en onderhouden.
+- Omdat we de logica over twee typen dupliceren, moesten we ook de tests dupliceren.
 
-We really want to capture the _idea_ of a stack in one type, and have one set of tests for them. We should be wearing our refactoring hat right now which means we should not be changing the tests because we want to maintain the same behaviour.
+We willen het _idee_ van een stack in één type vastleggen en er één set tests voor hebben. We zouden nu onze refactoring-hoed moeten opzetten, wat betekent dat we de tests niet moeten wijzigen, omdat we hetzelfde gedrag willen behouden.
 
-Without generics, this is what we _could_ do
+Zonder generieke typen is dit wat we _zouden_ kunnen doen
+
 
 ```go
 type StackOfInts = Stack
@@ -358,24 +363,24 @@ func (s *Stack) Pop() (interface{}, bool) {
 }
 ```
 
-- We're aliasing our previous implementations of `StackOfInts` and `StackOfStrings` to a new unified type `Stack`
-- We've removed the type safety from the `Stack` by making it so `values` is a [slice](https://github.com/quii/learn-go-with-tests/blob/main/arrays-and-slices.md) of `interface{}`
+- We aliassen onze eerdere implementaties van `StackOfInts` en `StackOfStrings` naar een nieuw, uniform type `Stack`.
+- We hebben de typesafety van de `Stack` verwijderd door `values` een [slice](https://github.com/quii/learn-go-with-tests/blob/main/arrays-and-slices.md) van `interface{}` te maken.
 
-To try this code, you'll have to remove the type constraints from our assert functions:
+Om deze code te proberen, moet je de typebeperkingen van onze assert-functies verwijderen:
 
 ```go
 func AssertEqual(t *testing.T, got, want interface{})
 ```
 
-If you do this, our tests still pass. Who needs generics?
+Als je dit doet, slagen onze tests nog steeds. Wie heeft er nog generics nodig?
 
-### The problem with throwing out type safety
+### Het probleem met het weggooien van typesafety
 
-The first problem is the same as we saw with our `AssertEquals` - we've lost type safety. I can now `Push` apples onto a stack of oranges.
+Het eerste probleem is hetzelfde als dat we zagen met onze `AssertEquals`: we zijn de typesafety kwijt. Ik kan nu appels op een stapel peren `Pushen`.
 
-Even if we have the discipline not to do this, the code is still unpleasant to work with because when methods **return `interface{}` they are horrible to work with**.
+Zelfs als we de discipline hebben om dit niet te doen, is de code nog steeds onaangenaam om mee te werken, omdat methoden die **`interface{}` retourneren, vreselijk zijn om mee te werken**.
 
-Add the following test,
+Voeg de volgende test toe:
 
 ```go
 t.Run("interface stack DX is horrid", func(t *testing.T) {
@@ -389,15 +394,15 @@ t.Run("interface stack DX is horrid", func(t *testing.T) {
 })
 ```
 
-You get a compiler error, showing the weakness of losing type-safety:
+Er verschijnt een compilerfout, die de zwakte van het verlies van typeveiligheid aantoont:
 
 ```
 invalid operation: operator + not defined on firstNum (variable of type interface{})
 ```
 
-When `Pop` returns `interface{}` it means the compiler has no information about what the data is and therefore severely limits what we can do. It can't know that it should be an integer, so it does not let us use the `+` operator.
+Wanneer `Pop` `interface{}` retourneert, betekent dit dat de compiler geen informatie heeft over de data en daarom onze mogelijkheden ernstig beperkt. De compiler kan niet weten dat het een geheel getal moet zijn, dus staat hij ons de `+` operator niet toe.
 
-To get around this, the caller has to do a [type assertion](https://golang.org/ref/spec#Type_assertions) for each value.
+Om dit te omzeilen, moet de aanroeper voor elke waarde een [type assertion](https://golang.org/ref/spec#Type_assertions) uitvoeren.
 
 ```go
 t.Run("interface stack dx is horrid", func(t *testing.T) {
@@ -419,13 +424,13 @@ t.Run("interface stack dx is horrid", func(t *testing.T) {
 })
 ```
 
-The unpleasantness radiating from this test would be repeated for every potential user of our `Stack` implementation, yuck.
+De onaangenaamheid die van deze test uitgaat, zou zich herhalen voor elke potentiële gebruiker van onze `Stack`-implementatie, bah.
 
-### Generic data structures to the rescue
+### Generieke datastructuren schieten te hulp
 
-Just like you can define generic arguments to functions, you can define generic data structures.
+Net zoals je generieke argumenten voor functies kunt definiëren, kun je ook generieke datastructuren definiëren.
 
-Here's our new `Stack` implementation, featuring a generic data type.
+Hier is onze nieuwe `Stack`-implementatie, met een generiek gegevenstype.
 
 ```go
 type Stack[T any] struct {
@@ -453,7 +458,7 @@ func (s *Stack[T]) Pop() (T, bool) {
 }
 ```
 
-Here's the tests, showing them working how we'd like them to work, with full type-safety.
+Hier zie je de tests, die laten zien hoe ze werken zoals wij dat graag zouden zien, met volledige typesafety.
 
 ```go
 func TestStack(t *testing.T) {
@@ -485,7 +490,7 @@ func TestStack(t *testing.T) {
 }
 ```
 
-You'll notice the syntax for defining generic data structures is consistent with defining generic arguments to functions.
+Je zult merken dat de syntaxis voor het definiëren van generieke datastructuren consistent is met de syntaxis voor het definiëren van generieke argumenten voor functies.
 
 ```go
 type Stack[T any] struct {
@@ -493,15 +498,16 @@ type Stack[T any] struct {
 }
 ```
 
-It's _almost_ the same as before, it's just that what we're saying is the **type of the stack constrains what type of values you can work with**.
+Het is _bijna_ hetzelfde als voorheen, alleen zeggen we dat het **type van de stack beperkt met welk type waarden je kunt werken**.
 
-Once you create a `Stack[Orange]` or a `Stack[Apple]` the methods defined on our stack will only let you pass in and will only return the particular type of the stack you're working with:
+Zodra je een `Stack[Orange]` of een `Stack[Apple]` hebt aangemaakt, laten de methoden die op onze stack zijn gedefinieerd je alleen het specifieke type stack waarmee je werkt doorgeven en retourneren:
+
 
 ```go
 func (s *Stack[T]) Pop() (T, bool)
 ```
 
-You can imagine the types of implementation being somehow generated for you, depending on what type of stack you create:
+Je kunt zich voorstellen dat de typen implementaties op de een of andere manier voor jeu worden gegenereerd, afhankelijk van het type stack dat je creëert:
 
 ```go
 func (s *Stack[Orange]) Pop() (Orange, bool)
@@ -511,23 +517,23 @@ func (s *Stack[Orange]) Pop() (Orange, bool)
 func (s *Stack[Apple]) Pop() (Apple, bool)
 ```
 
-Now that we have done this refactoring, we can safely remove the string stack test because we don't need to prove the same logic over and over.
+Nu we deze refactoring hebben uitgevoerd, kunnen we de string stack test veilig verwijderen, omdat we niet steeds dezelfde logica hoeven te bewijzen.
 
-Note that so far in the examples of calling generic functions, we have not needed to specify the generic types. For example, to call `AssertEqual[T]`, we do not need to specify what the type `T` is since it can be inferred from the arguments. In cases where the generic types cannot be inferred, you need to specify the types when calling the function. The syntax is the same as when defining the function, i.e. you specify the types inside square brackets before the arguments.
+Merk op dat we tot nu toe in de voorbeelden van het aanroepen van generieke functies de generieke typen niet hoefden te specificeren. Om bijvoorbeeld `AssertEqual[T]` aan te roepen, hoeven we niet te specificeren wat het type `T` is, omdat dit kan worden afgeleid uit de argumenten. In gevallen waarin de generieke typen niet kunnen worden afgeleid, moet je de typen specificeren bij het aanroepen van de functie. De syntaxis is hetzelfde als bij het definiëren van de functie, d.w.z. je specificeert de typen tussen vierkante haken vóór de argumenten.
 
-For a concrete example, consider making a constructor for `Stack[T]`.
+Voor een concreet voorbeeld kun je overwegen een constructor te maken voor `Stack[T]`.
 ```go
 func NewStack[T any]() *Stack[T] {
 	return new(Stack[T])
 }
 ```
-To use this constructor to create a stack of ints and a stack of strings for example, you call it like this:
+Om deze constructor te gebruiken om bijvoorbeeld een stapel ints en een stapel strings te maken, roep je hem als volgt aan:
 ```go
 myStackOfInts := NewStack[int]()
 myStackOfStrings := NewStack[string]()
 ```
 
-Here is the `Stack` implementation and the tests after adding the constructor.
+Hier zie je de `Stack`-implementatie en de tests na het toevoegen van de constructor.
 
 ```go
 type Stack[T any] struct {
@@ -589,42 +595,41 @@ func TestStack(t *testing.T) {
 }
 ```
 
+Met behulp van een generiek gegevenstype hebben we:
 
-Using a generic data type we have:
+- Verminderde duplicatie van belangrijke logica.
+- `Pop` retourneert `T`, zodat we bij het aanmaken van een `Stack[int]` in de praktijk `int` van `Pop` terugkrijgen; we kunnen nu `+` gebruiken zonder dat we type-assertie-gymnastiek hoeven te doen.
+- Misbruik tijdens compileren voorkomen. Je kunt geen sinaasappels `Pushen` naar een appel stack.
 
-- Reduced duplication of important logic.
-- Made `Pop` return `T` so that if we create a `Stack[int]` we in practice get back `int` from `Pop`; we can now use `+` without the need for type assertion gymnastics.
-- Prevented misuse at compile time. You cannot `Push` oranges to an apple stack.
+## Samenvattend
 
-## Wrapping up
+Dit hoofdstuk zou je een voorproefje moeten hebben gegeven van de syntaxis van generieke typen en enkele ideeën moeten hebben gegeven waarom generieke typen nuttig kunnen zijn. We hebben onze eigen `Assert`-functies geschreven die we veilig kunnen hergebruiken om te experimenteren met andere ideeën rond generieke typen, en we hebben een eenvoudige datastructuur geïmplementeerd om elk gewenst type data op een typeveilige manier op te slaan.
 
-This chapter should have given you a taste of generics syntax, and some ideas as to why generics might be helpful. We've written our own `Assert` functions which we can safely re-use to experiment with other ideas around generics, and we've implemented a simple data structure to store any type of data we wish, in a type-safe manner.
+### Generics zijn in de meeste gevallen eenvoudiger dan `interface{}`
 
-### Generics are simpler than using `interface{}` in most cases
+Als je geen ervaring hebt met statisch getypeerde talen, is het nut van generics misschien niet meteen duidelijk, maar ik hoop dat de voorbeelden in dit hoofdstuk hebben geïllustreerd waar de Go-taal niet zo expressief is als we zouden willen. Met name het gebruik van `interface{}` maakt je code:
 
-If you're inexperienced with statically-typed languages, the point of generics may not be immediately obvious, but I hope the examples in this chapter have illustrated where the Go language isn't as expressive as we'd like. In particular using `interface{}` makes your code:
+- Minder veilig (een mix van appels en peren), vereist meer foutafhandeling
+- Minder expressief, `interface{}` vertelt je niets over de data
+- Waarschijnlijker dat het vertrouwt op [reflectie](https://github.com/bobkosse/leer-go-met-tests/basisbeginselen-go/reflection.md), type-asserties, enz., wat je code lastiger te gebruiken en foutgevoeliger maakt, omdat het controles van compile-time naar runtime verplaatst
 
-- Less safe (mix apples and oranges), requires more error handling
-- Less expressive, `interface{}` tells you nothing about the data
-- More likely to rely on [reflection](https://github.com/quii/learn-go-with-tests/blob/main/reflection.md), type-assertions etc which makes your code more difficult to work with and more error prone as it pushes checks from compile-time to runtime
+Het gebruik van statisch getypeerde talen is een manier om beperkingen te beschrijven. Als je het goed doet, creëer je code die niet alleen veilig en eenvoudig te gebruiken is, maar ook eenvoudiger te schrijven, omdat de mogelijke oplossingsruimte kleiner is.
 
-Using statically typed languages is an act of describing constraints. If you do it well, you create code that is not only safe and simple to use but also simpler to write because the possible solution space is smaller.
+Generics biedt ons een nieuwe manier om beperkingen in onze code uit te drukken. Zoals aangetoond, stelt dit ons in staat om code te samen te voegen en te vereenvoudigen die tot Go 1.18 niet mogelijk was.
 
-Generics gives us a new way to express constraints in our code, which as demonstrated will allow us to consolidate and simplify code that was not possible until Go 1.18.
+### Zullen generics Go in Java veranderen?
 
-### Will generics turn Go into Java?
+- Nee.
 
-- No.
+Er is veel [FUD (fear, uncertainty and doubt)](https://en.wikipedia.org/wiki/Fear,_uncertainty,_and_doubt) in de Go-community over het feit dat generics leiden tot nachtmerrieachtige abstracties en verbijsterende codebases. Dit wordt meestal gecompenseerd door "ze moeten zorgvuldig worden gebruikt".
 
-There's a lot of [FUD (fear, uncertainty and doubt)](https://en.wikipedia.org/wiki/Fear,_uncertainty,_and_doubt) in the Go community about generics leading to nightmare abstractions and baffling code bases. This is usually caveatted with "they must be used carefully".
+Hoewel dit waar is, is het geen bijzonder nuttig advies, omdat dit voor elke taalfunctie geldt.
 
-Whilst this is true, it's not especially useful advice because this is true of any language feature.
+Niet veel mensen klagen over ons vermogen om interfaces te definiëren, wat net als generics een manier is om beperkingen in onze code te beschrijven. Wanneer je een interface beschrijft, maak je een ontwerpkeuze die _slecht zou kunnen zijn_. generics zijn niet uniek in hun vermogen om code verwarrend en vervelend te maken.
 
-Not many people complain about our ability to define interfaces which, like generics is a way of describing constraints within our code. When you describe an interface you are making a design choice that _could be poor_, generics are not unique in their ability to make confusing, annoying to use code.
+### Je gebruikt al generics
 
-### You're already using generics
-
-When you consider that if you've used arrays, slices or maps; you've _already been a consumer of generic code_.
+Als je bedenkt dat als je arrays, slices of maps hebt gebruikt, je _al een consument van generics_ bent geweest.
 
 ```
 var myApples []Apple
@@ -632,31 +637,31 @@ var myApples []Apple
 append(myApples, Orange{})
 ```
 
-### Abstraction is not a dirty word
+### Abstractie is geen vies woord
 
-It's easy to dunk on [AbstractSingletonProxyFactoryBean](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/aop/framework/AbstractSingletonProxyFactoryBean.html) but let's not pretend a code base with no abstraction at all isn't also bad. It's your job to _gather_ related concepts when appropriate, so your system is easier to understand and change; rather than being a collection of disparate functions and types with a lack of clarity.
+Het is makkelijk om [AbstractSingletonProxyFactoryBean](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/aop/framework/AbstractSingletonProxyFactoryBean.html) te gebruiken, maar laten we niet doen alsof een codebase zonder enige abstractie niet net zo slecht is. Het is jouw taak om gerelateerde concepten te _verzamelen_ wanneer dat nodig is, zodat je systeem gemakkelijker te begrijpen en te wijzigen is; in plaats van een verzameling van uiteenlopende functies en typen met een gebrek aan duidelijkheid.
 
-### [Make it work, make it right, make it fast](https://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast#:~:text=%22Make%20it%20work%2C%20make%20it,to%20DesignForPerformance%20ahead%20of%20time.)
+### [Laat het werken, maak het goed, maak het snel](https://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast#:~:text=%22Make%20it%20work%2C%20make%20it,to%20DesignForPerformance%20ahead%20of%20time.)
 
-People run in to problems with generics when they're abstracting too quickly without enough information to make good design decisions.
+Mensen lopen tegen problemen aan met generics wanneer ze te snel abstraheren zonder voldoende informatie om goede ontwerpbeslissingen te nemen.
 
-The TDD cycle of red, green, refactor means that you have more guidance as to what code you _actually need_ to deliver your behaviour, **rather than imagining abstractions up front**; but you still need to be careful.
+De TDD-cyclus van rood, groen, refactoring betekent dat je meer richting hebt met betrekking tot welke code je _werkelijk_ nodig hebt om je gedrag te leveren, **in plaats van dat je van tevoren abstracties bedenkt**; maar je moet nog steeds voorzichtig zijn.
 
-There's no hard and fast rules here but resist making things generic until you can see that you have a useful generalisation. When we created the various `Stack` implementations we importantly started with _concrete_ behaviour like `StackOfStrings` and `StackOfInts` backed by tests. From our _real_ code we could start to see real patterns, and backed by our tests, we could explore refactoring toward a more general-purpose solution.
+Er zijn hier geen vaste regels, maar maak dingen pas generiek als je ziet dat je een bruikbare generalisatie hebt. Toen we de verschillende `Stack`-implementaties creëerden, begonnen we met concreet gedrag zoals `StackOfStrings` en `StackOfInts`, ondersteund door tests. Vanuit onze echte code konden we echte patronen zien, en op basis van onze tests konden we refactoring onderzoeken voor een meer algemene oplossing.
 
-People often advise you to only generalise when you see the same code three times, which seems like a good starting rule of thumb.
+Developers adviseren vaak om pas te generaliseren als je dezelfde code drie keer ziet, wat een goede vuistregel lijkt.
 
-A common path I've taken in other programming languages has been:
+Een veelvoorkomend pad dat ik in andere programmeertalen heb gevolgd, is:
 
-- One TDD cycle to drive some behaviour
-- Another TDD cycle to exercise some other related scenarios
+- Eén TDD-cyclus om bepaald gedrag aan te sturen
+- Nog een TDD-cyclus om andere gerelateerde scenario's te oefenen
 
-> Hmm, these things look similar - but a little duplication is better than coupling to a bad abstraction
+> Hmm, deze dingen lijken op elkaar, maar een beetje duplicatie is beter dan koppeling aan een slechte abstractie
 
-- Sleep on it
-- Another TDD cycle
+- Slaap er een nachtje over
+- Een nieuwe TDD-cyclus
 
-> OK, I'd like to try to see if I can generalise this thing. Thank goodness I am so smart and good-looking because I use TDD, so I can refactor whenever I wish, and the process has helped me understand what behaviour I actually need before designing too much.
+> Oké, ik wil graag proberen of ik dit kan generaliseren. Gelukkig ben ik zo slim en knap omdat ik TDD gebruik, dus ik kan refactoren wanneer ik wil. Het proces heeft me geholpen te begrijpen welk gedrag ik echt nodig heb voordat ik te veel ontwerp.
 
-- This abstraction feels nice! The tests are still passing, and the code is simpler
-- I can now delete a number of tests, I've captured the _essence_ of the behaviour and removed unnecessary detail
+- Deze abstractie voelt prettig! De tests slagen nog steeds en de code is eenvoudiger.
+- Ik kan nu een aantal tests verwijderen. Ik heb de _essentie_ van het gedrag vastgelegd en onnodige details verwijderd.
