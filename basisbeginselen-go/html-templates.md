@@ -16,16 +16,6 @@ Je kunt je HTML in Go genereren met behulp van [`fmt.Fprintf`](https://pkg.go.de
 
 In het hoofdstuk [Bestanden lezen](reading-files.md) hebben we code geschreven die [`fs.FS`](https://pkg.go.dev/io/fs) (een bestandssysteem) gebruikt en een deel van `Post` retourneert voor elk markdown-bestand dat het tegenkomt.
 
-We leven in een wereld waarin iedereen webapplicaties wil bouwen met het nieuwste frontend-framework, gebouwd op gigabytes aan getranspileerde JavaScript en werkend met een Byzantijns bouwsysteem. [Maar misschien is dat niet altijd nodig](https://quii.dev/The_Web_I_Want).
-
-Ik denk dat de meeste Go-ontwikkelaars waarde hechten aan een eenvoudige, stabiele en snelle toolchain, maar de frontend-wereld schiet hier vaak tekort.
-
-Veel websites hoeven geen [SPA](https://en.wikipedia.org/wiki/Single-page_application) te zijn. **HTML en CSS zijn fantastische manieren om content te leveren** en je kunt Go gebruiken om een ​​website te maken die HTML levert.
-
-Als je toch dynamische elementen wilt hebben, kun je er nog wat client-side JavaScript aan toevoegen. Je kunt ook experimenteren met [Hotwire](https://hotwired.dev/), waarmee je een dynamische ervaring kunt bieden met een server-side benadering.
-
-Je kunt je HTML in Go genereren met behulp van [`fmt.Fprintf`](https://pkg.go.dev/fmt#Fprintf), maar in dit hoofdstuk leer je dat de standaardbibliotheek van Go een aantal tools heeft, om HTML op een eenvoudigere en betere manier te onderhouden en te genereren. Je leert ook effectievere manieren om dit soort code te testen, die je misschien nog niet eerder bent tegengekomen.
-
 ```go
 posts, err := blogposts.NewPostsFromFS(os.DirFS("posts"))
 ```
@@ -38,8 +28,6 @@ type Post struct {
 	Tags                     []string
 }
 ```
-
-In het hoofdstuk [Bestanden lezen](reading-files.md) hebben we code geschreven die een [`fs.FS`](https://pkg.go.dev/io/fs) (een bestandssysteem) neemt en een stukje `Post` retourneert voor elk markdown-bestand dat het tegenkomt.
 
 Hier is een voorbeeld van een van de markdown-bestanden die verwerkt kunnen worden.
 
@@ -59,21 +47,9 @@ Voor onze blog willen we twee soorten pagina's genereren:
 1. **View post**. Geeft een specifiek bericht weer. Het `Body`-veld in `Post` is een tekenreeks met markdown, dus die moet worden omgezet naar HTML.
 2. **Index**. Geeft een overzicht van alle berichten, met hyperlinks om het specifieke bericht te bekijken.
 
-Hier is een voorbeeld van een van de markdown bestanden die verwerkt kunnen worden.
-
-We willen ook een consistente uitstraling op onze hele site. Daarom gebruiken we voor elke pagina de gebruikelijke HTML-elementen, zoals `<html>` en een `<head>` met links naar CSS-stijlblad en alles wat we verder nog nodig hebben.
-
-Als we doorgaan met het schrijven van blogsoftware, dan nemen we deze gegevens en genereren hieruit HTML-code die onze webserver kan retourneren als reactie op HTTP-verzoeken.
-
-Voor onze blog willen we twee soorten pagina's genereren:
-
-Wanneer je blogsoftware bouwt, heb je verschillende opties wat betreft de manier waarop je HTML opbouwt en naar de browser van de gebruiker verzendt.
-
 We willen ook een consistente uitstraling op onze hele site. Daarom gebruiken we voor elke pagina de gebruikelijke HTML-elementen, zoals `<html>` en een `<head>` met links naar CSS-stijlblad en alles wat we verder nog nodig hebben.
 
 Wanneer je blogsoftware bouwt, heb je verschillende opties wat betreft de manier waarop je HTML opbouwt en naar de browser van de gebruiker verzendt.
-
-We ontwerpen onze code zo dat deze een `io.Writer` accepteert. Dit betekent dat de aanroeper van onze code de flexibiliteit heeft om:
 
 We ontwerpen onze code zo dat deze een `io.Writer` accepteert. Dit betekent dat de aanroeper van onze code de flexibiliteit heeft om:
 
@@ -83,37 +59,13 @@ We ontwerpen onze code zo dat deze een `io.Writer` accepteert. Dit betekent dat 
 
 ## Schrijf eerst je test
 
-Zoals altijd is het belangrijk om na te denken over de vereisten voordat je er te snel in de oplossing duikt. Hoe kunnen we deze vrij grote set vereisten opsplitsen in een kleine, haalbare stap waar we ons op kunnen richten?
-
-Naar mijn mening heeft het daadwerkelijk bekijken van content een hogere prioriteit dan een indexpagina. We zouden dit product kunnen lanceren en directe links naar onze fantastische content kunnen delen. Een indexpagina die niet naar de daadwerkelijke content kan linken, is niet immers niet zo nuttig.
-
-Toch voelt het renderen van een bericht zoals eerder beschreven nog steeds groot. Al het HTML-gedoe, het omzetten van de body-markdown naar HTML, het vermelden van tags, enzovoort.
-
-Op dit moment maak ik me niet al te druk om de specifieke markup, en een eenvoudige eerste stap zou zijn om te controleren of we de titel van het bericht als een `<h1>` kunnen weergeven. Dit _voelt als de kleinste eerste stap_ die ons een stap verder kan brengen.
-
-## Schrijf eerst je test
-
-Doordat we voor een `io.Writer` hebben gekozen, wordt testen ook eenvoudiger. In dit geval schrijven we naar een [`bytes.Buffer`](https://pkg.go.dev/bytes#Buffer), waarvan we de inhoud later kunnen controleren.
-
-## Probeer de test uit te voeren
-
-Als je de voorgaande hoofdstukken van dit boek hebt gelezen, zou je hier nu goed in moeten zijn. Je kunt de test niet kunnen uitvoeren omdat we het pakket of de `Render`-functie niet hebben gedefinieerd. Probeer zelf de compiler meldingen te volgen en bereik een status waarin je de test kunt uitvoeren en ziet dat deze mislukt met een duidelijke melding.
-
-Het is echt belangrijk dat je oefent met het testen van je fouten. Je zult jezelf dankbaar zijn als je 6 maanden later per ongeluk een test laat mislukken, omdat je nu de moeite hebt genomen om te controleren of de test wel is mislukt, met een duidelijke boodschap.
-
-## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
-
-Dit is de minimale code om de test uit te voeren
-
-Zoals altijd is het belangrijk om na te denken over de vereisten voordat je te snel in de oplossing duikt. Hoe kunnen we deze vrij grote set vereisten opsplitsen in een kleine, haalbare stap waar we ons eerst op kunnen richten?
+Zoals altijd is het belangrijk om na te denken over de vereisten voordat je  te snel in de oplossing duikt. Hoe kunnen we deze vrij grote set vereisten opsplitsen in een kleine, haalbare stap waar we ons eerst op kunnen richten?
 
 Naar mijn mening heeft het daadwerkelijk bekijken van content een hogere prioriteit dan een indexpagina. We zouden dit product kunnen lanceren en directe links naar onze fantastische content kunnen delen. Een indexpagina die niet naar de daadwerkelijke content kan linken, is niet nuttig.
 
 Toch voelt het renderen van een bericht zoals eerder beschreven nog steeds groot aan. Al het HTML-materiaal, het omzetten van de body-markdown naar HTML, het weergeven van tags, enzovoort.
 
 Op dit moment maak ik me niet al te druk om de specifieke markup, en een eenvoudige eerste stap zou zijn om te controleren of we de titel van het bericht als een `<h1>` kunnen weergeven. Dit _voelt_ als die kleinste eerste stap die ons een stap verder kan brengen.
-
-De test moet aangeven dat een lege string niet gelijk is aan wat we willen.
 
 ```go
 package blogrenderer_test
@@ -192,10 +144,6 @@ Vergeet niet dat softwareontwikkeling in de eerste plaats een leeractiviteit is.
 
 We maken ons dus op dit moment geen zorgen over het gebruik van templatebibliotheken. Je kunt prima HTML genereren met "normale" stringtemplates. Door het templategedeelte over te slaan, kunnen we een klein beetje bruikbaar gedrag valideren en hebben we een klein beetje ontwerpwerk gedaan voor de API van ons pakket.
 
-Vergeet niet dat softwareontwikkeling in de eerste plaats een leeractiviteit is. Om te ontdekken en te leren terwijl we werken, moeten we op een manier werken die ons regelmatige, hoogwaardige feedback geeft. De makkelijkste manier om dat te doen, is door in kleine stapjes te werken.
-
-We maken ons dus op dit moment geen zorgen over het gebruik van templatebibliotheken. Je kunt prima HTML maken met "normale" stringtemplates, en door het templategedeelte over te slaan, kunnen we een klein beetje bruikbaar gedrag valideren en hebben we een klein beetje ontwerpwerk gedaan voor de API van ons pakket.
-
 ## Refactor
 
 Er valt nog niet veel te refactoren, dus laten we doorgaan naar de volgende iteratie
@@ -224,29 +172,11 @@ Tags: <ul><li>go</li><li>tdd</li></ul>`
 	})
 ```
 
-Er valt nog niet veel te refactoren, dus laten we doorgaan naar de volgende iteratie
-
-## Write the test first
-
 Merk op dat het schrijven hiervan _onhandig_ aanvoelt. Het zien van al die markup in de test voelt niet fijn, en we hebben nog niet eens de body toegevoegd, of de HTML die we nodig hebben met alle `<head>`-content en alle pagina-indelingen die we nodig hebben.
 
 Laten we de pijn desondanks _voorlopig_ maar accepteren.
 
-Nu we een zeer basale versie hebben die werkt, kunnen we itereren op de test om de functionaliteit uit te breiden. In dit geval door meer informatie uit de `Post` te renderen.
-
 ## Probeer de test uit te voeren
-
-Merk op dat het schrijven hiervan _ongemakkelijk aanvoelt_. Het zien van al die markup in de test voelt niet prettig, en we hebben nog niet eens de body of de HTML-code toegevoegd die we nodig hebben, met alle `<head>`-content en alle pagina-indelingen die we nodig hebben.
-
-Maar laten we de pijn maar even verdragen.
-
-## Try to run the test
-
-Er zou een foutmelding moeten verschijnen, met de melding dat de string die we verwachten niet aanwezig is. De beschrijving en tags worden namelijk niet weergegeven.
-
-## Schrijf genoeg code om de test te laten slagen
-
-Probeer dit zelf te doen in plaats van de code te kopiëren. Je zult merken dat het een beetje _vervelend_ is om deze test te laten slagen! Toen ik het probeerde, kreeg ik deze foutmelding:
 
 Er zou een foutmelding moeten verschijnen, met de melding dat de string die we verwachten niet aanwezig is. De beschrijving en tags worden namelijk niet weergegeven.
 
@@ -261,8 +191,6 @@ Probeer dit zelf te doen in plaats van de code te kopiëren. Je zult merken dat 
         <p>This is a description</p>
         Tags: <ul><li>go</li><li></li></ul>'
 ```
-
-Nieuwe regels! Wat maakt het uit? Nou, onze test wel, omdat hij een exacte string waarde vergelijkt. Zou dat moeten? Ik heb de nieuwe regels voorlopig verwijderd, gewoon om de test te laten slagen.
 
 Nieuwe regels! Wat maakt het uit? Nou, onze test wel, omdat hij een exacte stringwaarde vergelijkt. Zou dat moeten? Ik heb de nieuwe regels voorlopig verwijderd, gewoon om de test te laten slagen.
 
@@ -298,13 +226,7 @@ func Render(w io.Writer, p Post) error {
 
 Belangrijk is echter dat we een voldoende hebben gehaald en dat de software werkt.
 
-**Verdorie**. Niet de mooiste code die ik ooit heb geschreven, en we zitten nog maar in een heel vroeg stadium van de implementatie van onze markup. We hebben zoveel meer content en dingen op onze pagina nodig, dat we snel inzien dat deze aanpak niet geschikt is.
-
-Belangrijk is echter dat we een voldoende hebben gehaald en dat de software werkt.
-
 ## Refactor
-
-Nu we het vangnet hebben van een geslaagde test voor werkende code, kunnen we nadenken over het wijzigen van onze implementatieaanpak in de refactoringfase.
 
 Nu we het vangnet hebben van een geslaagde test voor werkende code, kunnen we nadenken over het wijzigen van onze implementatieaanpak in de refactoringfase.
 
@@ -314,7 +236,7 @@ Go heeft twee templatepakketten: [text/template](https://pkg.go.dev/text/templat
 
 Wat is het verschil tussen de text- en HTML-versie?
 
-> Het pakket (html/template) implementeert datagestuurde templates voor het genereren van HTML-uitvoer die veilig is tegen code-injectie. Het biedt dezelfde interface als pakket text/template en dient in plaats van text/template te worden gebruikt wanneer de uitvoer HTML is.
+> Het pakket (html/template) implementeert datagestuurde templates voor het genereren van HTML-uitvoer die veilig is tegen code-injectie. Het biedt dezelfde interface als pakket text/template en dient in plaats van text/template te worden gebruikt wanneer de uitvoer HTML is. 
 
 De templatetaal lijkt sterk op [Mustache](https://mustache.github.io) en stelt je in staat om dynamisch content te genereren op een zeer overzichtelijke manier, met een goede scheiding van verantwoordelijkheden. Vergeleken met andere templatetalen die je mogelijk hebt gebruikt, is het erg beperkt of "logicaloos", zoals Mustache het graag noemt. Dit is een belangrijke, **en bewuste** ontwerpbeslissing.
 
@@ -375,6 +297,7 @@ Wat we willen, is onze templates in aparte bestanden plaatsen, zodat we ze beter
 Maak een map aan met de naam "templates" en maak daarin een bestand aan met de naam `blog.gohtml`. Plak onze template in het bestand.
 
 Wijzig nu onze code om de bestandssystemen te embedden met behulp van de [embeddingfunctionaliteit in go 1.16](https://pkg.go.dev/embed).
+
 
 ```go
 package blogrenderer
@@ -601,6 +524,7 @@ Voer je test opnieuw uit. Er moet een nieuw "ontvangen" bestand worden aangemaak
 ## Een excuus om te rommelen met benchmarking
 
 Laten we, voordat we verdergaan, eens kijken wat onze code doet.
+
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -905,6 +829,7 @@ Dit zou onze renderingcode logischer maken en is waarschijnlijk de striktste sch
 Beide opties zijn prima, in dit geval ben ik geneigd om voor de eerste te kiezen. Naarmate het systeem zich verder ontwikkelt, moet je voorzichtig zijn met het toevoegen van steeds meer ad-hocmethoden om het renderen soepeler te laten verlopen; speciale weergavemodellen worden nuttiger wanneer de transformatie tussen het domeinobject en de weergave complexer wordt.
 
 We kunnen onze methode dus toevoegen aan `Post`
+
 
 ```go
 func (p Post) SanitisedTitle() string {
