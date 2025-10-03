@@ -236,9 +236,9 @@ Go heeft twee templatepakketten: [text/template](https://pkg.go.dev/text/templat
 
 Wat is het verschil tussen de text- en HTML-versie?
 
-> Pakkettemplate (html/template) implementeert datagestuurde templates voor het genereren van HTML-uitvoer die veilig is tegen code-injectie. Het biedt dezelfde interface als pakket text/template en dient in plaats van text/template te worden gebruikt wanneer de uitvoer HTML is. 
+> Het pakket (html/template) implementeert datagestuurde templates voor het genereren van HTML-uitvoer die veilig is tegen code-injectie. Het biedt dezelfde interface als pakket text/template en dient in plaats van text/template te worden gebruikt wanneer de uitvoer HTML is. 
 
-De templatetaal lijkt sterk op [Mustache](https://mustache.github.io) en stelt je in staat om dynamisch content te genereren op een zeer overzichtelijke manier, met een goede scheiding van aandachtspunten. Vergeleken met andere templatetalen die je mogelijk hebt gebruikt, is het erg beperkt of "logicaloos", zoals Mustache het graag noemt. Dit is een belangrijke, **en bewuste** ontwerpbeslissing.
+De templatetaal lijkt sterk op [Mustache](https://mustache.github.io) en stelt je in staat om dynamisch content te genereren op een zeer overzichtelijke manier, met een goede scheiding van verantwoordelijkheden. Vergeleken met andere templatetalen die je mogelijk hebt gebruikt, is het erg beperkt of "logicaloos", zoals Mustache het graag noemt. Dit is een belangrijke, **en bewuste** ontwerpbeslissing.
 
 Hoewel we ons hier richten op het genereren van HTML, kun je, als je project complexe string-concatenaties en incantaties gebruikt, beter `text/template` gebruiken om je code schoon te houden.
 
