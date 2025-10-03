@@ -1,8 +1,8 @@
-# Revisiting arrays and slices with generics
+# Arrays en slices opnieuw bekijken met generieke typen
 
-**[The code for this chapter is a continuation from Arrays and Slices, found here](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
+**[De code voor dit hoofdstuk is een voortzetting van Arrays en Slices, hier te vinden](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
 
-Take a look at both `SumAll` and `SumAllTails` that we wrote in [arrays and slices](arrays-and-slices.md). If you don't have your version please copy the code from the [arrays and slices](arrays-and-slices.md) chapter along with the tests.
+Bekijk zowel `SumAll` als `SumAllTails` die we schreven in [arrays en slices](arrays-and-slices.md). Als je je versie niet hebt, kopieer dan de code uit het hoofdstuk [arrays en slices](arrays-and-slices.md) samen met de tests.
 
 ```go
 // Sum calculates the total from a slice of numbers.
@@ -30,49 +30,49 @@ func SumAllTails(numbersToSum ...[]int) []int {
 }
 ```
 
-Do you see a recurring pattern?
+Zie je een terugkerend patroon?
 
-- Create some kind of "initial" result value.
-- Iterate over the collection, applying some kind of operation (or function) to the result and the next item in the slice, setting a new value for the result
-- Return the result.
+- Creëer een soort "initiële" resultaatwaarde.
+- Itereer over de verzameling en pas een bewerking (of functie) toe op het resultaat en het volgende item in de slice, waarbij een nieuwe waarde voor het resultaat wordt ingesteld.
+- Retourneer het resultaat.
 
-This idea is commonly talked about in functional programming circles, often times called 'reduce' or [fold](https://en.wikipedia.org/wiki/Fold_(higher-order_function)).
+Dit idee wordt vaak besproken in kringen van functioneel programmeren, vaak 'reduce' of [fold](https://en.wikipedia.org/wiki/Fold_(higher-order_function)) genoemd.
 
-> In functional programming, fold (also termed reduce, accumulate, aggregate, compress, or inject) refers to a family of higher-order functions that analyze a recursive data structure and through use of a given combining operation, recombine the results of recursively processing its constituent parts, building up a return value. Typically, a fold is presented with a combining function, a top node of a data structure, and possibly some default values to be used under certain conditions. The fold then proceeds to combine elements of the data structure's hierarchy, using the function in a systematic way.
+> In functioneel programmeren verwijst fold (ook wel reduce, accumulate, aggregate, compress of inject genoemd) naar een familie van hogere-orde functies die een recursieve datastructuur analyseren en, door middel van een gegeven combinatiebewerking, de resultaten van de recursieve verwerking van de samenstellende delen recombineren en zo een retourwaarde opbouwen. Een fold wordt doorgaans gepresenteerd met een combinatiefunctie, een bovenste knooppunt van een datastructuur en mogelijk enkele standaardwaarden die onder bepaalde omstandigheden moeten worden gebruikt. De fold combineert vervolgens elementen van de hiërarchie van de datastructuur, waarbij de functie op een systematische manier wordt gebruikt.
 
-Go has always had higher-order functions, and as of version 1.18 it also has [generics](./generics.md), so it is now possible to define some of these functions discussed in our wider field. There's no point burying your head in the sand, this is a very common abstraction outside the Go ecosystem and it'll be beneficial to understand it.
+Go heeft altijd al hogere-orde functies gehad, en vanaf versie 1.18 heeft het ook [generics](./generics.md), waardoor het nu mogelijk is om enkele van deze functies die in ons bredere vakgebied worden besproken, te definiëren. Het heeft geen zin om je kop in het zand te steken; dit is een veelvoorkomende abstractie buiten het Go-ecosysteem en het zal nuttig zijn om het te begrijpen.
 
-Now, I know some of you are probably cringing at this.
+Ik weet dat sommigen van jullie hier waarschijnlijk een beetje huiverig voor zijn.
 
-> Go is supposed to be simple
+> Go is bedoeld om eenvoudig te zijn
 
-**Don't conflate easiness, with simplicity**. Doing loops and copy-pasting code is easy, but it's not necessarily simple. For more on simple vs easy, watch [Rich Hickey's masterpiece of a talk - Simple Made Easy](https://www.youtube.com/watch?v=SxdOUGdseq4).
+**Verwar gemak niet met eenvoud**. Loops maken en code kopiëren en plakken is makkelijk, maar niet per se simpel. Bekijk [Rich Hickey's meesterwerk van een presentatie - Simple Made Easy](https://www.youtube.com/watch?v=SxdOUGdseq4) voor meer informatie over simpel versus makkelijk.
 
-**Don't conflate unfamiliarity, with complexity**. Fold/reduce may initially sound scary and computer-sciencey but all it really is, is an abstraction over a very common operation. Taking a collection, and combining it into one item. When you step back, you'll realise you probably do this _a lot_.
+**Verwar onbekendheid niet met complexiteit**. Fold/reduce klinkt misschien in eerste instantie eng en computerwetenschappelijk, maar het is eigenlijk niets meer dan een abstractie van een veelvoorkomende bewerking. Een verzameling nemen en deze combineren tot één item. Als je een stapje terug doet, zul je je realiseren dat je dit waarschijnlijk _vaak_ doet.
 
-## A generic refactor
+## Een generic refactoring
 
-A mistake people often make with shiny new language features is they start by using them without having a concrete use-case. They rely on conjecture and guesswork to guide their efforts.
+Een fout die mensen vaak maken met gloednieuwe taalfuncties, is dat ze ze meteen gebruiken zonder een concrete use-case te hebben. Ze vertrouwen op speculatie en giswerk om hun inspanningen te sturen.
 
-Thankfully we've written our "useful" functions and have tests around them, so now we are free to experiment with ideas in the refactoring stage of TDD and know that whatever we're trying, has a verification of its value via our unit tests.
+Gelukkig hebben we onze "nuttige" functies geschreven en tests eromheen, dus we kunnen nu vrij experimenteren met ideeën in de refactoringfase van TDD en weten dat wat we ook proberen, de waarde ervan wordt geverifieerd via onze unittests.
 
-Using generics as a tool for simplifying code via the refactoring step is far more likely to guide you to useful improvements, rather than premature abstractions.
+Het gebruik van generieke functies als hulpmiddel om code te vereenvoudigen via de refactoringstap leidt veel waarschijnlijker tot nuttige verbeteringen dan tot voorbarige abstracties.
 
-We are safe to try things out, re-run our tests, if we like the change we can commit. If not, just revert the change. This freedom to experiment is one of the truly huge values of TDD.
+We kunnen veilig dingen uitproberen, onze tests opnieuw uitvoeren, en als de wijziging ons bevalt, kunnen we die implementeren. Zo niet, dan draaien we de wijziging gewoon terug. Deze vrijheid om te experimenteren is een van de echt grote voordelen van TDD.
 
-You should be familiar with the generics syntax [from the previous chapter](generics.md), try and write your own `Reduce` function and use it inside `Sum` and `SumAllTails`.
+Je dient bekend te zijn met de generics syntaxis [uit het vorige hoofdstuk](generics.md). Probeer je eigen `Reduce`-functie te schrijven en gebruik deze in `Sum` en `SumAllTails`.
 
-### Hints
+### Tips
 
-If you think about the arguments to your function first, it'll give you a very small set of valid solutions
-  - The array you want to reduce
-  - Some kind of combining function
+Als je eerst nadenkt over de argumenten van je functie, krijg je een zeer kleine set geldige oplossingen.
+- De array die je wilt reduceren.
+- Een soort combinerende functie.
 
-"Reduce" is an incredibly well documented pattern, there's no need to re-invent the wheel. [Read the wiki, in particular the lists section](https://en.wikipedia.org/wiki/Fold_(higher-order_function)), it should prompt you for another argument you'll need.
+"Reduce" is een ongelooflijk goed gedocumenteerd patroon, je hoeft het wiel niet opnieuw uit te vinden. [Lees de wiki, met name de sectie met lijsten](https://en.wikipedia.org/wiki/Fold_(higher-order_function)), het zou je in de richtin gmoeten duwen om een ​​ander argument te noemen dat je nodig hebt.
 
-> In practice, it is convenient and natural to have an initial value
+> In de praktijk is het handig en natuurlijk om een ​​beginwaarde te hebben
 
-### My first-pass of `Reduce`
+### Mijn eerste poging tot `Reduce`
 
 ```go
 func Reduce[A any](collection []A, f func(A, A) A, initialValue A) A {
@@ -84,11 +84,11 @@ func Reduce[A any](collection []A, f func(A, A) A, initialValue A) A {
 }
 ```
 
-Reduce captures the _essence_ of the pattern, it's a function that takes a collection, an accumulating function, an initial value, and returns a single value. There's no messy distractions around concrete types.
+Reduce legt de essentie van het patroon vast. Het is een functie die een verzameling, een optellende functie, een beginwaarde gebruikt en één waarde retourneert. Er zijn geen rommelige afleidingen rond concrete typen.
 
-If you understand generics syntax, you should have no problem understanding what this function does. By using the recognised term `Reduce`, programmers from other languages understand the intent too.
+Als je de syntaxis van generieke typen begrijpt, zou je geen probleem moeten hebben met het begrijpen van wat deze functie doet. Door de erkende term `Reduce` te gebruiken, begrijpen programmeurs uit andere talen ook de bedoeling.
 
-### The usage
+### Het gebruik
 
 ```go
 // Sum calculates the total from a slice of numbers.
@@ -112,11 +112,12 @@ func SumAllTails(numbers ...[]int) []int {
 }
 ```
 
-`Sum` and `SumAllTails` now describe the behaviour of their computations as the functions declared on their first lines respectively. The act of running the computation on the collection is abstracted away in `Reduce`.
+`Sum` en `SumAllTails` beschrijven nu het gedrag van hun berekeningen als de functies die respectievelijk op hun eerste regels zijn gedeclareerd. Het uitvoeren van de berekening op de verzameling is geabstraheerd in `Reduce`.
 
-## Further applications of reduce
+## Verdere toepassingen van reduce
 
-Using tests we can play around with our reduce function to see how re-usable it is. I have copied over our generic assertion functions from the previous chapter.
+Met behulp van tests kunnen we experimenteren met onze reduce-functie om te zien hoe herbruikbaar deze is. Ik heb onze generic assertiefuncties uit het vorige hoofdstuk overgenomen.
+
 
 ```go
 func TestReduce(t *testing.T) {
@@ -138,29 +139,29 @@ func TestReduce(t *testing.T) {
 }
 ```
 
-### The zero value
+### De nulwaarde
 
-In the multiplication example, we show the reason for having a default value as an argument to `Reduce`. If we relied on Go's default value of 0 for `int`, we'd multiply our initial value by 0, and then the following ones, so you'd only ever get 0. By setting it to 1, the first element in the slice will stay the same, and the rest will multiply by the next elements.
+In het vermenigvuldigingsvoorbeeld laten we zien waarom er een standaardwaarde als argument voor `Reduce` is. Als we de standaardwaarde 0 van Go voor `int` zouden gebruiken, zouden we onze beginwaarde met 0 vermenigvuldigen, en vervolgens de daarop volgende, zodat je altijd 0 overhoudt. Door het op 1 in te stellen, blijft het eerste element in de slice hetzelfde en worden de restelementen vermenigvuldigd met de volgende elementen.
 
-If you wish to sound clever with your nerd friends, you'd call this [The Identity Element](https://en.wikipedia.org/wiki/Identity_element).
+Als je slim wilt overkomen bij je nerdvrienden, noem je dit [Het Identiteitselement](https://en.wikipedia.org/wiki/Identity_element).
 
-> In mathematics, an identity element, or neutral element, of a binary operation operating on a set is an element of the set which leaves unchanged every element of the set when the operation is applied.
+> In de wiskunde is een identiteitselement, of neutraal element, van een binaire bewerking die op een verzameling wordt uitgevoerd, een element van de verzameling dat elk element van de verzameling onveranderd laat wanneer de bewerking wordt toegepast. 
 
-In addition, the identity element is 0.
+Hier is het identiteitselement bijvoorbeeld 0.
 
 `1 + 0 = 1`
 
-With multiplication, it is 1.
+Met vermenigvuldigen, is het 1.
 
 `1 * 1 = 1`
 
-## What if we wish to reduce into a different type from `A`?
+## Wat als we willen reduceren tot een ander type dan `A`?
 
-Suppose we had a list of transactions `Transaction` and we wanted a function that would take them, plus a name to figure out their bank balance.
+Stel dat we een lijst met transacties `Transactie` hebben en we een functie willen die deze transacties, plus een naam, verwerkt om hun banksaldo te berekenen.
 
-Let's follow the TDD process.
+Laten we het TDD-proces volgen.
 
-## Write the test first
+## Schrijf eerst je test
 
 ```go
 func TestBadBank(t *testing.T) {
@@ -183,16 +184,16 @@ func TestBadBank(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 ```
 # github.com/quii/learn-go-with-tests/arrays/v8 [github.com/quii/learn-go-with-tests/arrays/v8.test]
 ./bad_bank_test.go:6:20: undefined: Transaction
 ./bad_bank_test.go:18:14: undefined: BalanceFor
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test te laten uitvoeren en de falende test output te controleren
 
-We don't have our types or functions yet, add them to make the test run.
+We hebben nog geen typen of functies, voeg deze toe om de test uit te voeren.
 
 ```go
 type Transaction struct {
@@ -206,7 +207,7 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-When you run the test you should see the following:
+Wanneer je de test uitvoert, zou je het volgende moeten zien:
 
 ```
 === RUN   TestBadBank
@@ -216,9 +217,9 @@ When you run the test you should see the following:
 --- FAIL: TestBadBank (0.00s)
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
-Let's write the code as if we didn't have a `Reduce` function first.
+Laten we de code schrijven alsof we geen `Reduce`-functie hebben.
 
 ```go
 func BalanceFor(transactions []Transaction, name string) float64 {
@@ -237,9 +238,9 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 
 ## Refactor
 
-At this point, have some source control discipline and commit your work. We have working software, ready to challenge Monzo, Barclays, et al.
+Zorg op dit punt voor wat broncodebeheer en commit je werk. We hebben werkende software, klaar om Monzo, Barclays en anderen uit te dagen.
 
-Now our work is committed, we are free to play around with it, and try some different ideas out in the refactoring phase. To be fair, the code we have isn't exactly bad, but for the sake of this exercise, I want to demonstrate the same code using `Reduce`.
+Nu ons werk gecommit is, kunnen we ermee experimenteren en verschillende ideeën uitproberen in de refactoringfase. Om eerlijk te zijn, de code die we hebben is niet bepaald slecht, maar voor deze oefening wil ik dezelfde code demonstreren met `Reduce`.
 
 ```go
 func BalanceFor(transactions []Transaction, name string) float64 {
@@ -256,13 +257,13 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-But this won't compile.
+Maar dit comileert niet.
 
 ```
 ./bad_bank.go:19:35: type func(acc float64, t Transaction) float64 of adjustBalance does not match inferred type func(Transaction, Transaction) Transaction for func(A, A) A
 ```
 
-The reason is we're trying to reduce to a _different_ type than the type of the collection. This sounds scary, but actually just requires us to adjust the type signature of `Reduce` to make it work. We won't have to change the function body, and we won't have to change any of our existing callers.
+De reden is dat we proberen te reduceren naar een _ander_ type dan het type van de collectie. Dit klinkt eng, maar vereist eigenlijk alleen dat we de typesignatuur van `Reduce` aanpassen om het te laten werken. We hoeven de functiebody niet aan te passen, en we hoeven ook geen van onze bestaande aanroepen te wijzigen.
 
 ```go
 func Reduce[A, B any](collection []A, f func(B, A) B, initialValue B) B {
@@ -274,13 +275,13 @@ func Reduce[A, B any](collection []A, f func(B, A) B, initialValue B) B {
 }
 ```
 
-We've added a second type constraint which has allowed us to loosen the constraints on `Reduce`. This allows people to `Reduce` from a collection of `A` into a `B`. In our case from `Transaction` to `float64`.
+We hebben een tweede typebeperking toegevoegd waarmee we de beperkingen voor `Reduce` konden versoepelen. Dit stelt ons in staat om te `Reduce` te gebruiken van een verzameling `A` naar een `B`. In ons geval van `Transaction` naar `float64`.
 
-This makes `Reduce` more general-purpose and reusable, and still type-safe. If you try and run the tests again they should compile, and pass.
+Dit maakt `Reduce` algemener en herbruikbaarder, en nog steeds typeveilig. Als je de tests opnieuw uitvoert, zouden ze moeten compileren en slagen.
 
-## Extending the bank
+## Te bank uitbreiden
 
-For fun, I wanted to improve the ergonomics of the bank code. I've omitted the TDD process for brevity.
+Voor de lol wilde ik de ergonomie van de bankcode verbeteren. Om het kort te houden, heb ik het TDD-proces weggelaten.
 
 ```go
 func TestBadBank(t *testing.T) {
@@ -305,7 +306,7 @@ func TestBadBank(t *testing.T) {
 }
 ```
 
-And here's the updated code
+En hier is de bijgewerkte code
 
 ```go
 package main
@@ -344,26 +345,25 @@ func applyTransaction(a Account, transaction Transaction) Account {
 }
 ```
 
-I feel this really shows the power of using concepts like `Reduce`. The `NewBalanceFor` feels more _declarative_, describing _what_ happens, rather than _how_. Often when we're reading code, we're darting through lots of files, and we're trying to understand _what_ is happening, rather than _how_, and this style of code facilitates this well.
+Ik vind dat dit echt de kracht laat zien van concepten zoals `Reduce`. `NewBalanceFor` voelt meer _declaratief_ aan en beschrijft _wat_ er gebeurt in plaats van _hoe_. Vaak bladeren we tijdens het lezen van code door talloze bestanden en proberen we te begrijpen _wat_ er gebeurt in plaats van _hoe_, en deze codestijl maakt dit goed mogelijk.
 
-If I wish to dig in to the detail I can, and I can see the _business logic_ of `applyTransaction` without worrying about loops and mutating state; `Reduce` takes care of that separately.
+Als ik me in de details wil verdiepen, kan ik dat doen, en ik kan de _business logic_ van `applyTransaction` zien zonder me zorgen te maken over lussen en muterende statussen; `Reduce` zorgt daar apart voor.
 
+### Fold/reduce zijn behoorlijk universeel
 
-### Fold/reduce are pretty universal
+De mogelijkheden zijn eindeloos™️ met `Reduce` (of `Fold`). Het is niet voor niets een veelgebruikt patroon, het is niet alleen voor rekenkunde of het samenvoegen van strings. Probeer eens een paar andere toepassingen.
 
-The possibilities are endless™️ with `Reduce` (or `Fold`). It's a common pattern for a reason, it's not just for arithmetic or string concatenation. Try a few other applications.
-
-- Why not mix some `color.RGBA` into a single colour?
-- Total up the number of votes in a poll, or items in a shopping basket.
-- More or less anything involving processing a list.
+- Waarom meng je `color.RGBA` niet tot één kleur?
+- Tel het aantal stemmen in een poll of de items in een winkelmandje op.
+- Zo'n beetje alles wat met het verwerken van een lijst te maken heeft.
 
 ## Find
 
-Now that Go has generics, combining them with higher-order-functions, we can reduce a lot of boilerplate code within our projects, to help our systems be easier to understand and manage.
+Nu Go generieke functies heeft en deze combineert met functies van hogere orde, kunnen we veel boilerplate code binnen onze projecten reduceren, waardoor onze systemen gemakkelijker te begrijpen en te beheren zijn.
 
-No longer do you need to write specific `Find` functions for each type of collection you want to search, instead re-use or write a `Find` function. If you understood the `Reduce` function above, writing a `Find` function will be trivial.
+Je hoeft niet langer specifieke `Find`-functies te schrijven voor elk type collectie dat je wilt doorzoeken; in plaats daarvan kun je ze hergebruiken of een `Find`-functie schrijven. Als je de bovenstaande `Reduce`-functie begreep, is het schrijven van een `Find`-functie een fluitje van een cent.
 
-Here's a test
+Hier is een test
 
 ```go
 func TestFind(t *testing.T) {
@@ -379,7 +379,7 @@ func TestFind(t *testing.T) {
 }
 ```
 
-And here's the implementation
+En hier is de implementatie
 
 ```go
 func Find[A any](items []A, predicate func(A) bool) (value A, found bool) {
@@ -392,7 +392,7 @@ func Find[A any](items []A, predicate func(A) bool) (value A, found bool) {
 }
 ```
 
-Again, because it takes a generic type, we can re-use it in many ways
+Omdat het een generiek type aanneemt, kunnen we het op veel manieren hergebruiken.
 
 ```go
 type Person struct {
@@ -415,38 +415,38 @@ t.Run("Find the best programmer", func(t *testing.T) {
 })
 ```
 
-As you can see, this code is flawless.
+Zoals je kunt zien, is deze code foutloos.
 
-## Wrapping up
+## Samenvattend
 
-When done tastefully, higher-order functions like these will make your code simpler to read and maintain, but remember the rule of thumb:
+Wanneer ze met smaak worden uitgevoerd, maken hogere-orde functies zoals deze je code eenvoudiger leesbaar en onderhoudbaar. Onthoud echter de volgende vuistregel:
 
-Use the TDD process to drive out real, specific behaviour that you actually need, in the refactoring stage you then _might_ discover some useful abstractions to help tidy the code up.
+Gebruik het TDD-proces om echt, specifiek gedrag te definiëren dat je daadwerkelijk nodig hebt. In de refactoringfase _ontdek_ je vervolgens mogelijk enkele nuttige abstracties om de code op te schonen.
 
-Practice combining TDD with good source control habits. Commit your work when your test is passing, _before_ trying to refactor. This way if you make a mess, you can easily get yourself back to your working state.
+Oefen met het combineren van TDD met goede gewoonten van broncodebeheer. Commit je werk wanneer je test slaagt, _voordat_ je probeert te refactoren. Op deze manier kun je, als je een puinhoop maakt, gemakkelijk terugkeren naar je werkende staat.
 
-### Names matter
+### Naamgeving doet ertoe
 
-Make an effort to do some research outside of Go, so you don't re-invent patterns that already exist with an already established name.
+Doe je best om wat onderzoek buiten Go te doen, zodat je bestaande patronen niet opnieuw uitvindt met een reeds bestaande naam.
 
-Writing a function takes a collection of `A` and converts them to `B`? Don't call it `Convert`, that's [`Map`](https://en.wikipedia.org/wiki/Map_(higher-order_function)). Using the "proper" name for these items will reduce the cognitive burden for others and make it more search engine friendly to learn more.
+Een functie schrijven die een verzameling `A` omzet naar `B`? Noem het dan niet `Convert`, dat is [`Map`](https://en.wikipedia.org/wiki/Map_(higher-order_function)). Door de "juiste" naam voor deze items te gebruiken, wordt de cognitieve belasting voor anderen verminderd en wordt het zoekmachinevriendelijker om meer te leren.
 
-### This doesn't feel idiomatic?
+### Voelt dit niet idiomatisch aan?
 
-Try to have an open-mind.
+Probeer een open geest te hebben.
 
-Whilst the idioms of Go won't, and shouldn't _radically_ change due to generics being released, the idioms _will_ change - due to the language changing! This should not be a controversial point.
+Hoewel de idiomen van Go niet _radicaal_ zullen veranderen en dat ook niet zouden moeten doen door de release van generieke versies, _zullen_ ze wel veranderen, door de taalverandering! Dit zou geen controversieel punt moeten zijn.
 
-Saying
+Zeggen
 
-> This is not idiomatic
+> Dit is niet idiomatisch
 
-Without any more detail, is not an actionable, or useful thing to say. Especially when discussing new language features.
+Zonder verdere details is het niet uitvoerbaar of nuttig om te zeggen. Vooral niet bij het bespreken van nieuwe taalfuncties.
 
-Discuss with your colleagues patterns and style of code based on their merits rather than dogma. So long as you have well-designed tests, you'll always be able to refactor and shift things as you understand what works well for you, and your team.
+Bespreek patronen en codestijlen met je collega's op basis van hun verdiensten in plaats van dogma's. Zolang je goed ontworpen tests hebt, kun je altijd dingen herstructureren en aanpassen naarmate je begrijpt wat goed werkt voor jou en je team.
 
-### Resources
+### Bronnen
 
-Fold is a real fundamental in computer science. Here's some interesting resources if you wish to dig more into it
+Fold is een echte basis in de computerwetenschap. Hier zijn enkele interessante bronnen als je je er verder in wilt verdiepen.
 - [Wikipedia: Fold](https://en.wikipedia.org/wiki/Fold)
-- [A tutorial on the universality and expressiveness of fold](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)
+- [Een tutorial over de universaliteit en expressiviteit van fold (ENGELSTALIG)](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)
