@@ -24,7 +24,7 @@
 * [Bestanden lezen](basisbeginselen-go/reading-files.md)
 * [Templates](basisbeginselen-go/html-templates.md)
 * [Generics](basisbeginselen-go/generics.md)
-* [Revisiting arrays and slices with generics](basisbeginselen-go/revisiting-arrays-and-slices-with-generics.md)
+* [Arrays en slices opnieuw bekijken met generieke typen](basisbeginselen-go/revisiting-arrays-and-slices-with-generics.md)
 
 ## Basisbeginselen Testen
 
