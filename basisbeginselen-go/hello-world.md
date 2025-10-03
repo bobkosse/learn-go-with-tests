@@ -17,7 +17,7 @@ func main() {
 }
 ```
 
-Ga in je terminal naar de map die je aangemaakë hebt en typ: `go run hello.go`.
+Ga in je terminal naar de map die je aangemaakt hebt en typ: `go run hello.go`.
 
 ## Hoe dit werkt
 
