@@ -145,7 +145,7 @@ In het vermenigvuldigingsvoorbeeld laten we zien waarom er een standaardwaarde a
 
 Als je slim wilt overkomen bij je nerdvrienden, noem je dit [Het Identiteitselement](https://en.wikipedia.org/wiki/Identity_element).
 
-> In de wiskunde is een identiteitselement, of neutraal element, van een binaire bewerking die op een verzameling wordt uitgevoerd, een element van de verzameling dat elk element van de verzameling onveranderd laat wanneer de bewerking wordt toegepast. 
+> In de wiskunde is een identiteitselement, of neutraal element, van een binaire bewerking die op een verzameling wordt uitgevoerd, een element van de verzameling dat elk element van de verzameling onveranderd laat wanneer de bewerking wordt toegepast.
 
 Hier is het identiteitselement bijvoorbeeld 0.
 
@@ -279,7 +279,7 @@ We hebben een tweede typebeperking toegevoegd waarmee we de beperkingen voor `Re
 
 Dit maakt `Reduce` algemener en herbruikbaarder, en nog steeds typeveilig. Als je de tests opnieuw uitvoert, zouden ze moeten compileren en slagen.
 
-## Te bank uitbreiden
+## De bank uitbreiden
 
 Voor de lol wilde ik de ergonomie van de bankcode verbeteren. Om het kort te houden, heb ik het TDD-proces weggelaten.
 
