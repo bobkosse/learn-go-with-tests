@@ -1,167 +1,166 @@
-# Learn Go with Tests - Scaling Acceptance Tests (and light intro to gRPC)
+# Leer Go met Tests - Acceptatietests opschalen (en een korte introductie tot gRPC)
 
-This chapter is a follow-up to [Intro to acceptance tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/intro-to-acceptance-tests). You can find [the finished code for this chapter on GitHub](https://github.com/quii/go-specs-greet).
+Dit hoofdstuk is een vervolg op [Inleiding tot acceptatietests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/intro-to-acceptance-tests). Je kunt [de voltooide code voor dit hoofdstuk vinden op GitHub](https://github.com/quii/go-specs-greet).
 
-Acceptance tests are essential, and they directly impact your ability to confidently evolve your system over time, with a reasonable cost of change.
+Acceptatietests zijn essentieel en hebben een directe invloed op je vermogen om je systeem in de loop der tijd met vertrouwen te ontwikkelen, tegen redelijke kosten.
 
-They're also a fantastic tool to help you work with legacy code. When faced with a poor codebase without any tests, please resist the temptation to start refactoring. Instead, write some acceptance tests to give you a safety net to freely change the system's internals without affecting its functional external behaviour. ATs need not be concerned with internal quality, so they're a great fit in these situations.
+Ze vormen ook een fantastische tool om te werken met legacy code. Wanneer je te maken hebt met een slechte codebase zonder tests, weersta dan de verleiding om te beginnen met refactoren. Schrijf in plaats daarvan een aantal acceptatietests om je een vangnet te bieden om de interne werking van het systeem vrijelijk te kunnen wijzigen zonder het functionele externe gedrag te beïnvloeden. Acceptatietests hoeven zich geen zorgen te maken over de interne kwaliteit, dus ze zijn in deze situaties een uitstekende keuze.
 
-After reading this, you'll appreciate that acceptance tests are useful for verification and can also be used in the development process by helping us change our system more deliberately and methodically, reducing wasted effort.
+Nadat je dit hebt gelezen, zul je begrijpen dat acceptatietests nuttig zijn voor verificatie en dat ze ook kunnen worden gebruikt in het ontwikkelingsproces. Ze helpen ons om ons systeem doelbewuster en methodischer te veranderen, waardoor er minder moeite wordt verspild.
 
-## Prerequisite material
+## Vereist materiaal
 
-The inspiration for this chapter is borne of many years of frustration with acceptance tests. Two videos I would recommend you watch are:
+De inspiratie voor dit hoofdstuk is voortgekomen uit jarenlange frustratie met acceptatietests. Twee video's die ik je aanraad om te bekijken zijn:
 
-- Dave Farley - [How to write acceptance tests](https://www.youtube.com/watch?v=JDD5EEJgpHU)
-- Nat Pryce - [E2E functional tests that can run in milliseconds](https://www.youtube.com/watch?v=Fk4rCn4YLLU)
+- Dave Farley - [Hoe schrijf je acceptatietests](https://www.youtube.com/watch?v=JDD5EEJgpHU)
+- Nat Pryce - [E2E functionele tests die in milliseconden kunnen worden uitgevoerd](https://www.youtube.com/watch?v=Fk4rCn4YLLU)
 
-"Growing Object Oriented Software" (GOOS) is such an important book for many software engineers, including myself. The approach it prescribes is the one I coach engineers I work with to follow.
+"Growing Object Oriented Software" (GOOS) is een belangrijk boek voor veel software engineers, waaronder ikzelf. De aanpak die het voorschrijft, is de aanpak die ik de engineers met wie ik werk, aanraad te volgen.
 
 - [GOOS](http://www.growing-object-oriented-software.com) - Nat Pryce & Steve Freeman
 
-Finally, [Riya Dattani](https://twitter.com/dattaniriya) and I spoke about this topic in the context of BDD in our talk, [Acceptance tests, BDD and Go](https://www.youtube.com/watch?v=ZMWJCk_0WrY).
+Ten slotte spraken [Riya Dattani](https://twitter.com/dattaniriya) en ik over dit onderwerp in de context van BDD in onze lezing [Acceptatietests, BDD en Go](https://www.youtube.com/watch?v=ZMWJCk_0WrY).
 
-## Recap
+## Samenvatting
 
-We're talking about "black-box" tests that verify your system behaves as expected from the outside, from a "**business perspective**". The tests do not have access to the innards of the system it tests; they're only concerned with **what** your system does rather than **how**.
+We hebben het over "black-box"-tests die controleren of je systeem zich van buitenaf gedraagt zoals verwacht, vanuit een "**zakelijk perspectief**". De tests hebben geen toegang tot de interne onderdelen van het systeem dat ze testen; ze zijn alleen geïnteresseerd in **wat** je systeem doet in plaats van **hoe**.
 
-## Anatomy of bad acceptance tests
+## Anatomie van slechte acceptatietests
 
-Over many years, I've worked for several companies and teams. Each of them recognised the need for acceptance tests; some way to test a system from a user's point of view and to verify it works how it's intended, but almost without exception, the cost of these tests became a real problem for the team.
+Ik heb jarenlang voor verschillende bedrijven en teams gewerkt. Elk van hen erkende de noodzaak van acceptatietests; een manier om een systeem vanuit het perspectief van de gebruiker te testen en te verifiëren dat het werkt zoals bedoeld. Maar bijna zonder uitzondering vormden de kosten van deze tests een echt probleem voor het team.
 
-- Slow to run
-- Brittle
-- Flaky
-- Expensive to maintain, and seem to make changing the software harder than it ought to be
-- Can only run in a particular environment, causing slow and poor feedback loops
+- Langzaam draaiend
+- Broos
+- Onstabiel
+- Duur in onderhoud en het lijkt erop dat het lastiger is om de software te wijzigen dan nodig is
+- Kan alleen draaien in een specifieke omgeving, wat zorgt voor trage en slechte feedbackloops
 
-Let's say you intend to write an acceptance test around a website you're building. You decide to use a headless web browser (like [Selenium](https://www.selenium.dev)) to simulate a user clicking buttons on your website to verify it does what it needs to do.
+Stel dat je van plan bent een acceptatietest te schrijven voor een website die je bouwt. Je besluit een headless webbrowser (zoals [Selenium](https://www.selenium.dev)) te gebruiken om te simuleren dat een gebruiker op knoppen op je website klikt om te controleren of deze doet wat hij moet doen.
 
-Over time, your website's markup has to change as new features are discovered, and engineers bike-shed over whether something should be an `<article>` or a `<section>` for the billionth time.
+Na verloop van tijd moet de opmaak van je website veranderen naarmate er nieuwe functies worden ontdekt, en technici discussiëren voor de miljardste keer over de vraag of iets een `<artikel>` of een `<sectie>` moet zijn.
 
-Even though your team are only making minor changes to the system, barely noticeable to the actual user, you find yourself wasting lots of time updating your ATs.
+Hoewel je team slechts kleine wijzigingen in het systeem aanbrengt, die nauwelijks merkbaar zijn voor de daadwerkelijke gebruiker, verspil je toch veel tijd aan het bijwerken van je acceptatietests.
 
 ### Tight-coupling
 
-Think about what prompts acceptance tests to change:
+Denk na over wat de aanleiding is voor acceptatietests om te veranderen:
 
-- An external behaviour change. If you want to change what the system does, changing the acceptance test suite seems reasonable, if not desirable.
-- An implementation detail change / refactoring. Ideally, this shouldn't prompt a change, or if it does, a minor one.
+- Een externe gedragsverandering. Als je wilt veranderen wat het systeem doet, lijkt het aanpassen van de acceptatietestsuite redelijk, zo niet wenselijk.
+- Een wijziging in de implementatiedetails/refactoring. Idealiter zou dit geen verandering moeten veroorzaken, of als dat wel gebeurt, een kleine.
 
-Too often, though, the latter is the reason acceptance tests have to change. To the point where engineers even become reluctant to change their system because of the perceived effort of updating tests!
+Maar al te vaak is dit laatste de reden dat acceptatietests moeten veranderen. Zo erg zelfs dat engineers aarzelen om hun systeem te veranderen vanwege de ervaren inspanning die het updaten van tests met zich meebrengt!
 
-![Riya and myself talking about separating concerns in our tests](https://i.imgur.com/bbG6z57.png)
+![Riya en ik praten over het scheiden van aandachtspunten in onze tests](https://i.imgur.com/bbG6z57.png)
 
-These problems stem from not applying well-established and practised engineering habits written by the authors mentioned above. **You can't write acceptance tests like unit tests**; they require more thought and different practices.
+Deze problemen komen voort uit het niet toepassen van gevestigde en beoefende engineeringgewoonten die door de bovengenoemde auteurs zijn geschreven. **Je kunt acceptatietests niet schrijven zoals unittests**; ze vereisen meer denkwerk en andere werkwijzen.
 
-## Anatomy of good acceptance tests
+## Anatomie van goede acceptatietests
 
-If we want acceptance tests that only change when we change behaviour and not implementation detail, it stands to reason that we need to separate those concerns.
+Als we acceptatietests willen die alleen veranderen wanneer we het gedrag veranderen en niet de implementatiedetails, dan is het logisch dat we die aandachtspunten moeten scheiden.
 
-### On types of complexity
+### Over soorten complexiteit
 
-As software engineers, we have to deal with two kinds of complexity.
+Als software engineers hebben we te maken met twee soorten complexiteit.
 
-- **Accidental complexity** is the complexity we have to deal with because we're working with computers, stuff like networks, disks, APIs, etc.
+- **Accidental complexity** is de complexiteit waarmee we te maken hebben omdat we werken met computers, zaken als netwerken, schijven, API's, enz.
 
-- **Essential complexity** is sometimes referred to as "domain logic". It's the particular rules and truths within your domain.
-  - For example, "if an account owner withdraws more money than is available, they are overdrawn". This statement says nothing about computers; this statement was true before computers were even used in banks!
+- **Essentiële complexiteit** wordt soms ook wel "domeinlogica" genoemd. Het zijn de specifieke regels en waarheden binnen je domein.
+    - Bijvoorbeeld: "als een rekeninghouder meer geld opneemt dan beschikbaar is, is er sprake van een roodstand". Deze bewering zegt niets over computers; deze bewering was al waar voordat computers überhaupt in banken werden gebruikt!
 
-Essential complexity should be expressible to a non-technical person, and it's valuable to have modelled it in our "domain" code, and in our acceptance tests.
+Essentiële complexiteit zou voor een niet-technisch persoon begrijpelijk moeten zijn, en het is waardevol om deze te modelleren in onze "domein"-code en in onze acceptatietests.
 
-### Separation of concerns
+### Scheiding van aandachtspunten
 
-What Dave Farley proposed in the video earlier, and what Riya and I also discussed, is we should have the idea of **specifications**. Specifications describe the behaviour of the system we want without being coupled with accidental complexity or implementation detail.
+Wat Dave Farley eerder in de video voorstelde, en wat Riya en ik ook bespraken, is dat we het idee van **specificaties** zouden moeten hebben. Specificaties beschrijven het gedrag van het systeem dat we willen, zonder dat ze gepaard gaan met onbedoelde complexiteit of implementatiedetails.
 
-This idea should feel reasonable to you. In production code, we frequently strive to separate concerns and decouple units of work. Would you not hesitate to introduce an `interface` to allow your `HTTP` handler to decouple it from non-HTTP concerns? Let's take this same line of thinking for our acceptance tests.
+Dit idee zou aannemelijk voor je moeten zijn. In productiecode streven we er vaak naar om aandachtspunten te scheiden en werkeenheden te ontkoppelen. Zou je niet aarzelen om een `interface` te introduceren zodat je `HTTP`-handler deze kan ontkoppelen van niet-HTTP-aandachtspunten? Laten we dezelfde denkwijze volgen voor onze acceptatietests.
 
-Dave Farley describes a specific structure.
+Dave Farley beschrijft een specifieke structuur.
 
-![Dave Farley on Acceptance Tests](https://i.imgur.com/nPwpihG.png)
+![Dave Farley over acceptatietests](https://i.imgur.com/nPwpihG.png)
 
-At GopherconUK, Riya and I put this in Go terms.
+Op GopherconUK hebben Riya en ik dit in Go-termen vertaald.
 
-![Separation of concerns](https://i.imgur.com/qdY4RJe.png)
+![Scheiding van aandachtspunten](https://i.imgur.com/qdY4RJe.png)
 
-### Testing on steroids
+### Testen op steroïden
 
-Decoupling how the specification is executed allows us to reuse it in different scenarios. We can:
+Door de uitvoering van de specificatie te ontkoppelen, kunnen we deze in verschillende scenario's hergebruiken. We kunnen:
 
-#### Make our drivers configurable
+#### Onze drivers configureerbaar maken
 
-This means you can run your ATs locally, in your staging and (ideally) production environments.
-- Too many teams engineer their systems such that acceptance tests are impossible to run locally. This introduces an intolerably slow feedback loop. Wouldn't you rather be confident your ATs will pass _before_ integrating your code? If the tests start breaking, is it acceptable that you'd be unable to reproduce the failure locally and instead, have to commit changes and cross your fingers that it'll pass 20 minutes later in a different environment?
-- Remember, just because your tests pass in staging doesn't mean your system will work. Dev/Prod parity is, at best, a white lie. [I test in prod](https://increment.com/testing/i-test-in-production/).
-- There are always differences between the environments that can affect the *behaviour* of your system. A CDN could have some cache headers incorrectly set; a downstream service you depend on may behave differently; a configuration value may be incorrect. But wouldn't it be nice if you could run your specifications in prod to catch these problems quickly?
+Dit betekent dat je je acceptatietests lokaal, in je staging- en (idealiter) productieomgevingen kunt uitvoeren.
+- Te veel teams ontwerpen hun systemen zo dat acceptatietests onmogelijk lokaal kunnen worden uitgevoerd. Dit introduceert een ondraaglijk trage feedbacklus. Zou je er niet liever zeker van zijn dat je acceptatietests slagen _voordat_ je je code integreert? Als de tests mislukken, is het dan acceptabel dat je de fout niet lokaal kunt reproduceren en in plaats daarvan wijzigingen moet committen en hopen dat het 20 minuten later in een andere omgeving wel lukt?
+- Onthoud dat het feit dat je tests in staging slagen, niet betekent dat je systeem ook werkt. Dev/Prod-pariteit is op zijn best een leugentje om bestwil. [Ik test in prod](https://increment.com/testing/i-test-in-production/).
+- Er zijn altijd verschillen tussen de omgevingen die het *gedrag* van je systeem kunnen beïnvloeden. Een CDN kan cacheheaders onjuist hebben ingesteld; Een downstream service waarvan je afhankelijk bent, kan zich anders gedragen; een configuratiewaarde kan onjuist zijn. Maar zou het niet handig zijn als je je specificaties in productie kon uitvoeren om deze problemen snel op te sporen?
 
-#### Plug in _different_ drivers to test other parts of your system
+#### Plug _verschillende_ drivers in om andere delen van je systeem te testen
 
-This flexibility allows us to test behaviours at different abstraction and architectural layers, which allows us to have more focused tests beyond black-box tests.
-- For instance, you may have a web page with an API behind it. Why not use the same specification to test both? You can use a headless web browser for the web page, and HTTP calls for the API.
-- Taking this idea further, ideally, we want the **code to model essential complexity** (as "domain" code) so we should also be able to use our specifications for unit tests. This will give swift feedback that the essential complexity in our system is modelled and behaves correctly.
+Deze flexibiliteit stelt ons in staat om gedragingen op verschillende abstractie- en architectuurlagen te testen, waardoor we gerichtere tests kunnen uitvoeren dan alleen black-box-tests.
+- Je kunt bijvoorbeeld een webpagina hebben met een API erachter. Waarom zou je dan niet dezelfde specificatie gebruiken om beide te testen? Je kunt een headless webbrowser gebruiken voor de webpagina en HTTP-aanroepen voor de API.
+- Als we dit idee verder uitwerken, willen we idealiter dat de **code essentiële complexiteit modelleert** (als "domein"-code), zodat we onze specificaties ook voor unittests kunnen gebruiken. Dit geeft snelle feedback dat de essentiële complexiteit in ons systeem is gemodelleerd en correct functioneert.
 
+### Acceptatietests veranderen om de juiste redenen
 
-### Acceptance tests changing for the right reasons
+Met deze aanpak hoeven je specificaties alleen te veranderen als het gedrag van het systeem verandert, wat logisch is.
 
-With this approach, the only reason for your specifications to change is if the behaviour of the system changes, which is reasonable.
+- Als je HTTP API moet veranderen, is er één voor de hand liggende plek om deze bij te werken: de driver.
+- Als je markup verandert, werk dan ook de specifieke driver bij.
 
-- If your HTTP API has to change, you have one obvious place to update it, the driver.
-- If your markup changes, again, update the specific driver.
+Naarmate je systeem groeit, zul je merken dat je drivers voor meerdere tests hergebruikt. Dit betekent wederom dat als implementatiedetails veranderen, je slechts één, meestal voor de hand liggende, plek hoeft bij te werken.
 
-As your system grows, you'll find yourself reusing drivers for multiple tests, which again means if implementation detail changes, you only have to update one, usually obvious place.
+Als deze aanpak goed wordt uitgevoerd, biedt deze ons flexibiliteit in onze implementatiedetails en stabiliteit in onze specificaties. Belangrijk is dat het een eenvoudige en duidelijke structuur biedt voor het beheren van wijzigingen, wat essentieel wordt naarmate een systeem en het bijbehorende team groeien.
 
-When done right, this approach gives us flexibility in our implementation detail and stability in our specifications. Importantly, it provides a simple and obvious structure for managing change, which becomes essential as a system and its team grows.
+### Acceptatietests als methode voor softwareontwikkeling
 
-### Acceptance tests as a method for software development
+Tijdens ons gesprek bespraken Riya en ik acceptatietests en hun relatie met BDD. We bespraken hoe je je werk kunt beginnen met het proberen _het probleem dat je probeert op te lossen te begrijpen_ en dit te verwoorden in een specificatie, je helpt je intentie te focussen en een geweldige manier is om je werk te starten.
 
-In our talk, Riya and I discussed acceptance tests and their relation to BDD. We talked about how starting your work by trying to _understand the problem you're trying to solve_ and expressing it as a specification helps focus your intent and is a great way to start your work.
-
-I was first introduced to this way of working in GOOS. A while ago, I summarised the ideas on my blog. Here is an extract from my post [Why TDD](https://quii.dev/The_Why_of_TDD)
+Ik maakte voor het eerst kennis met deze manier van werken in GOOS. Een tijdje geleden heb ik de ideeën samengevat op mijn blog. Hier is een fragment uit mijn bericht [Waarom TDD](https://quii.dev/The_Why_of_TDD)
 
 ---
 
-TDD is focused on letting you design for the behaviour you precisely need, iteratively. When starting a new area, you must identify a key, necessary behaviour and aggressively cut scope.
+TDD is erop gericht je iteratief te laten ontwerpen voor het gedrag dat je precies nodig hebt. Wanneer je een nieuw gebied start, moet je het belangrijkste, noodzakelijk gedrag identificeren en de scope agressief beperken.
 
-Follow a "top-down" approach, starting with an acceptance test (AT) that exercises the behaviour from the outside. This will act as a north-star for your efforts. All you should be focused on is making that test pass. This test will likely be failing for a while whilst you develop enough code to make it pass.
+Volg een top-downbenadering, beginnend met een acceptatietest (AT) die het gedrag van buitenaf test. Dit zal dienen als een leidraad voor je inspanningen. Het enige waar je je op moet richten, is ervoor zorgen dat die test slaagt. Deze test zal waarschijnlijk een tijdje falen terwijl je voldoende code ontwikkelt om hem te laten slagen.
 
 ![](https://i.imgur.com/pxTaYu4.png)
 
-Once your AT is set up, you can break into the TDD process to drive out enough units to make the AT pass. The trick is to not worry too much about design at this point; get enough code to make the AT pass because you're still learning and exploring the problem.
+Zodra je AT is ingesteld, kun je het TDD-proces starten om voldoende units te genereren voor de AT-pass. De truc is om je op dit punt niet te veel zorgen te maken over het ontwerp; zorg dat je voldoende code hebt om de AT te laten slagen, omdat je nog steeds bezig bent met het leren en verkennen van het probleem.
 
-Taking this first step is often more extensive than you think, setting up web servers, routing, configuration, etc., which is why keeping the scope of the work small is essential. We want to make that first positive step on our blank canvas and have it backed by a passing AT so we can continue to iterate quickly and safely.
+Het zetten van deze eerste stap is vaak omvangrijker dan je denkt, met het opzetten van webservers, routing, configuratie, enz. Daarom is het essentieel om de scope van het werk beperkt te houden. We willen die eerste positieve stap op ons lege canvas zetten en deze laten ondersteunen door een AT die slaagt, zodat we snel en veilig kunnen blijven itereren.
 
 ![](https://i.imgur.com/t5y5opw.png)
 
-As you develop, listen to your tests, and they should give you signals to help you push your design in a better direction but, again, anchored to the behaviour rather than our imagination.
+Luister tijdens je ontwikkeling naar je tests. Ze zouden je signalen moeten geven die je helpen je ontwerp in een betere richting te sturen, maar wederom gebaseerd op het gedrag in plaats van op onze verbeelding.
 
-Typically, your first "unit" that does the hard work to make the AT pass will grow too big to be comfortable, even for this small amount of behaviour. This is when you can start thinking about how to break the problem down and introduce new collaborators.
+Je eerste "eenheid" die het zware werk doet om de AT te laten slagen, zal doorgaans te groot worden om comfortabel te zijn, zelfs voor dit kleine beetje gedrag. Dit is het moment waarop je kunt gaan nadenken over hoe je het probleem kunt opsplitsen en nieuwe samenwerkingspartners kunt introduceren.
 
 ![](https://i.imgur.com/UYqd7Cq.png)
 
-This is where test doubles (e.g. fakes, mocks) are handy because most of the complexity that lives internally within software doesn't usually reside in implementation detail but "between" the units and how they interact.
+Hierbij zijn testdubbels (bijvoorbeeld fakes, mocks) handig, omdat de meeste complexiteit die intern in software leeft doorgaans niet in de implementatiedetails zit, maar 'tussen' de eenheden en de manier waarop ze met elkaar interacteren.
 
-#### The perils of bottom-up
+#### De gevaren van bottom-up
 
-This is a "top-down" approach rather than a "bottom-up". Bottom-up has its uses, but it carries an element of risk. By building "services" and code without it being integrated into your application quickly and without verifying a high-level test, **you risk wasting lots of effort on unvalidated ideas**.
+Dit is een "top-down"-benadering in plaats van een "bottom-up". Bottom-up heeft zijn nut, maar brengt ook een risico met zich mee. Door "services" en code te bouwen zonder dat deze snel in je applicatie worden geïntegreerd en zonder een high-level test te verifiëren, **loop je het risico veel moeite te verspillen aan niet-gevalideerde ideeën**.
 
-This is a crucial property of the acceptance-test-driven approach, using tests to get real validation of our code.
+Dit is een cruciale eigenschap van de acceptatietestgestuurde aanpak, waarbij tests worden gebruikt om onze code daadwerkelijk te valideren.
 
-Too many times, I've encountered engineers who have made a chunk of code, in isolation, bottom-up, they think is going to solve a job, but it:
+Ik ben te vaak engineers tegengekomen die een stuk code, geïsoleerd en bottom-up, hebben gemaakt waarvan ze denken dat het een probleem oplost, maar het:
 
-- Doesn't work how we want to
-- Does stuff we don't need
-- Doesn't integrate easily
-- Requires a ton of re-writing anyway
+- Werkt niet zoals we willen
+- Doet dingen die we niet nodig hebben
+- Is niet gemakkelijk te integreren
+- Vereist sowieso veel herschrijven
 
-This is waste.
+Dat is verspilling.
 
-## Enough talk, time to code
+## Genoeg gepraat, tijd om te coderen
 
-Unlike other chapters, you'll need [Docker](https://www.docker.com) installed because we'll be running our applications in containers. It's assumed at this point in the book you're comfortable writing Go code, importing from different packages, etc.
+In tegenstelling tot andere hoofdstukken moet je [Docker](https://www.docker.com) geïnstalleerd hebben, omdat we onze applicaties in containers zullen draaien. We gaan ervan uit dat je op dit punt in het boek vertrouwd bent met het schrijven van Go-code, het importeren vanuit verschillende pakketten, enz.
 
-Create a new project with `go mod init github.com/quii/go-specs-greet` (you can put whatever you like here but if you change the path you will need to change all internal imports to match)
+Maak een nieuw project aan met `go mod init github.com/quii/go-specs-greet` (je kunt hier plaatsen wat je wilt, maar als je het pad wijzigt, moet je alle interne imports aanpassen).
 
-Make a folder `specifications` to hold our specifications, and add a file `greet.go`
+Maak een map `specifications` aan voor onze specificaties en voeg een bestand `greet.go` toe.
 
 ```go
 package specifications
@@ -183,37 +182,37 @@ func GreetSpecification(t testing.TB, greeter Greeter) {
 }
 ```
 
-My IDE (Goland) takes care of the fuss of adding dependencies for me, but if you need to do it manually, you'd do
+Mijn IDE (Goland) zorgt voor het toevoegen van afhankelijkheden, maar als je het handmatig moet doen, moet je het volgende in de terminal invoeren:
 
 `go get github.com/alecthomas/assert/v2`
 
-Given Farley's acceptance test design (Specification->DSL->Driver->System), we now have a decoupled specification from implementation. It doesn't know or care about _how_ we `Greet`; it's just concerned with the essential complexity of our domain. Admittedly this complexity isn't much right now, but we'll expand upon the spec to add more functionality as we further iterate. It's always important to start small!
+Gegeven Farley's acceptatietestontwerp (Specificatie->Domain Specific Language(DSL)->Stuurprogramma->Systeem) hebben we nu een specificatie die losgekoppeld is van de implementatie. Het weet niet _hoe_ we 'Greet'-en en maakt zich er ook niet druk om; het houdt zich alleen bezig met de essentiële complexiteit van ons domein. Toegegeven, deze complexiteit is nu nog niet zo groot, maar we zullen de specificatie uitbreiden om meer functionaliteit toe te voegen naarmate we verder itereren. Het is altijd belangrijk om klein te beginnen!
 
-You could view the interface as our first step of a DSL; as the project grows, you may find the need to abstract differently, but for now, this is fine.
+Je zou de interface kunnen zien als onze eerste stap in een DSL; naarmate het project groeit, kun je de behoefte voelen om anders te abstraheren, maar voor nu is dit prima.
 
-At this point, this level of ceremony to decouple our specification from implementation might make some people accuse us of "overly abstracting". **I promise you that acceptance tests that are too coupled to implementation become a real burden on engineering teams**. I am confident that most acceptance tests out in the wild are expensive to maintain due to this inappropriate coupling; rather than the reverse of being overly abstract.
+Op dit punt zou deze mate van ceremonie om onze specificatie los te koppelen van de implementatie sommigen ertoe kunnen aanzetten ons te beschuldigen van "overmatig abstraheren". **Ik beloof je dat acceptatietests die te veel gekoppeld zijn aan de implementatie een echte last worden voor engineeringteams**. Ik ben ervan overtuigd dat de meeste acceptatietests die in de praktijk worden uitgevoerd, duur zijn om te onderhouden vanwege deze ongepaste koppeling; in plaats van het omgekeerde van overmatig abstract zijn.
 
-We can use this specification to verify any "system" that can `Greet`.
+We kunnen deze specificatie gebruiken om elk 'systeem' te verifiëren dat kan 'Greet'-en.
 
-### First system: HTTP API
+### Eerste systeem: HTTP API
 
-We require to provide a "greeter service" over HTTP. So we'll need to create:
+We moeten een "greeter service" via HTTP aanbieden. We moeten dus het volgende aanmaken:
 
-1. A **driver**. In this case, one works with an HTTP system by using an **HTTP client**. This code will know how to work with our API. Drivers translate DSLs into system-specific calls; in our case, the driver will implement the interface specifications define.
-2. An **HTTP server** with a greet API
-3. A **test**, which is responsible for managing the life-cycle of spinning up the server and then plugging the driver into the specification to run it as a test
+1. Een **driver**. In dit geval werkt men met een HTTP-systeem door een **HTTP-client** te gebruiken. Deze code weet hoe het met onze API moet werken. Drivers vertalen DSL's naar systeemspecifieke aanroepen; in ons geval implementeert de driver de gedefinieerde interfacespecificaties.
+2. Een **HTTP-server** met een greet API
+3. Een **test**, die verantwoordelijk is voor het beheer van de levenscyclus van het opstarten van de server en het vervolgens koppelen van de driver aan de specificatie om deze als test uit te voeren.
 
-## Write the test first
+## Schrijf eerst de test
 
-The initial process for creating a black-box test that compiles and runs your program, executes the test and then cleans everything up can be quite labour intensive. That's why it's preferable to do it at the start of your project with minimal functionality. I typically start all my projects with a "hello world" server implementation, with all of my tests set up and ready for me to build the actual functionality quickly.
+Het initiële proces voor het maken van een black-boxtest die je programma compileert en uitvoert, de test uitvoert en vervolgens alles opschoont, kan behoorlijk arbeidsintensief zijn. Daarom is het beter om dit aan het begin van je project te doen met minimale functionaliteit. Ik start al mijn projecten meestal met een "hello world"-serverimplementatie, waarbij al mijn tests klaarstaan om de daadwerkelijke functionaliteit snel te bouwen.
 
-The mental model of "specifications", "drivers", and "acceptance tests" can take a little time to get used to, so follow carefully. It can be helpful to "work backwards" by trying to call the specification first.
+Het mentale model van "specificaties", "drivers" en "acceptatietests" kan even wennen zijn, dus volg het zorgvuldig. Het kan nuttig zijn om "achteruit te werken" door eerst de specificatie aan te roepen.
 
-Create some structure to house the program we intend to ship.
+Creëer een structuur voor het programma dat we willen uitbrengen.
 
 `mkdir -p cmd/httpserver`
 
-Inside the new folder, create a new file `greeter_server_test.go`, and add the following.
+Maak in de nieuwe map een nieuw bestand `greeter_server_test.go` en voeg het volgende toe.
 
 ```go
 package main_test
@@ -229,9 +228,9 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-We wish to run our specification in a Go test. We already have access to a `*testing.T`, so that's the first argument, but what about the second?
+We willen onze specificatie uitvoeren in een Go-test. We hebben al toegang tot een `*testing.T`, dus dat is het eerste argument, maar hoe zit het met het tweede?
 
-`specifications.Greeter` is an interface, which we will implement with a `Driver` by changing the new TestGreeterServer code to the following:
+`specifications.Greeter` is een interface die we zullen implementeren met een `Driver` door de nieuwe TestGreeterServer-code als volgt te wijzigen:
 
 ```go
 import (
@@ -244,21 +243,21 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-It would be favourable for our `Driver` to be configurable to run it against different environments, including locally, so we have added a `BaseURL` field.
+Het zou gunstig zijn als onze `Driver` configureerbaar zou zijn om deze in verschillende omgevingen te kunnen gebruiken, waaronder lokaal. Daarom hebben we een `BaseURL`-veld toegevoegd.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./greeter_server_test.go:46:12: undefined: go_specs_greet.Driver
 ```
 
-We're still practising TDD here! It's a big first step we have to make; we need to make a few files and write maybe more code than we're typically used to, but when you're first starting, this is often the case. It's so important we try to remember the red step's rules.
+We zijn hier nog steeds bezig met TDD! Het is een belangrijke eerste stap die we moeten zetten; we moeten een paar bestanden aanmaken en misschien meer code schrijven dan we gewend zijn, maar als je net begint, is dit vaak het geval. Het is daarom belangrijk dat we de regels van de rode stap onthouden.
 
-> Commit as many sins as necessary to get the test passing
+> Bega zoveel zonden als nodig is om de test te laten slagen.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test om uit te voeren en controleer de mislukte testuitvoer.
 
-Hold your nose; remember, we can refactor when the test has passed. Here's the code for the driver in `driver.go` which we will place in the project root:
+Hou je mond; onthoud dat we kunnen refactoren wanneer de test is geslaagd. Hier is de code voor de driver in `driver.go` die we in de projectroot plaatsen:
 
 ```go
 package go_specs_greet
@@ -286,29 +285,28 @@ func (d Driver) Greet() (string, error) {
 }
 ```
 
+Opmerkingen:
 
-Notes:
-
-- You could argue that I should be writing tests to drive out the various `if err != nil`, but in my experience, so long as you're not doing anything with the `err`, tests that say "you return the error you get" are relatively low value.
-- **You shouldn't use the default HTTP client**. Later we'll pass in an HTTP client to configure it with timeouts etc., but for now, we're just trying to get ourselves to a passing test.
--  In our `greeter_server_test.go` we called the Driver function from `go_specs_greet` package which we have now created, don't forget to add `github.com/quii/go-specs-greet` to its imports.
-Try and rerun the tests; they should now compile but not pass.
+- Je zou kunnen stellen dat ik tests zou moeten schrijven om de verschillende `if err != nil`-fouten te omzeilen, maar in mijn ervaring zijn tests die zeggen "je retourneert de fout die je krijgt" relatief laagwaardig, zolang je niets met de `err`-fout doet.
+- **Je zou de standaard HTTP-client niet moeten gebruiken**. Later zullen we een HTTP-client toevoegen om deze te configureren met time-outs enz., maar voor nu proberen we gewoon een geslaagde test te krijgen.
+- In onze `greeter_server_test.go` hebben we de Driver-functie aangeroepen vanuit het `go_specs_greet`-pakket dat we nu hebben aangemaakt. Vergeet niet `github.com/quii/go-specs-greet` aan de import toe te voegen.
+Probeer de tests opnieuw uit te voeren; ze zouden nu moeten compileren, maar niet slagen.
 
 ```
 Get "http://localhost:8080/greet": dial tcp [::1]:8080: connect: connection refused
 ```
 
-We have a `Driver`, but we have not started our application yet, so it cannot do an HTTP request. We need our acceptance test to coordinate building, running and finally killing our system for the test to run.
+We hebben een `Driver`, maar onze applicatie is nog niet gestart, dus deze kan geen HTTP-verzoek verwerken. We hebben onze acceptatietest nodig om het bouwen, draaien en uiteindelijk afsluiten van ons systeem te coördineren voordat de test kan worden uitgevoerd.
 
-### Running our application
+### Onze applicatie draaien
 
-It's common for teams to build Docker images of their systems to deploy, so for our test we'll do the same
+Het is gebruikelijk dat teams Docker-images van hun systemen bouwen om te implementeren, dus voor onze test doen we hetzelfde.
 
-To help us use Docker in our tests, we will use [Testcontainers](https://golang.testcontainers.org). Testcontainers gives us a programmatic way to build Docker images and manage container life-cycles.
+Om Docker in onze tests te kunnen gebruiken, gebruiken we [Testcontainers](https://golang.testcontainers.org). Testcontainers biedt ons een programmatische manier om Docker-images te bouwen en de levenscycli van containers te beheren.
 
 `go get github.com/testcontainers/testcontainers-go`
 
-Now you can edit `cmd/httpserver/greeter_server_test.go` to read as follows:
+Je kunt nu `cmd/httpserver/greeter_server_test.go` bewerken, zodat het er als volgt uitziet:
 
 ```go
 package main_test
@@ -351,7 +349,7 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-Try and run the test.
+Probeer de test uit te voeren.
 
 ```
 === RUN   TestGreeterHandler
@@ -363,7 +361,7 @@ Try and run the test.
 --- FAIL: TestGreeterHandler (0.59s)
 ```
 
-We need to create a Dockerfile for our program. Inside our `httpserver` folder, create a `Dockerfile` and add the following.
+We moeten een Dockerfile voor ons programma maken. Maak in onze map `httpserver` een `Dockerfile` en voeg het volgende toe.
 
 ```dockerfile
 # Make sure to specify the same Go version as the one in the go.mod file.
@@ -384,13 +382,13 @@ EXPOSE 8080
 CMD [ "./svr" ]
 ```
 
-Don't worry too much about the details here; it can be refined and optimised, but for this example, it'll suffice. The advantage of our approach here is we can later improve our Dockerfile and have a test to prove it works as we intend it to. This is a real strength of having black-box tests!
+Maak je niet te veel zorgen over de details; het kan verfijnd en geoptimaliseerd worden, maar voor dit voorbeeld is het voldoende. Het voordeel van onze aanpak is dat we later ons Dockerfile kunnen verbeteren en een test kunnen uitvoeren om te bewijzen dat het werkt zoals we willen. Dit is een echte kracht van black-box-tests!
 
-Try and rerun the test; it should complain about not being able to build the image. Of course, that's because we haven't written a program to build yet!
+Probeer de test opnieuw uit te voeren; hij zou moeten klagen dat de image niet gebouwd kan worden. Dat komt natuurlijk omdat we nog geen programma hebben geschreven om te bouwen!
 
-For the test to fully execute, we'll need to create a program that listens on `8080`, but **that's all**. Stick to the TDD discipline, don't write the production code that would make the test pass until we've verified the test fails as we'd expect.
+Om de test volledig uit te voeren, moeten we een programma maken dat luistert naar `8080`, maar **dat is alles**. Houd je aan de TDD-discipline en schrijf de productiecode die de test zou laten slagen pas als we hebben geverifieerd dat de test faalt zoals verwacht.
 
-Create a `main.go` inside our `httpserver` folder with the following
+Maak een `main.go` aan in onze `httpserver`-map met het volgende
 
 ```go
 package main
@@ -409,7 +407,7 @@ func main() {
 }
 ```
 
-Try to run the test again, and it should fail with the following.
+Probeer de test opnieuw uit te voeren. Deze zou dan moeten mislukken en het volgende resultaat moet verschijnen.
 
 ```
     greet.go:16: Expected values to be equal:
@@ -418,9 +416,9 @@ Try to run the test again, and it should fail with the following.
 --- FAIL: TestGreeterHandler (2.09s)
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-Update the handler to behave how our specification wants it to
+Werk de handler bij zodat deze zich gedraagt zoals onze specificatie dat voorschrijft
 
 ```go
 import (
@@ -441,7 +439,7 @@ func main() {
 
 ## Refactor
 
-Whilst this technically isn't a refactor, we shouldn't rely on the default HTTP client, so let's change our Driver, so we can supply one, which our test will give.
+Hoewel dit technisch gezien geen refactor is, moeten we niet vertrouwen op de standaard HTTP-client. Laten we daarom onze driver aanpassen, zodat we er een kunnen leveren die onze test zal opleveren.
 
 ```go
 import (
@@ -468,7 +466,7 @@ func (d Driver) Greet() (string, error) {
 }
 ```
 
-In our test in `cmd/httpserver/greeter_server_test.go`, update the creation of the driver to pass in a client.
+In onze test in `cmd/httpserver/greeter_server_test.go`, wordt de aanmaak van de driver bijgewerkt om deze door te geven aan een client.
 
 ```go
 client := http.Client{
@@ -479,9 +477,9 @@ driver := go_specs_greet.Driver{BaseURL: "http://localhost:8080", Client: &clien
 specifications.GreetSpecification(t, driver)
 ```
 
-It's good practice to keep `main.go` as simple as possible; it should only be concerned with piecing together the building blocks you make into an application.
+Het is een goede gewoonte om `main.go` zo eenvoudig mogelijk te houden; het zou zich alleen moeten bezighouden met het samenvoegen van de bouwstenen die je maakt tot een applicatie.
 
-Create a file in the project root called `handler.go` and move our code into there.
+Maak een bestand in de projectroot met de naam `handler.go` en verplaats onze code daarheen.
 
 ```go
 package go_specs_greet
@@ -496,7 +494,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Update `main.go` to import and use the handler instead.
+Werk `main.go` bij om in plaats daarvan de handler te importeren en te gebruiken.
 
 ```go
 package main
@@ -513,17 +511,17 @@ func main() {
 }
 ```
 
-## Reflect
+## Reflectie
 
-The first step felt like an effort. We've made several `go` files to create and test an HTTP handler that returns a hard-coded string. This "iteration 0" ceremony and setup will serve us well for further iterations.
+De eerste stap voelde als een inspanning. We hebben verschillende `go`-bestanden gemaakt om een HTTP-handler te maken en te testen die een hardgecodeerde string retourneert. Deze "iteratie 0"-ceremonie en -configuratie zullen ons goed van pas komen bij verdere iteraties.
 
-Changing functionality should be simple and controlled by driving it through the specification and dealing with whatever changes it forces us to make. Now the `DockerFile` and `testcontainers` are set up for our acceptance test; we shouldn't have to change these files unless the way we construct our application changes.
+Het wijzigen van functionaliteit moet eenvoudig en gecontroleerd zijn door deze via de specificatie te sturen en alle wijzigingen die we daardoor moeten aanbrengen, te verwerken. Nu zijn de `DockerFile` en `testcontainers` ingesteld voor onze acceptatietest; we zouden deze bestanden niet hoeven te wijzigen, tenzij de manier waarop we onze applicatie bouwen verandert.
 
-We'll see this with our following requirement, greet a particular person.
+We zullen dit zien met onze volgende eis: begroet een specifieke persoon.
 
-## Write the test first
+## Schrijf eerst de test
 
-Edit our specification
+Bewerk onze specificatie
 
 ```go
 package specifications
@@ -545,9 +543,9 @@ func GreetSpecification(t testing.TB, greeter Greeter) {
 }
 ```
 
-To allow us to greet specific people, we need to change the interface to our system to accept a `name` parameter.
+Om specifieke mensen te kunnen begroeten, moeten we de interface van ons systeem aanpassen zodat deze een `naam`-parameter accepteert.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./greeter_server_test.go:48:39: cannot use driver (variable of type go_specs_greet.Driver) as type specifications.Greeter in argument to specifications.GreetSpecification:
@@ -556,11 +554,12 @@ To allow us to greet specific people, we need to change the interface to our sys
 		want Greet(name string) (string, error)
 ```
 
-The change in the specification has meant our driver needs to be updated.
+De wijziging in de specificatie betekent dat onze driver moet worden bijgewerkt.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test uit te voeren en controleer de mislukte testuitvoer.
 
-Update the driver so that it specifies a `name` query value in the request to ask for a particular `name` to be greeted.
+Werk de driver bij zodat deze een querywaarde voor `name` in de aanvraag specificeert om te vragen of een specifieke `name` als begroeting moet worden gebruikt.
+
 
 ```go
 import "io"
@@ -579,7 +578,7 @@ func (d Driver) Greet(name string) (string, error) {
 }
 ```
 
-The test should now run, and fail.
+De test zou nu moeten worden uitgevoerd, maar mislukken.
 
 ```
     greet.go:16: Expected values to be equal:
@@ -590,9 +589,9 @@ The test should now run, and fail.
 --- FAIL: TestGreeterHandler (1.92s)
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-Extract the `name` from the request and greet.
+Extraheer de `naam` uit het verzoek en begroet.
 
 ```go
 import (
@@ -605,15 +604,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The test should now pass.
+De test zou nu moeten slagen
 
 ## Refactor
 
-In [HTTP Handlers Revisited,](https://github.com/quii/learn-go-with-tests/blob/main/http-handlers-revisited.md) we discussed how important it is for HTTP handlers should only be responsible for handling HTTP concerns; any "domain logic" should live outside of the handler. This allows us to develop domain logic in isolation from HTTP, making it simpler to test and understand.
+In [HTTP Handlers Revisited,](https://github.com/quii/learn-go-with-tests/blob/main/http-handlers-revisited.md) hebben we besproken hoe belangrijk het is dat HTTP-handlers alleen verantwoordelijk zijn voor het afhandelen van HTTP-problemen; alle "domeinlogica" moet zich buiten de handler bevinden. Dit stelt ons in staat om domeinlogica geïsoleerd van HTTP te ontwikkelen, waardoor het eenvoudiger te testen en te begrijpen is.
 
-Let's pull apart these concerns.
+Laten we deze problemen eens nader bekijken.
 
-Update our handler in `./handler.go` as follows:
+We werken onze handler in `./handler.go` als volgt bij:
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -622,7 +621,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Create new file `./greet.go`:
+maak een nieuw bestand aan `./greet.go`:
+
 ```go
 package go_specs_greet
 
@@ -633,13 +633,13 @@ func Greet(name string) string {
 }
 ```
 
-## A slight diversion in to the "adapter" design pattern
+## Een kleine uitweiding over het "adapter"-ontwerppatroon
 
-Now that we've separated our domain logic of greeting people into a separate function, we are now free to write unit tests for our greet function. This is undoubtedly a lot simpler than testing it through a specification that goes through a driver that hits a web server, to get a string!
+Nu we onze domeinlogica voor het begroeten van mensen in een aparte functie hebben ondergebracht, kunnen we nu unittests schrijven voor onze greet-functie. Dit is ongetwijfeld een stuk eenvoudiger dan het testen via een specificatie die via een driver gaat die een webserver benadert, om een string te verkrijgen!
 
-Wouldn't it be nice if we could reuse our specification here too? After all, the specification's point is decoupled from implementation details. If the specification captures our **essential complexity** and our "domain" code is supposed to model it, we should be able to use them together.
+Zou het niet mooi zijn als we onze specificatie hier ook zouden kunnen hergebruiken? Het punt van de specificatie is immers losgekoppeld van de implementatiedetails. Als de specificatie onze **essentiële complexiteit** vastlegt en onze "domein"-code deze moet modelleren, zouden we ze samen moeten kunnen gebruiken.
 
-Let's give it a go by creating  `./greet_test.go` as follows:
+Laten we het proberen door `./greet_test.go` als volgt aan te maken:
 
 ```go
 package go_specs_greet_test
@@ -657,22 +657,22 @@ func TestGreet(t *testing.T) {
 
 ```
 
-This would be nice, but it doesn't work
+Dit zou leuk zijn, maar werkt helaas niet
 
 ```
 ./greet_test.go:11:39: cannot use go_specs_greet.Greet (value of type func(name string) string) as type specifications.Greeter in argument to specifications.GreetSpecification:
 	func(name string) string does not implement specifications.Greeter (missing Greet method)
 ```
 
-Our specification wants something that has a method `Greet()` not a function.
+Onze specificatie wil iets met een methode `Greet()`, geen functie.
 
-The compilation error is frustrating; we have a thing that we "know" is a `Greeter`, but it's not quite in the right **shape** for the compiler to let us use it. This is what the **adapter** pattern caters for.
+De compilatiefout is frustrerend; we hebben iets waarvan we "weten" dat het een `Greeter` is, maar het is niet helemaal in de juiste **vorm** om door de compiler gebruikt te kunnen worden. Dit is waar het **adapter**-patroon voor zorgt.
 
-> In [software engineering](https://en.wikipedia.org/wiki/Software_engineering), the **adapter pattern** is a [software design pattern](https://en.wikipedia.org/wiki/Software_design_pattern) (also known as [wrapper](https://en.wikipedia.org/wiki/Wrapper_function), an alternative naming shared with the [decorator pattern](https://en.wikipedia.org/wiki/Decorator_pattern)) that allows the [interface](https://en.wikipedia.org/wiki/Interface_(computer_science)) of an existing [class](https://en.wikipedia.org/wiki/Class_(computer_science)) to be used as another interface.[[1\]](https://en.wikipedia.org/wiki/Adapter_pattern#cite_note-HeadFirst-1) It is often used to make existing classes work with others without modifying their [source code](https://en.wikipedia.org/wiki/Source_code).
+> In [software engineering](https://en.wikipedia.org/wiki/Software_engineering) is het **adapterpatroon** een [softwareontwerppatroon](https://en.wikipedia.org/wiki/Software_design_pattern) (ook bekend als [wrapper](https://en.wikipedia.org/wiki/Wrapper_function), een alternatieve naamgeving die wordt gedeeld met het [decoratorpatroon](https://en.wikipedia.org/wiki/Decorator_pattern)) waarmee de [interface](https://en.wikipedia.org/wiki/Interface_(computer_science)) van een bestaande [klasse](https://en.wikipedia.org/wiki/Class_(computer_science)) kan worden gebruikt als een andere interface.[[1\]](https://en.wikipedia.org/wiki/Adapter_pattern#cite_note-HeadFirst-1) Het wordt vaak gebruikt om bestaande klassen met andere klassen te laten werken zonder hun [bron code](https://en.wikipedia.org/wiki/Source_code) te wijzigen.
 
-A lot of fancy words for something relatively simple, which is often the case with design patterns, which is why people tend to roll their eyes at them. The value of design patterns is not specific implementations but a language to describe specific solutions to common problems engineers face. If you have a team that has a shared vocabulary, it reduces the friction in communication.
+Veel mooie woorden voor iets relatief eenvoudigs, wat vaak het geval is bij ontwerppatronen, waardoor mensen er vaak met hun ogen rollen. De waarde van ontwerppatronen zit niet in specifieke implementaties, maar in een taal die specifieke oplossingen beschrijft voor veelvoorkomende problemen waar engineers mee te maken krijgen. Als je een team hebt dat een gedeelde woordenschat heeft, vermindert dat de communicatieproblemen.
 
-Add this code in `./specifications/adapters.go`
+Voeg deze code toe aan `./specifications/adapters.go`
 
 ```go
 type GreetAdapter func(name string) string
@@ -682,7 +682,7 @@ func (g GreetAdapter) Greet(name string) (string, error) {
 }
 ```
 
-We can now use our adapter in our test to plug our `Greet` function into the specification.
+We kunnen onze adapter nu in onze test gebruiken om onze `Greet`-functie in de specificatie op te nemen.
 
 ```go
 package go_specs_greet_test
@@ -702,21 +702,21 @@ func TestGreet(t *testing.T) {
 }
 ```
 
-The adapter pattern is handy when you have a type that exhibits the behaviour that an interface wants, but isn't in the right shape.
+Het adapterpatroon is handig wanneer je een type hebt dat het gewenste gedrag vertoont voor een interface, maar niet de juiste vorm heeft.
 
-## Reflect
+## Reflecteren
 
-The behaviour change felt simple, right? OK, maybe it was simply due to the nature of the problem, but this method of work gives you discipline and a simple, repeatable way of changing your system from top to bottom:
+De gedragsverandering voelde eenvoudig, toch? Oké, misschien lag het gewoon aan de aard van het probleem, maar deze werkwijze geeft je discipline en een eenvoudige, herhaalbare manier om je systeem van top tot teen te veranderen:
 
-- Analyse your problem and identify a slight improvement to your system that pushes you in the right direction
-- Capture the new essential complexity in a specification
-- Follow the compilation errors until the AT runs
-- Update your implementation to make the system behave according to the specification
+- Analyseer je probleem en identificeer een kleine verbetering aan je systeem die je in de goede richting duwt
+- Leg de nieuwe essentiële complexiteit vast in een specificatie
+- Volg de compilatiefouten totdat de acceptatietest draait
+- Werk je implementatie bij zodat het systeem zich gedraagt volgens de specificatie
 - Refactor
 
-After the pain of the first iteration, we didn't have to edit our acceptance test code because we have the separation of specifications, drivers and implementation. Changing our specification required us to update our driver and finally our implementation, but the boilerplate code around _how_ to spin up the system as a container was unaffected.
+Na de pijn van de eerste iteratie hoefden we onze acceptatietestcode niet aan te passen, omdat we de specificaties, drivers en implementatie van elkaar gescheiden houden. Het wijzigen van onze specificatie vereiste dat we onze driver en uiteindelijk onze implementatie moesten bijwerken, maar de boilerplate-code over _hoe_ het systeem als container moest worden opgestart, bleef onaangetast.
 
-Even with the overhead of building a docker image for our application and spinning up the container, the feedback loop for testing our **entire** application is very tight:
+Zelfs met de overhead van het bouwen van een docker-image voor onze applicatie en het opstarten van de container, is de feedbacklus voor het testen van onze **hele** applicatie erg strak:
 
 ```
 quii@Chriss-MacBook-Pro go-specs-greet % go test ./...
@@ -725,23 +725,23 @@ ok  	github.com/quii/go-specs-greet/cmd/httpserver	2.221s
 ?   	github.com/quii/go-specs-greet/specifications	[no test files]
 ```
 
-Now, imagine your CTO has now decided that gRPC is _the future_. She wants you to expose this same functionality over a gRPC server whilst maintaining the existing HTTP server.
+Stel je nu voor dat je CTO heeft besloten dat gRPC _de toekomst_ is. Ze wil dat je dezelfde functionaliteit beschikbaar stelt via een gRPC-server, terwijl je de bestaande HTTP-server behoudt.
 
-This is an example of **accidental complexity**. Remember, accidental complexity is the complexity we have to deal with because we're working with computers, stuff like networks, disks, APIs, etc. **The essential complexity has not changed**, so we shouldn't have to change our specifications.
+Dit is een voorbeeld van **toevallige complexiteit**. Onthoud dat toevallige complexiteit de complexiteit is waarmee we te maken hebben omdat we werken met computers, zaken als netwerken, schijven, API's, enzovoort. **De essentiële complexiteit is niet veranderd**, dus we zouden onze specificaties niet hoeven te wijzigen.
 
-Many repository structures and design patterns are mainly dealing with separating types of complexity. For instance, "ports and adapters" ask that you separate your domain code from anything to do with accidental complexity; that code lives in an "adapters" folder.
+Veel repositorystructuren en ontwerppatronen houden zich voornamelijk bezig met het scheiden van soorten complexiteit. Zo vragen "poorten en adapters" je om je domeincode te scheiden van alles wat met toevallige complexiteit te maken heeft; die code staat in een map "adapters".
 
-### Making the change easy
+### De wijziging eenvoudig maken
 
-Sometimes, it makes sense to do some refactoring _before_ making a change.
+Soms is het zinvol om wat refactoring uit te voeren _voordat_ een wijziging wordt aangebracht.
 
-> First make the change easy, then make the easy change
+> Eerst de wijziging eenvoudig maken, dan de eenvoudige wijziging doorvoeren
 
 ~Kent Beck
 
-For that reason, let's move our `http` code - `driver.go` and `handler.go` - into a package called `httpserver` within an `adapters` folder and change their package names to `httpserver`.
+Laten we daarom onze `http`-code - `driver.go` en `handler.go` - verplaatsen naar een pakket met de naam `httpserver` in een map `adapters` en hun pakketnamen wijzigen in `httpserver`.
 
-You'll now need to import the root package into `handler.go` to refer to the Greet method...
+Je moet nu het root-pakket importeren in `handler.go` om te verwijzen naar de Greet-methode...
 
 ```go
 package httpserver
@@ -760,7 +760,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 ```
 
-import your httpserver adapter into main.go:
+Importeer je httpserveradapter in main.go:
 
 ```go
 package main
@@ -777,29 +777,29 @@ func main() {
 }
 ```
 
-and update the import and reference to `Driver` in greeter_server_test.go:
+en werk de import en verwijzing naar `Driver` in greeter_server_test.go bij:
 
 ```go
 driver := httpserver.Driver{BaseURL: "http://localhost:8080", Client: &client}
 ```
 
-Finally, it's helpful to gather our domain level code in to its own folder too. Don't be lazy and have a `domain` folder in your projects with hundreds of unrelated types and functions. Make an effort to think about your domain and group ideas that belong together, together. This will make your project easier to understand and will improve the quality of your imports.
+Tot slot is het handig om ook onze code op domeinniveau in een eigen map te verzamelen. Wees niet lui en maak een map `domain` aan in je projecten met honderden niet-gerelateerde typen en functies. Neem de moeite om na te denken over je domein en groepeer ideeën die bij elkaar horen. Dit maakt je project begrijpelijker en verbetert de kwaliteit van je imports.
 
-Rather than seeing
+In plaats van te zien
 
 ```go
 domain.Greet
 ```
 
-Which is just a bit weird, instead favour
+Wat gewoon een beetje raar is, in plaats daarvan heeft dit de voorkeur:
 
 ```go
 interactions.Greet
 ```
 
-Create a `domain` folder to house all your domain code, and within it, an `interactions` folder. Depending on your tooling, you may have to update some imports and code.
+Maak een map `domain` aan voor al je domeincode, en daarbinnen een map `interactions`. Afhankelijk van je tooling moet je mogelijk enkele imports en code bijwerken.
 
-Our project tree should now look like this:
+Onze projectboom zou er nu zo uit moeten zien:
 
 ```
 quii@Chriss-MacBook-Pro go-specs-greet % tree
@@ -827,18 +827,18 @@ quii@Chriss-MacBook-Pro go-specs-greet % tree
 
 ```
 
-Our domain code, **essential complexity**, lives at the root of our go module, and code that will allow us to use them in "the real world" are organised into **adapters**. The `cmd` folder is where we can compose these logical groupings into practical applications, which have black-box tests to verify it all works. Nice!
+Onze domeincode, **essentiële complexiteit**, vormt de basis van onze go-module, en code die ons in staat stelt deze in "de echte wereld" te gebruiken, is georganiseerd in **adapters**. De map `cmd` is waar we deze logische groeperingen kunnen samenvoegen tot praktische applicaties, die black-box tests hebben om te verifiëren dat alles werkt. Mooi!
 
-Finally, we can do a _tiny_ bit of tidying up our acceptance test. If you consider the high-level steps of our acceptance test:
+Ten slotte kunnen we onze acceptatietest een _klein_ beetje opschonen. Als je de hoofdstappen van onze acceptatietest bekijkt:
 
-- Build a docker image
-- Wait for it to be listening on _some_ port
-- Create a driver that understands how to translate the DSL into system specific calls
-- Plug in the driver into the specification
+- Bouw een docker-image
+- Wacht tot deze luistert op _een_ poort
+- Maak een driver die begrijpt hoe de DSL moet worden vertaald naar systeemspecifieke aanroepen
+- Sluit de driver aan op de specificatie
 
-... you'll realise we have the same requirements for an acceptance test for the gRPC server!
+... je zult je realiseren dat we dezelfde vereisten hebben voor een acceptatietest voor de gRPC-server!
 
-The `adapters` folder seems a good place as any, so inside a file called `docker.go`, encapsulate the first two steps in a function that we'll reuse next.
+De map `adapters` lijkt een goede plek, dus in een bestand met de naam `docker.go` kapselen we de eerste twee stappen in een functie in die we hierna zullen hergebruiken.
 
 ```go
 package adapters
@@ -882,7 +882,7 @@ func StartDockerServer(
 }
 ```
 
-This gives us an opportunity to clean up our acceptance test a little
+Dit geeft ons de gelegenheid om onze acceptatietest een beetje op te schonen
 
 ```go
 func TestGreeterServer(t *testing.T) {
@@ -900,17 +900,17 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-This should make writing the _next_ test simpler.
+Dit zou het schrijven van de _volgende_ test eenvoudiger moeten maken.
 
-## Write the test first
+## Schrijf eerst de test
 
-This new functionality can be accomplished by creating a new `adapter` to interact with our domain code. For that reason we:
+Deze nieuwe functionaliteit kan worden gerealiseerd door een nieuwe `adapter` aan te maken die communiceert met onze domeincode. Om die reden:
 
-- Shouldn't have to change the specification;
-- Should be able to reuse the specification;
-- Should be able to reuse the domain code.
+- hoeven we de specificatie niet te wijzigen;
+- moeten we de specificatie kunnen hergebruiken;
+- moeten we de domeincode kunnen hergebruiken.
 
-Create a new folder `grpcserver` inside `cmd` to house our new program and the corresponding acceptance test. Inside `cmd/grpc_server/greeter_server_test.go`, add an acceptance test, which looks very similar to our HTTP server test, not by coincidence but by design.
+Maak een nieuwe map `grpcserver` aan binnen `cmd` om ons nieuwe programma en de bijbehorende acceptatietest te huisvesten. Voeg binnen `cmd/grpc_server/greeter_server_test.go` een acceptatietest toe, die sterk lijkt op onze HTTP-servertest. Dat is niet toevallig maar een bewuste ontwerpkeuze.
 
 ```go
 package main_test
@@ -936,22 +936,22 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-The only differences are:
+De enige verschillen zijn:
 
-- We use a different docker file, because we're building a different program
-- This means we'll need a new `Driver`, that'll use `gRPC` to interact with our new program
+- We gebruiken een ander dockerbestand, omdat we een ander programma bouwen.
+- Dit betekent dat we een nieuwe driver nodig hebben die gRPC gebruikt om met ons nieuwe programma te communiceren.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./greeter_server_test.go:26:12: undefined: grpcserver
 ```
 
-We haven't created a `Driver` yet, so it won't compile.
+We hebben nog geen `Driver` aangemaakt, dus deze zal niet compileren.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test om uit te voeren en controleer de mislukte testuitvoer.
 
-Create a `grpcserver` folder inside `adapters` and inside it create `driver.go`
+Maak een map `grpcserver` aan in `adapters` en maak daarin `driver.go` aan.
 
 ```go
 package grpcserver
@@ -965,9 +965,9 @@ func (d Driver) Greet(name string) (string, error) {
 }
 ```
 
-If you run again, it should now _compile_ but not pass because we haven't created a Dockerfile and corresponding program to run.
+Als je het opnieuw uitvoert, zou het nu moeten _compileren_, maar zal de test niet slagen, omdat we geen Dockerfile en bijbehorend programma hebben aangemaakt om uit te voeren.
 
-Create a new `Dockerfile` inside `cmd/grpcserver`.
+Maak een nieuwe `Dockerfile` aan in `cmd/grpcserver`.
 
 ```dockerfile
 # Make sure to specify the same Go version as the one in the go.mod file.
@@ -987,7 +987,7 @@ EXPOSE 50051
 CMD [ "./svr" ]
 ```
 
-And a `main.go`
+En een `main.go`
 
 ```go
 package main
@@ -999,19 +999,19 @@ func main() {
 }
 ```
 
-You should find now that the test fails because our server is not listening on the port. Now is the time to start building our client and server with gRPC.
+Je zou nu moeten merken dat de test mislukt omdat onze server niet op de poort luistert. Nu is het tijd om onze client en server met gRPC te bouwen.
 
-## Write enough code to make it pass
+## Schrijf voldoende code om de test te laten slagen
 
 ### gRPC
 
-If you're unfamiliar with gRPC, I'd start by looking at the [gRPC website](https://grpc.io). Still, for this chapter, it's just another kind of adapter into our system, a way for other systems to call (**r**emote **p**rocedure **c**all) our excellent domain code.
+Als je niet bekend bent met gRPC, zou ik beginnen met het bekijken van de [gRPC-website](https://grpc.io). Voor dit hoofdstuk is het echter gewoon een soort adapter in ons systeem, een manier voor andere systemen om onze uitstekende domeincode aan te roepen (**r**emote **p**rocedure **c**all).
 
-The twist is you define a "service definition" using Protocol Buffers. You then generate server and client code from the definition. This not only works for Go but for most mainstream languages too. This means you can share a definition with other teams in your company who may not even write Go and can still do service-to-service communication smoothly.
+Het probleem is dat je een "servicedefinitie" definieert met behulp van protocolbuffers. Vervolgens genereer je server- en clientcode op basis van de definitie. Dit werkt niet alleen voor Go, maar ook voor de meeste gangbare talen. Dit betekent dat je een definitie kunt delen met andere teams in je bedrijf die misschien niet eens Go schrijven, en toch soepel service-to-servicecommunicatie kunt uitvoeren.
 
-If you haven't used gRPC before, you'll need to install a **Protocol buffer compiler** and some **Go plugins**. [The gRPC website has clear instructions on how to do this](https://grpc.io/docs/languages/go/quickstart/).
+Als je gRPC nog niet eerder hebt gebruikt, moet je een **Protocolbuffercompiler** en een aantal **Go-plug-ins** installeren. [De gRPC-website bevat duidelijke instructies hiervoor](https://grpc.io/docs/languages/go/quickstart/).
 
-Inside the same folder as our new driver, add a `greet.proto` file with the following
+Voeg in dezelfde map als onze nieuwe driver een `greet.proto`-bestand toe met de volgende inhoud:
 
 ```protobuf
 syntax = "proto3";
@@ -1033,9 +1033,9 @@ message GreetReply {
 }
 ```
 
-To understand this definition, you don't need to be an expert in Protocol Buffers. We define a service with a Greet method and then describe the incoming and outgoing message types.
+Om deze definitie te begrijpen, hoef je geen expert te zijn in protocolbuffers. We definiëren een service met een Greet-methode en beschrijven vervolgens de inkomende en uitgaande berichttypen.
 
-Inside `adapters/grpcserver` run the following to generate the client and server code
+Voer binnen `adapters/grpcserver` het volgende uit om de client- en servercode te genereren.
 
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
@@ -1043,7 +1043,7 @@ protoc --go_out=. --go_opt=paths=source_relative \
     greet.proto
 ```
 
-If it worked, we would have some code generated for us to use. Let's start by using the generated client code inside our `Driver`.
+Als het werkt, zouden we code hebben moeten gegenereren die we kunnen gebruiken. Laten we beginnen met het gebruiken van de gegenereerde clientcode in onze `Driver`.
 
 ```go
 package grpcserver
@@ -1079,7 +1079,7 @@ func (d Driver) Greet(name string) (string, error) {
 }
 ```
 
-Now that we have a client, we need to update our `main.go` to create a server. Remember, at this point; we're just trying to get our test to pass and not worrying about code quality.
+Nu we een client hebben, moeten we onze `main.go` bijwerken om een server aan te maken. Onthoud: op dit moment proberen we alleen onze test te laten slagen en maken we ons geen zorgen over de kwaliteit van de code.
 
 ```go
 package main
@@ -1127,13 +1127,13 @@ type GreeterServer interface {
 }
 ```
 
-Our `main` function:
+Onze `main`-functie:
 
-- Listens on a port
-- Creates a `GreetServer` that implements the interface, and then registers it with `grpcServer.RegisterGreeterServer`, along with a `grpc.Server`.
-- Uses the server with the listener
+- Luistert naar een poort
+- Maakt een `GreetServer` aan die de interface implementeert en registreert deze vervolgens bij `grpcServer.RegisterGreeterServer`, samen met een `grpc.Server`.
+- Gebruikt de server met de listener
 
-It wouldn't be a massive extra effort to call our domain code inside `greetServer.Greet` rather than hard-coding `fix-me` in the message, but I'd like to run our acceptance test first to see if everything is working on a transport level and verify the failing test output.
+Het zou geen enorme extra moeite kosten om onze domeincode aan te roepen in `greetServer.Greet` in plaats van `fix-me` hard te coderen in het bericht, maar ik wil eerst onze acceptatietest uitvoeren om te zien of alles werkt op transportniveau en de mislukte testuitvoer te verifiëren.
 
 ```
 greet.go:16: Expected values to be equal:
@@ -1143,9 +1143,9 @@ greet.go:16: Expected values to be equal:
 \ No newline at end of file
 ```
 
-Nice! We can see our driver is able to connect to our gRPC server in the test.
+Goed! We zien dat onze driver in de test verbinding kan maken met onze gRPC-server.
 
-Now, call our domain code inside our `GreetServer`
+Noem nu onze domeincode in onze `GreetServer`
 
 ```go
 type GreetServer struct {
@@ -1157,19 +1157,19 @@ func (g GreetServer) Greet(ctx context.Context, request *grpcserver.GreetRequest
 }
 ```
 
-Finally, it passes! We have an acceptance test that proves our gRPC greet server behaves how we'd like.
+Eindelijk is het gelukt! We hebben een acceptatietest die bewijst dat onze gRPC-begroetingsserver zich gedraagt zoals we willen.
 
 ## Refactor
 
-We committed several sins to get the test passing, but now they're passing, we have the safety net to refactor.
+We hebben verschillende fouten gemaakt om de test te laten slagen, maar nu ze slagen, hebben we het vangnet om te refactoren.
 
-### Simplify main
+### Vereenvoudig main
 
-As before, we don't want `main` to have too much code inside it. We can move our new `GreetServer` into `adapters/grpcserver` as that's where it should live. In terms of cohesion, if we change the service definition, we want the "blast-radius" of change to be confined to that area of our code.
+Net als voorheen willen we niet dat `main` te veel code bevat. We kunnen onze nieuwe `GreetServer` verplaatsen naar `adapters/grpcserver`, aangezien die daar hoort. Om de samenhang te behouden: als we de servicedefinitie wijzigen, willen we dat de "blast-radius" van de wijziging beperkt blijft tot dat deel van onze code.
 
-### Don't redial in our driver every time
+### Roep niet elke keer opnieuw onze driver aan
 
-We only have one test, but if we expand our specification (we will), it doesn't make sense for the Driver to redial for every RPC call.
+We hebben maar één test, maar als we onze specificatie uitbreiden (wat we zullen doen), is het niet zinvol dat de driver bij elke RPC-oproep opnieuw aanroept.
 
 ```go
 package grpcserver
@@ -1216,9 +1216,9 @@ func (d *Driver) getClient() (GreeterClient, error) {
 }
 ```
 
-Here we're showing how we can use [`sync.Once`](https://pkg.go.dev/sync#Once) to ensure our `Driver` only attempts to create a connection to our server once.
+Hier laten we zien hoe we [`sync.Once`](https://pkg.go.dev/sync#Once) kunnen gebruiken om ervoor te zorgen dat onze `Driver` slechts één keer verbinding probeert te maken met onze server.
 
-Let's take a look at the current state of our project structure before moving on.
+Laten we eerst de huidige status van onze projectstructuur bekijken voordat we verdergaan.
 
 ```
 quii@Chriss-MacBook-Pro go-specs-greet % tree
@@ -1255,15 +1255,15 @@ quii@Chriss-MacBook-Pro go-specs-greet % tree
     └── greet.go
 ```
 
-- `adapters` have cohesive units of functionality grouped together
-- `cmd` holds our applications and corresponding acceptance tests
-- Our code is totally decoupled from any accidental complexity
+- `adapters` hebben samenhangende functionaliteitseenheden die gegroepeerd zijn
+- `cmd` bevat onze applicaties en bijbehorende acceptatietests
+- Onze code is volledig ontkoppeld van elke toevallige complexiteit
 
-### Consolidating `Dockerfile`
+### `Dockerfile` consolideren
 
-You've probably noticed the two `Dockerfiles` are almost identical beyond the path to the binary we wish to build.
+Je hebt waarschijnlijk gemerkt dat de twee `Dockerfiles` vrijwel identiek zijn, afgezien van het pad naar de binaire code die we willen bouwen.
 
-`Dockerfiles` can accept arguments to let us reuse them in different contexts, which sounds perfect. We can delete our 2 Dockerfiles and instead have one at the root of the project with the following
+`Dockerfiles` kunnen argumenten accepteren, zodat we ze in verschillende contexten kunnen hergebruiken, wat perfect klinkt. We kunnen onze twee Dockerfiles verwijderen en er in plaats daarvan één in de root van het project plaatsen met de volgende code:
 
 ```dockerfile
 # Make sure to specify the same Go version as the one in the go.mod file.
@@ -1284,7 +1284,7 @@ RUN go build -o svr cmd/${bin_to_build}/main.go
 CMD [ "./svr" ]
 ```
 
-We'll have to update our `StartDockerServer` function to pass in the argument when we build the images
+We zullen onze `StartDockerServer`-functie moeten bijwerken om het argument door te geven wanneer we de images bouwen
 
 ```go
 func StartDockerServer(
@@ -1317,7 +1317,7 @@ func StartDockerServer(
 }
 ```
 
-And finally, update our tests to pass in the image to build (do this for the other test and change `grpcserver` to `httpserver`).
+En werk ten slotte onze tests bij zodat de te bouwen image wordt doorgegeven (doe dit voor de andere test en verander `grpcserver` in `httpserver`).
 
 ```go
 func TestGreeterServer(t *testing.T) {
@@ -1331,25 +1331,25 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-### Separating different kinds of tests
+### Verschillende soorten tests scheiden
 
-Acceptance tests are great in that they test the whole system works from a pure user-facing, behavioural POV, but they do have their downsides compared to unit tests:
+Acceptatietests zijn geweldig omdat ze de werking van het hele systeem testen vanuit een puur gebruikersgericht, gedragsmatig perspectief, maar ze hebben ook hun nadelen ten opzichte van unittests:
 
-- Slower
-- Quality of feedback is often not as focused as a unit test
-- Doesn't help you with internal quality, or design
+- Ze zijn langzamer
+- De kwaliteit van de feedback is vaak niet zo gericht als bij een unittest
+- Helpt je niet met de interne kwaliteit of het ontwerp
 
-[The Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html) guides us on the kind of mix we want for our test suite, you should read Fowler's post for more detail, but the very simplistic summary for this post is "lots of unit tests and a few acceptance tests".
+[De Testpiramide](https://martinfowler.com/articles/practical-test-pyramid.html) geeft ons richtlijnen voor de mix die we willen voor onze testsuite. Lees Fowlers bericht voor meer details, maar de simplistische samenvatting van dit bericht is "veel unittests en een paar acceptatietests".
 
-For that reason, as a project grows you often may be in situations where the acceptance tests can take a few minutes to run. To offer a friendly developer experience for people checking out your project, you can enable developers to run the different kinds of tests separately.
+Om die reden kan het voorkomen dat je, naarmate een project groeit, in situaties terechtkomt waarin de acceptatietests een paar minuten duren. Om een prettige ontwikkelaarservaring te bieden aan mensen die je project bekijken, kun je ontwikkelaars de mogelijkheid bieden om de verschillende soorten tests afzonderlijk uit te voeren.
 
-It's preferable that running `go test ./...` should be runnable with no further set up from an engineer, beyond say a few key dependencies such as the Go compiler (obviously) and perhaps Docker.
+Het is beter dat `go test ./...` uitgevoerd kan worden zonder verdere configuratie door een engineer, afgezien van bijvoorbeeld een paar belangrijke afhankelijkheden zoals de Go-compiler (uiteraard) en eventueel Docker.
 
-Go provides a mechanism for engineers to run only "short" tests with the [short flag](https://pkg.go.dev/testing#Short)
+Go biedt engineers een mechanisme om alleen "korte" tests uit te voeren met de [short flag](https://pkg.go.dev/testing#Short)
 
 `go test -short ./...`
 
-We can add to our acceptance tests to see if the user wants to run our acceptance tests by inspecting the value of the flag
+We kunnen onze acceptatietests uitbreiden om te zien of de gebruiker onze acceptatietests wil uitvoeren door de waarde van de vlag te inspecteren
 
 ```go
 if testing.Short() {
@@ -1357,7 +1357,7 @@ if testing.Short() {
 }
 ```
 
-I made a `Makefile` to show this usage
+Ik heb een `Makefile` gemaakt om dit gebruik te laten zien
 
 ```makefile
 build:
@@ -1368,26 +1368,26 @@ unit-tests:
 	go test -short ./...
 ```
 
-### When should I write acceptance tests?
+### Wanneer moet ik acceptatietests schrijven?
 
-The best practice is to favour having lots of fast running unit tests and a few acceptance tests, but how do you decide when you should write an acceptance test, vs unit tests?
+De beste aanpak is om de voorkeur te geven aan veel snellopende unittests en een paar acceptatietests, maar hoe bepaal je wanneer je een acceptatietest moet schrijven en niet unittests?
 
-It's difficult to give a concrete rule, but the questions I typically ask myself are:
+Het is moeilijk om een concrete regel te geven, maar de vragen die ik mezelf meestal stel zijn:
 
-- Is this an edge case? I'd prefer to unit test those
-- Is this something that the non-computer people talk about a lot? I would prefer to have a lot of confidence the key thing "really" works, so I'd add an acceptance test
-- Am I describing a user journey, rather than a specific function? Acceptance test
-- Would unit tests give me enough confidence? Sometimes you're taking an existing journey that already has an acceptance test, but you're adding other functionality to deal with different scenarios due to different inputs. In this case, adding another acceptance test adds a cost but brings little value, so I'd prefer some unit tests.
+- Is dit een edge case? Ik zou liever unittests uitvoeren.
+- Is dit iets waar mensen zonder computerkennis veel over praten? Ik zou er liever zeker van zijn dat het belangrijkste "echt" werkt, dus ik zou een acceptatietest toevoegen.
+- Beschrijf ik een gebruikersreis in plaats van een specifieke functie? Acceptatietest.
+- Zouden unittests me voldoende vertrouwen geven? Soms neem je een bestaande reis die al een acceptatietest heeft, maar voeg je andere functionaliteit toe om met verschillende scenario's om te gaan vanwege verschillende invoer. In dit geval brengt het toevoegen van nog een acceptatietest kosten met zich mee, maar levert het weinig waarde op, dus ik zou de voorkeur geven aan enkele unittests.
 
-## Iterating on our work
+## Itereren op ons werk
 
-With all this effort, you'd hope extending our system will now be simple. Making a system that is simple to work on, is not necessarily easy, but it's worth the time, and is substantially easier to do when you start a project.
+Met al deze moeite hoop je dat het uitbreiden van ons systeem nu eenvoudig zal zijn. Het maken van een systeem dat eenvoudig te gebruiken is, is niet per se makkelijk, maar het is de tijd waard en aanzienlijk eenvoudiger om te doen wanneer je een project start.
 
-Let's extend our API to include a "curse" functionality.
+Laten we onze API uitbreiden met een "curse"-functionaliteit.
 
-## Write the test first
+## Schrijf eerst de test
 
-This is brand-new behaviour, so we should start with an acceptance test. In our specification file, add the following
+Dit is gloednieuw gedrag, dus we moeten beginnen met een acceptatietest. Voeg het volgende toe aan ons specificatiebestand:
 
 ```go
 type MeanGreeter interface {
@@ -1401,7 +1401,7 @@ func CurseSpecification(t *testing.T, meany MeanGreeter) {
 }
 ```
 
-Pick one of our acceptance tests and try to use the specification
+Kies een van onze acceptatietests en probeer de specificatie te gebruiken
 
 ```go
 func TestGreeterServer(t *testing.T) {
@@ -1420,7 +1420,7 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 # github.com/quii/go-specs-greet/cmd/grpcserver_test [github.com/quii/go-specs-greet/cmd/grpcserver.test]
@@ -1428,11 +1428,11 @@ func TestGreeterServer(t *testing.T) {
 	*grpcserver.Driver does not implement specifications.MeanGreeter (missing Curse method)
 ```
 
-Our `Driver` doesn't support `Curse` yet.
+Onze `Driver` ondersteunt `Curse` nog niet.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test uit te voeren en controleer de uitvoer van de mislukte test.
 
-Remember we're just trying to get the test to run, so add the method to `Driver`
+Onthoud dat we alleen proberen de test uit te voeren, dus voeg de methode toe aan `Driver`
 
 ```go
 func (d *Driver) Curse(name string) (string, error) {
@@ -1440,7 +1440,7 @@ func (d *Driver) Curse(name string) (string, error) {
 }
 ```
 
-If you try again, the test should compile, run, and fail
+Als je het opnieuw probeert, moet de test compileren, wordt deze uitgevoerd en zal deze mislukken
 
 ```
 greet.go:26: Expected values to be equal:
@@ -1448,9 +1448,9 @@ greet.go:26: Expected values to be equal:
 \ No newline at end of file
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-We'll need to update our protocol buffer specification have a `Curse` method on it, and then regenerate our code.
+We moeten onze protocolbufferspecificatie bijwerken met een `Curse`-methode en vervolgens onze code opnieuw genereren.
 
 ```protobuf
 service Greeter {
@@ -1459,9 +1459,9 @@ service Greeter {
 }
 ```
 
-You could argue that reusing the types `GreetRequest` and `GreetReply` is inappropriate coupling, but we can deal with that in the refactoring stage. As I keep stressing, we're just trying to get the test passing, so we verify the software works, _then_ we can make it nice.
+Je zou kunnen stellen dat het hergebruiken van de typen `GreetRequest` en `GreetReply` een ongepaste koppeling is, maar daar kunnen we in de refactoringfase mee omgaan. Zoals ik blijf benadrukken: we proberen gewoon de test te laten slagen, zodat we controleren of de software werkt, _en_ dan kunnen we de code goed maken.
 
-Re-generate our code with (inside `adapters/grpcserver`).
+Genereer onze code opnieuw met (in `adapters/grpcserver`).
 
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
@@ -1469,9 +1469,9 @@ protoc --go_out=. --go_opt=paths=source_relative \
     greet.proto
 ```
 
-### Update driver
+### Driver bijwerken
 
-Now the client code has been updated, we can now call `Curse` in our `Driver`
+Nu de clientcode is bijgewerkt, kunnen we `Curse` aanroepen in onze `Driver`
 
 ```go
 func (d *Driver) Curse(name string) (string, error) {
@@ -1491,9 +1491,9 @@ func (d *Driver) Curse(name string) (string, error) {
 }
 ```
 
-### Update server
+### Server bijwerken
 
-Finally, we need to add the `Curse` method to our `Server`
+Ten slotte moeten we de `Curse`-methode toevoegen aan onze `Server`
 
 ```go
 package grpcserver
@@ -1518,58 +1518,57 @@ func (g GreetServer) Greet(ctx context.Context, request *GreetRequest) (*GreetRe
 }
 ```
 
-The tests should now pass.
+De tests zouden nu moeten slagen.
 
 ## Refactor
 
-Try doing this yourself.
+Probeer dit zelf.
 
-- Extract the `Curse` "domain logic", away from the grpc server, as we did for `Greet`. Use the specification as a unit test against your domain logic
-- Have different types in the protobuf to ensure the message types for `Greet` and `Curse` are decoupled.
+- Extraheer de `Curse`-domeinlogica, weg van de grpc-server, zoals we dat voor `Greet` hebben gedaan. Gebruik de specificatie als een unittest voor je domeinlogica.
+- Zorg voor verschillende typen in de protobuf om ervoor te zorgen dat de berichttypen voor `Greet` en `Curse` ontkoppeld zijn.
 
-## Implementing `Curse` for the HTTP server
+## `Curse` implementeren voor de HTTP-server
 
-Again, an exercise for you, the reader. We have our domain-level specification and our domain-level logic neatly separated. If you've followed this chapter, this should be very straightforward.
+Nogmaals, een oefening voor jou, de lezer. We hebben onze specificatie op domeinniveau en onze logica op domeinniveau netjes gescheiden. Als je dit hoofdstuk hebt gevolgd, zou dit heel eenvoudig moeten zijn.
 
-- Add the specification to the existing acceptance test for the HTTP server
-- Update your `Driver`
-- Add the new endpoint to the server, and reuse the domain code to implement the functionality. You may wish to use `http.NewServeMux` to handle the routeing to the separate endpoints.
+- Voeg de specificatie toe aan de bestaande acceptatietest voor de HTTP-server
+- Werk je `Driver` bij
+- Voeg het nieuwe eindpunt toe aan de server en hergebruik de domeincode om de functionaliteit te implementeren. Je kunt `http.NewServeMux` gebruiken om de routering naar de afzonderlijke eindpunten af te handelen.
 
-Remember to work in small steps, commit and run your tests frequently. If you get really stuck [you can find my implementation on GitHub](https://github.com/quii/go-specs-greet).
+Vergeet niet om in kleine stapjes te werken, commit en voer je tests regelmatig uit. Als je er echt niet uitkomt [kun je mijn implementatie vinden op GitHub](https://github.com/quii/go-specs-greet).
 
-## Enhance both systems by updating the domain logic with a unit test
+## Verbeter beide systemen door de domeinlogica bij te werken met een unittest
 
-As mentioned, not every change to a system should be driven via an acceptance test. Permutations of business rules and edge cases should be simple to drive via a unit test if you have separated concerns well.
+Zoals gezegd, hoeft niet elke wijziging in een systeem via een acceptatietest te worden uitgevoerd. Permutaties van bedrijfsregels en edge cases moeten eenvoudig via een unittest kunnen worden uitgevoerd als je de aandachtspunten goed hebt gescheiden.
 
-Add a unit test to our `Greet` function to default the `name` to `World` if it is empty. You should see how simple this is, and then the business rules are reflected in both applications for "free".
+Voeg een unittest toe aan onze `Greet`-functie om de `name` standaard in te stellen op `World` als deze leeg is. Je zult zien hoe eenvoudig dit is, en de bedrijfsregels worden vervolgens "gratis" in beide applicaties weergegeven.
 
-## Wrapping up
+## Samenvattend
 
-Building systems with a reasonable cost of change requires you to have ATs engineered to help you, not become a maintenance burden. They can be used as a means of guiding, or as a GOOS says, "growing" your software methodically.
+Het bouwen van systemen met redelijke wijzigingskosten vereist dat AT's zo zijn ontworpen dat ze je helpen en geen onderhoudslast vormen. Ze kunnen worden gebruikt als middel om je software te begeleiden, of zoals een GOOS het noemt, methodisch te laten "groeien".
 
-Hopefully, with this example, you can see our application's predictable, structured workflow for driving change and how you could use it for your work.
+Hopelijk zie je met dit voorbeeld de voorspelbare, gestructureerde workflow van onze applicatie voor het stimuleren van verandering en hoe je deze voor je werk kunt gebruiken.
 
-You can imagine talking to a stakeholder who wants to extend the system you work on in some way. Capture it in a domain-centric, implementation-agnostic way in a specification, and use it as a north star towards your efforts. Riya and I describe leveraging BDD techniques like "Example Mapping" [in our GopherconUK talk](https://www.youtube.com/watch?v=ZMWJCk_0WrY) to help you understand the essential complexity more deeply and allow you to write more detailed and meaningful specifications.
+Je kunt je voorstellen dat je met een stakeholder praat die het systeem waaraan je werkt op de een of andere manier wil uitbreiden. Leg dit domeingericht en implementatieonafhankelijk vast in een specificatie en gebruik dit als leidraad voor je inspanningen. Riya en ik beschrijven het gebruik van BDD-technieken zoals "Example Mapping" [in onze GopherconUK-lezing](https://www.youtube.com/watch?v=ZMWJCk_0WrY) om je te helpen de essentiële complexiteit beter te begrijpen en je in staat te stellen gedetailleerdere en zinvollere specificaties te schrijven.
 
-Separating essential and accidental complexity concerns will make your work less ad-hoc and more structured and deliberate; this ensures the resiliency of your acceptance tests and helps them become less of a maintenance burden.
+Het scheiden van essentiële en onvoorziene complexiteitskwesties maakt je werk minder ad-hoc en meer gestructureerd en weloverwogen; Dit zorgt voor de veerkracht van je acceptatietests en zorgt ervoor dat ze minder onderhoudsintensief worden.
 
-Dave Farley gives an excellent tip:
+Dave Farley geeft een uitstekende tip:
 
-> Imagine the least technical person that you can think of, who understands the problem-domain, reading your Acceptance Tests. The tests should make sense to that person.
+> Stel je voor dat de minst technische persoon die je kunt bedenken, die het probleemdomein begrijpt, je acceptatietests leest. De tests moeten voor die persoon logisch zijn.
 
-Specifications should then double up as documentation. They should specify clearly how a system should behave. This idea is the principle around tools like [Cucumber](https://cucumber.io), which offers you a DSL for capturing behaviours as code, and then you convert that DSL into system calls, just like we did here.
+Specificaties dienen dan ook als documentatie. Ze moeten duidelijk specificeren hoe een systeem zich moet gedragen. Dit idee is het principe achter tools zoals [Cucumber](https://cucumber.io), die je een DSL biedt om gedragingen als code vast te leggen, en die DSL vervolgens omzet in systeemaanroepen, net zoals we hier deden.
 
-### What has been covered
+### Wat is behandeld
 
-- Writing abstract specifications allows you to express the essential complexity of the problem you're solving and remove accidental complexity. This will enable you to reuse the specifications in different contexts.
-- How to use [Testcontainers](https://golang.testcontainers.org) to manage the life-cycle of your system for ATs. This allows you to thoroughly test the image you intend to ship on your computer, giving you fast feedback and confidence.
-- A brief intro into containerising your application with Docker
+- Het schrijven van abstracte specificaties stelt je in staat de essentiële complexiteit van het probleem dat je oplost uit te drukken en onbedoelde complexiteit te verwijderen. Dit stelt je in staat de specificaties in verschillende contexten te hergebruiken.
+- Hoe je [Testcontainers](https://golang.testcontainers.org) kunt gebruiken om de levenscyclus van je systeem voor AT's te beheren. Dit stelt je in staat om de image die je wilt verzenden grondig te testen op je computer, wat je snelle feedback en vertrouwen geeft.
+- Een korte introductie tot het containeriseren van je applicatie met Docker
 - gRPC
-- Rather than chasing canned folder structures, you can use your development approach to naturally drive out the structure of your application, based on your own needs
+- In plaats van te jagen op standaard mappenstructuren, kun je je ontwikkelaanpak gebruiken om de structuur van je applicatie op natuurlijke wijze te ontwikkelen, gebaseerd op je eigen behoeften.
 
-### Further material
+### Verder materiaal
 
-- In this example, our "DSL" is not much of a DSL; we just used interfaces to decouple our specification from the real world and allow us to express domain logic cleanly. As your system grows, this level of abstraction might become clumsy and unclear. [Read into the "Screenplay Pattern"](https://cucumber.io/blog/bdd/understanding-screenplay-(part-1)/) if you want to find more ideas as to how to structure your specifications.
-- For emphasis, [Growing Object-Oriented Software, Guided by Tests,](http://www.growing-object-oriented-software.com) is a classic. It demonstrates applying this "London style", "top-down" approach to writing software. Anyone who has enjoyed Learn Go with Tests should get much value from reading GOOS.
-- [In the example code repository](https://github.com/quii/go-specs-greet), there's more code and ideas I haven't written about here, such as multi-stage docker build, you may wish to check this out.
-  - In particular, *for fun*, I made a **third program**, a website with some HTML forms to `Greet` and `Curse`. The `Driver` leverages the excellent-looking [https://github.com/go-rod/rod](https://github.com/go-rod/rod) module, which allows it to work with the website with a browser, just like a user would. Looking at the git history, you can see how I started not using any templating tools "just to make it work" Then, once I passed my acceptance test, I had the freedom to do so without fear of breaking things. -->
+- In dit voorbeeld is onze "DSL" niet echt een DSL; we hebben gewoon interfaces gebruikt om onze specificatie los te koppelen van de echte wereld en om domeinlogica helder uit te drukken. Naarmate je systeem groeit, kan dit abstractieniveau onhandig en onduidelijk worden. [Lees het "Screenplay Pattern"](https://cucumber.io/blog/bdd/understanding-screenplay-(part-1)/) als je meer ideeën wilt over hoe je je specificaties kunt structureren.
+- Ter verduidelijking: [Growing Object-Oriented Software, Guided by Tests,](http://www.growing-object-oriented-software.com) is een klassieker. Het laat zien hoe deze "London style", "top-down"-benadering, wordt toegepast op het schrijven van software. Iedereen die Learn Go with Tests heeft gelezen, zal veel baat hebben bij het lezen van GOOS. - [In de voorbeeldcode repository](https://github.com/quii/go-specs-greet) staat meer code en ideeën die ik hier nog niet heb beschreven, zoals de multi-stage docker build. Misschien wil je dit eens bekijken.
+- In het bijzonder heb ik *voor de lol* een **derde programma** gemaakt, een website met een aantal HTML-formulieren om te `Greeten` en `Vloeken`. De `Driver` maakt gebruik van de uitstekend uitziende [https://github.com/go-rod/rod](https://github.com/go-rod/rod) module, waardoor het met de website kan werken via een browser, net zoals een gebruiker dat zou doen. Als je naar de git-geschiedenis kijkt, zie je hoe ik begon met het niet gebruiken van templates "gewoon om het werkend te krijgen". Toen ik eenmaal geslaagd was voor mijn acceptatietest, had ik de vrijheid om dat te doen zonder bang te zijn dingen kapot te maken. -->
