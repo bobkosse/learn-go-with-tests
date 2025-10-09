@@ -1,136 +1,54 @@
-# Introduction to acceptance testing
+# Inleiding tot acceptatietesten
 
-At `$WORK`, we've been running into the need to have "graceful shutdown" for our services. Graceful shutdown makes sure your system finishes its work properly before it is terminated. A real-world analogy would be someone trying to wrap up a phone call properly before moving on to the next meeting, rather than just hanging up mid-sentence.
+Bij `$WORK` zijn we de noodzaak tegengekomen van een "graceful shutdown" voor onze services. Graceful shutdown zorgt ervoor dat je systeem zijn werk correct afrondt voordat het wordt beëindigd. Een realistische vergelijking zou iemand zijn die een telefoongesprek netjes probeert af te ronden voordat hij doorgaat naar de volgende vergadering, in plaats van midden in een zin op te hangen.
 
-This chapter will give an intro to graceful shutdown in the context of an HTTP server, and how to write "acceptance tests" to give yourself confidence in the behaviour of your code.
+Dit hoofdstuk geeft een introductie tot graceful shutdown in de context van een HTTP-server en hoe je "acceptatietests" schrijft om jezelf het vertrouwen te geven in het gedrag van je code.
 
-After reading this you'll know how to share packages with excellent tests, reduce maintenance efforts, and increase confidence in the quality of your work.
+Na het lezen hiervan weet je hoe je pakketten kunt delen met uitstekende tests, onderhoudswerkzaamheden kunt verminderen en het vertrouwen in de kwaliteit van je werk kunt vergroten.
 
-## Just enough info about Kubernetes
+## Net genoeg info over Kubernetes
 
-We run our software on [Kubernetes](https://kubernetes.io/) (K8s). K8s will terminate "pods" (in practice, our software) for various reasons, and a common one is when we push new code that we want to deploy.
+We draaien onze software op [Kubernetes](https://kubernetes.io/) (K8s). K8s beëindigt "pods" (in de praktijk onze software) om verschillende redenen, en een veelvoorkomende reden is wanneer we nieuwe code pushen die we willen implementeren.
 
-We are setting ourselves high standards regarding [DORA metrics](https://cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance), so we work in a way where we deploy small, incremental improvements and features to production multiple times per day.
+We stellen hoge eisen aan [DORA-statistieken](https://cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance), dus we werken op een manier waarbij we kleine, incrementele verbeteringen en functies meerdere keren per dag in productie implementeren.
 
-When k8s wishes to terminate a pod, it initiates a ["termination lifecycle"](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace), and a part of that is sending a SIGTERM signal to our software. This is k8s telling our code:
+Wanneer k8s een pod wil beëindigen, start het een ["termination lifecycle"](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace), en een onderdeel daarvan is het verzenden van een SIGTERM-signaal naar onze software. Dit is wat k8s onze code vertelt:
 
-> You need to shut yourself down, finish whatever work you're doing because after a certain "grace period", I will send `SIGKILL`, and it's lights out for you.
+> Je moet jezelf afsluiten en al het werk afmaken waar je mee bezig bent, want na een bepaalde "grace period" stuur ik `SIGKILL` en is het voor jou gedaan.
 
-On `SIGKILL` any work your program might've been doing will be immediately stopped.
+Bij `SIGKILL` wordt al het werk dat je programma mogelijk aan het doen was, onmiddellijk gestopt.
 
-## If you do not have grace
+## Als je geen grace periode hebt
 
-Depending on the nature of your software, if you ignore `SIGTERM`, you can run into problems.
+Afhankelijk van de aard van de software kun je problemen ondervinden als je `SIGTERM` negeert.
 
-Our specific problem was with in-flight HTTP requests. When an automated test was exercising our API, if k8s decided to stop the pod, the server would die, the test would not get a response from the server, and the test will fail.
+Ons specifieke probleem betrof in-flight HTTP-verzoeken. Wanneer een geautomatiseerde test onze API uitvoerde en k8s besloot de pod te stoppen, liep de server vast, kreeg de test geen antwoord van de server en mislukte de test.
 
-This would trigger an alert in our incidents channel which requires a dev to stop what they're doing and address the problem. These intermittent failures are an annoying distraction for our team.
+Dit activeerde een waarschuwing in ons incidentenkanaal, waardoor een ontwikkelaar moest stoppen met wat hij aan het doen was en het probleem moest oplossen. Deze incidentele storingen vormen een vervelende afleiding voor ons team.
 
-These problems are not unique to our tests. If a user sends a request to your system and the process gets terminated mid-flight, they'll likely be greeted with a 5xx HTTP error, not the kind of user experience you want to deliver.
+Deze problemen doen zich niet alleen voor bij onze tests. Als een gebruiker een verzoek naar je systeem stuurt en het proces halverwege wordt beëindigd, krijgt deze gebruiker waarschijnlijk een 5xx HTTP-foutmelding, niet de gebruikerservaring die je wilt bieden.
 
-## When you have grace
+## Als je wel een grace periode hebt
 
-What we want to do is listen for `SIGTERM`, and rather than instantly killing the server, we want to:
+Wat we willen doen is luisteren naar `SIGTERM`, en in plaats van de server direct te sluiten, willen we:
 
-- Stop listening to any more requests
-- Allow any in-flight requests to finish
-- *Then* terminate the process
+- Stoppen met luisteren naar verdere verzoeken
+- Alle lopende verzoeken toestaan om te worden voltooid
+- *Vervolgens* het proces beëindigen
 
-## How to have grace
+## Hoe je een grace periode kunt hebben
 
-Thankfully, Go already has a mechanism for gracefully shutting down a server with [net/http/Server.Shutdown](https://pkg.go.dev/net/http#Server.Shutdown).
+Gelukkig heeft Go al een mechanisme om een server netjes af te sluiten met [net/http/Server.Shutdown](https://pkg.go.dev/net/http#Server.Shutdown).
 
-> Shutdown gracefully shuts down the server without interrupting any active connections. Shutdown works by first closing all open listeners, then closing all idle connections, and then waiting indefinitely for connections to return to idle and then shut down. If the provided context expires before the shutdown is complete, Shutdown returns the context's error, otherwise it returns any error returned from closing the Server's underlying Listener(s).
+> Met Shutdown wordt de server netjes afgesloten zonder actieve verbindingen te onderbreken. Shutdown werkt door eerst alle open listeners te sluiten, vervolgens alle inactieve verbindingen te sluiten en vervolgens oneindig te wachten tot de verbindingen weer inactief zijn en vervolgens af te sluiten. Als de opgegeven context verloopt voordat het afsluiten is voltooid, retourneert Shutdown de fout van de context. Anders retourneert het elke fout die wordt geretourneerd door het sluiten van de onderliggende listener(s) van de server.
 
-To handle `SIGTERM` we can use [os/signal.Notify](https://pkg.go.dev/os/signal#Notify), which will send any incoming signals to a channel we provide.
+Om `SIGTERM` af te handelen, kunnen we [os/signal.Notify](https://pkg.go.dev/os/signal#Notify) gebruiken, dat alle inkomende signalen naar een door ons aangeboden kanaal stuurt.
 
-By using these two features from the standard library, you can listen for `SIGTERM` and shutdown gracefully.
+Door deze twee functies uit de standaardbibliotheek te gebruiken, kun je luisteren naar `SIGTERM` en netjes afsluiten.
 
-## Graceful shutdown package
+## Graceful shutdown-pakket
 
-To that end, I wrote [https://pkg.go.dev/github.com/quii/go-graceful-shutdown](https://pkg.go.dev/github.com/quii/go-graceful-shutdown). It provides a decorator function for a `*http.Server` to call its `Shutdown` method when a `SIGTERM` signal is detected
-
-```go
-func main() {
-	var (
-		ctx        = context.Background()
-		httpServer = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
-		server     = gracefulshutdown.NewServer(httpServer)
-	)
-
-	if err := server.ListenAndServe(ctx); err != nil {
-		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
-		log.Fatalf("uh oh, didn't shutdown gracefully, some responses may have been lost %v", err)
-	}
-
-	// hopefully, you'll always see this instead
-	log.Println("shutdown gracefully! all responses were sent")
-}
-```
-
-The specifics around the code are not too important for this read, but it is worth having a quick look over the code before carrying on.
-
-## Tests and feedback loops
-
-When we wrote the `gracefulshutdown` package, we had unit tests to prove it behaves correctly which gave us the confidence to aggressively refactor. However, we still didn't feel "confident" that it **really** worked.
-
-We added a `cmd` package and made a real program to use the package we were writing. We'd manually fire it up, fire off an HTTP request to it, and then send a `SIGTERM` to see what would happen.
-
-**The engineer in you should be feeling uncomfortable with manual testing**.
-It's boring, it doesn't scale, it's inaccurate, and it's wasteful. If you're writing a package you intend to share, but also want to keep it simple and cheap to change, manual testing is not going to cut it.
-
-## Acceptance tests
-
-If you’ve read the rest of this book, you will have mostly written "unit tests". Unit tests are a fantastic tool for enabling fearless refactoring, driving good modular design, preventing regressions, and facilitating fast feedback.
-
-By their nature, they only test small parts of your system. Usually, unit
-tests alone are *not enough* for an effective testing strategy. Remember, we want our systems to **always be shippable**. We can't rely on manual testing, so we need another kind of testing: **acceptance tests**.
-
-### What are they?
-
-Acceptance tests are a kind of "black-box test". They are sometimes referred
-to as "functional tests". They should exercise the system as a user of the system would.
-
-The term "black-box" refers to the idea that the test code has no access to the internals of the system, it can only use its public interface and make assertions on the behaviours it observes. This means they can only test the system as a whole.
-
-This is an advantageous trait because it means the tests exercise the system the same as a user would, it can't use any special workarounds that could make a test pass, but not actually prove what you need to prove. This is similar to the principle of preferring your unit test files to live inside a separate test package, for example, `package mypkg_test` rather than `package mypkg`.
-
-### Benefits of acceptance tests
-
-- When they pass, you know your entire system behaves how you want it to.
-- They are more accurate, quicker, and require less effort than manual testing.
-- When written well, they act as accurate, verified documentation of your
-  system. It doesn't fall into the trap of documentation that diverges from the real behaviour of the system.
-- No mocking! It's all real.
-
-### Potential drawbacks vs unit tests
-
-- They are expensive to write.
-- They take longer to run.
-- They are dependent on the design of the system.
-- When they fail, they typically don't give you a root cause, and can be
-  difficult to debug.
-- They don't give you feedback on the internal quality of your system. You
-  could write total garbage and still make an acceptance test pass.
-- Not all scenarios are practical to exercise due to the black-box nature.
-
-For this reason, it is foolish to only rely on acceptance tests. They do not have many of the qualities unit tests have, and a system with a large number of acceptance tests will tend to suffer in terms of maintenance costs and poor lead time.
-
-#### Lead time?
-
-Lead time refers to how long it takes from a commit being merged into your
-main branch to it being deployed in production. This number can vary from weeks and even months for some teams to a matter of minutes. Again, at `$WORK`, we value DORA's findings and want to keep our lead time to under 10 minutes.
-
-A balanced testing approach is required for a reliable system with excellent
-lead time, and this is usually described in terms of the [Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html).
-
-## How to write basic acceptance tests
-
-How does this relate to the original problem? We've just written a package here, and it is entirely unit-testable.
-
-As I mentioned, the unit tests weren't quite giving us the confidence we needed. We want to be *really* sure the package works when integrated with a real, running program. We should be able to automate the manual checks we were making.
-
-Let's take a look at the test program:
+Om die reden heb ik [https://pkg.go.dev/github.com/quii/go-graceful-shutdown](https://pkg.go.dev/github.com/quii/go-graceful-shutdown) geschreven. Het biedt een decoratorfunctie voor een `*http.Server` om de `Shutdown`-methode aan te roepen wanneer een `SIGTERM`-signaal wordt gedetecteerd.
 
 ```go
 func main() {
@@ -150,21 +68,96 @@ func main() {
 }
 ```
 
-You may have guessed that `SlowHandler` has a `time.Sleep` to delay responding, so I had time to `SIGTERM` and see what happens. The rest is fairly boilerplate:
+De details rondom de code zijn niet zo belangrijk voor dit hoofdstuk, maar het is de moeite waard om de code kort te bekijken voordat je verdergaat.
 
-- Make a `net/http/Server`;
-- Wrap it in the library (see: [Decorator pattern](https://en.wikipedia.org/wiki/Decorator_pattern));
-- Use the wrapped version to `ListenAndServe`.
+## Tests en feedback loops
 
-### High-level steps for the acceptance test
+Toen we het `gracefulshutdown`-pakket schreven, voerden we unittests uit om te bewijzen dat het correct functioneerde, wat ons het vertrouwen gaf om agressief te refactoren. We hadden er echter nog steeds geen vertrouwen in dat het **echt** werkte.
 
-- Build the program
-- Run it (and wait for it listen on `8080`)
-- Send an HTTP request to the server
-- Before the server has a chance to send an HTTP response, send `SIGTERM`
-- See if we still get a response
+We voegden een `cmd`-pakket toe en maakten een echt programma om het pakket dat we aan het schrijven waren te gebruiken. We startten het handmatig op, stuurden er een HTTP-verzoek naartoe en stuurden vervolgens een `SIGTERM` om te zien wat er zou gebeuren.
 
-### Building and running the program
+**De engineer in jou zou zich ongemakkelijk moeten voelen bij handmatig testen**.
+Het is saai, het schaalt niet, het is onnauwkeurig en het is tijdverspilling. Als je een pakket schrijft dat je wilt delen, maar het ook eenvoudig en goedkoop wilt houden om te wijzigen, is handmatig testen niet voldoende.
+
+## Acceptatietests
+
+Als je de rest van dit boek hebt gelezen, zul je voornamelijk "unittests" hebben geschreven. Unittests zijn een fantastische tool om onbevreesd refactoren mogelijk te maken, een goed modulair ontwerp te stimuleren, regressies te voorkomen en snelle feedback te faciliteren.
+
+Van nature testen ze slechts kleine onderdelen van je systeem. Meestal zijn unittests alleen *niet voldoende* voor een effectieve teststrategie. Vergeet niet dat we willen dat onze systemen **altijd leverbaar** zijn. We kunnen niet vertrouwen op handmatige tests, dus hebben we een ander soort testen nodig: **acceptatietests**.
+
+### Wat zijn dat?
+
+Acceptatietests zijn een soort "black-box-test". Ze worden soms ook wel "functionele tests" genoemd. Ze moeten het systeem testen zoals een gebruiker dat zou doen.
+
+De term "black-box" verwijst naar het idee dat de testcode geen toegang heeft tot de interne onderdelen van het systeem; het kan alleen de openbare interface gebruiken en uitspraken doen over het gedrag dat het observeert. Dit betekent dat het systeem alleen als geheel getest kan worden.
+
+Dit is een voordelige eigenschap, omdat het betekent dat de tests het systeem op dezelfde manier testen als een gebruiker; het kan geen speciale workarounds gebruiken die een test zouden kunnen laten slagen, maar niet daadwerkelijk bewijzen wat je moet bewijzen. Dit is vergelijkbaar met het principe om je unit-testbestanden bij voorkeur in een apart testpakket te plaatsen, bijvoorbeeld `package mypkg_test` in plaats van `package mypkg`.
+
+### Voordelen van acceptatietests
+
+- Als ze slagen, weet je dat je hele systeem zich gedraagt zoals jij dat wilt.
+- Ze zijn nauwkeuriger, sneller en vergen minder inspanning dan handmatige tests.
+- Als ze goed geschreven zijn, fungeren ze als nauwkeurige, geverifieerde documentatie van je systeem. Het trapt niet in de valkuil van documentatie die afwijkt van het werkelijke gedrag van het systeem.
+- Geen gezeur! Het is allemaal echt.
+
+### Mogelijke nadelen ten opzichte van unittests
+
+- Ze zijn duur om te schrijven.
+- Ze duren langer om uit te voeren.
+- Ze zijn afhankelijk van het ontwerp van het systeem.
+- Als ze falen, geven ze je meestal geen hoofdoorzaak en kunnen ze moeilijk te debuggen zijn.
+- Ze geven je geen feedback over de interne kwaliteit van je systeem. Je zou totale troep kunnen schrijven en toch een acceptatietest kunnen laten slagen.
+- Niet alle scenario's zijn praktisch uitvoerbaar vanwege het black-box-karakter.
+
+Daarom is het onverstandig om alleen op acceptatietests te vertrouwen. Ze missen veel van de kwaliteiten van unittests, en een systeem met een groot aantal acceptatietests zal vaak te lijden hebben onder onderhoudskosten en slechtere doorlooptijd.
+
+#### Doorlooptijd?
+
+De doorlooptijd verwijst naar de tijd die nodig is om een commit te mergen in je hoofdbranch en deze te implementeren in productie. Deze tijd kan variëren van weken en zelfs maanden voor sommige teams tot een kwestie van minuten. Bij `$WORK` hechten we waarde aan de bevindingen van DORA en willen we onze doorlooptijd onder de 10 minuten houden.
+
+Een evenwichtige testaanpak is vereist voor een betrouwbaar systeem met een uitstekende doorlooptijd, en dit wordt meestal beschreven in termen van de [Testpiramide](https://martinfowler.com/articles/practical-test-pyramid.html).
+
+## Hoe schrijf je basisacceptatietests?
+
+Wat is de relatie met het oorspronkelijke probleem? We hebben hier net een pakket geschreven en het is volledig unit-testbaar.
+
+Zoals ik al zei, gaven de unit-tests ons niet helemaal het vertrouwen dat we nodig hadden. We willen *echt* zeker weten dat het pakket werkt wanneer het geïntegreerd is met een echt, lopend programma. We zouden de handmatige controles die we uitvoerden, moeten kunnen automatiseren.
+
+Laten we eens kijken naar het testprogramma:
+
+```go
+func main() {
+	var (
+		ctx        = context.Background()
+		httpServer = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
+		server     = gracefulshutdown.NewServer(httpServer)
+	)
+
+	if err := server.ListenAndServe(ctx); err != nil {
+		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
+		log.Fatalf("uh oh, didn't shutdown gracefully, some responses may have been lost %v", err)
+	}
+
+	// hopefully, you'll always see this instead
+	log.Println("shutdown gracefully! all responses were sent")
+}
+```
+
+Je hebt misschien al geraden dat `SlowHandler` een `time.Sleep` heeft om de reactie uit te stellen, dus ik had tijd om `SIGTERM` te gebruiken en te kijken wat er gebeurt. De rest is vrij standaard:
+
+- Maak een `net/http/Server`;
+- Wikkel deze in de bibliotheek (zie: [Decorator patroon](https://en.wikipedia.org/wiki/Decorator_pattern));
+- Gebruik de ingepakte versie om `ListenAndServe` uit te voeren.
+
+### Stappen op hoog niveau voor de acceptatietest
+
+- Bouw het programma
+- Voer het uit (en wacht tot het luistert op `8080`)
+- Stuur een HTTP-verzoek naar de server
+- Stuur `SIGTERM` voordat de server een HTTP-antwoord kan sturen
+- Kijk of we nog steeds een antwoord krijgen
+
+### Het programma bouwen en uitvoeren
 
 ```go
 package acceptancetests
@@ -267,23 +260,21 @@ func randomString(n int) string {
 	return string(s)
 }
 ```
+`LaunchTestProgram` is verantwoordelijk voor:
+- het bouwen van het programma
+- het starten van het programma
+- het wachten tot het programma luistert op poort `8080`
+- het bieden van een `cleanup`-functie om het programma te stoppen en te verwijderen, zodat we na afloop van onze tests een schone staat overhouden - het bieden van een `interrupt`-functie om het programma een `SIGTERM` te sturen, zodat we het gedrag kunnen testen.
 
-`LaunchTestProgram` is responsible for:
-- building the program
-- launching the program
-- waiting for it to listen on port `8080`
-- providing a `cleanup` function to kill the program and delete it to ensure that when our tests finish, we're left in a clean state
-- providing an `interrupt` function to send the program a `SIGTERM` to let us test the behaviour
+Toegegeven, dit is niet de mooiste code ter wereld, maar concentreer je gewoon op de geëxporteerde functie `LaunchTestProgram`; de niet-geëxporteerde functies die het aanroept, zijn oninteressante boilerplate-codes.
 
-Admittedly, this is not the nicest code in the world, but just focus on the exported function `LaunchTestProgram`, the un-exported functions it calls are uninteresting boilerplate.
+Zoals besproken, zijn acceptatietests vaak lastiger op te zetten. Deze code maakt de *test*-code aanzienlijk eenvoudiger te lezen, en vaak is het bij acceptatietests zo dat, zodra je de ceremoniële code hebt geschreven, deze klaar zijn en je er niet meer naar hoeft om te kijken.
 
-As discussed, acceptance testing tends to be trickier to set up. This code does make the *testing* code substantially simpler to read, and often with acceptance tests once you've written the ceremonious code, it's done, and you can forget about it.
+### De acceptatietest(s)
 
-### The acceptance test(s)
+We wilden twee acceptatietests voor twee programma's, één met een soepele afsluiting en één zonder, zodat wij en de lezers het verschil in gedrag kunnen zien. Met `LaunchTestProgram` om de programma's te bouwen en uit te voeren, is het vrij eenvoudig om acceptatietests voor beide te schrijven, en we profiteren van hergebruik met enkele hulpfuncties.
 
-We wanted to have two acceptance tests for two programs, one with graceful shutdown and one without, so we, and the readers can see the difference in behaviour. With `LaunchTestProgram` to build and run the programs, it's quite simple to write acceptance tests for both, and we benefit from re-use with some helper functions.
-
-Here is the test for the server *with* a graceful shutdown, [you can find the test without on GitHub](https://github.com/quii/go-graceful-shutdown/blob/main/acceptancetests/withoutgracefulshutdown/main_test.go)
+Hier is de test voor de server *met* een soepele afsluiting, [je kunt de test zonder vinden op GitHub](https://github.com/quii/go-graceful-shutdown/blob/main/acceptancetests/withoutgracefulshutdown/main_test.go)
 
 ```go
 package main
@@ -323,9 +314,9 @@ func TestGracefulShutdown(t *testing.T) {
 }
 ```
 
-With the setup encapsulated away, the tests are comprehensive, describe the behaviour, and are relatively easy to follow.
+Nu de setup is ingekapseld, zijn de tests uitgebreid, beschrijven ze het gedrag en zijn ze relatief eenvoudig te volgen.
 
-`assert.CanGet/CantGet` are helper functions I made to DRY up this common assertion for this suite.
+`assert.CanGet/CantGet` zijn hulpfuncties die ik heb gemaakt om deze veelvoorkomende bewering voor deze suite op te lossen.
 
 ```go
 func CanGet(t testing.TB, url string) {
@@ -350,15 +341,15 @@ func CanGet(t testing.TB, url string) {
 }
 ```
 
-This will fire off a `GET` to `URL` on a goroutine, and if it responds without error before 3 seconds, then it will not fail. `CantGet` is omitted for brevity, [but you can view it on GitHub here](https://github.com/quii/go-graceful-shutdown/blob/main/assert/assert.go#L61).
+Dit activeert een `GET` naar `URL` op een goroutine, en als deze binnen 3 seconden zonder fout reageert, mislukt de code niet. `CantGet` is weggelaten vanwege de beknoptheid, [maar je kunt het hier op GitHub bekijken](https://github.com/quii/go-graceful-shutdown/blob/main/assert/assert.go#L61).
 
-It's important to note again, Go has all the tools you need to write acceptance tests out of the box. You don't *need* a special framework to build acceptance tests.
+Het is belangrijk om nogmaals te vermelden dat Go alle tools heeft die je nodig hebt om acceptatietests direct te schrijven. Je hebt geen speciaal framework *nodig* om acceptatietests te bouwen.
 
-### Small investment with a big pay-off
+### Kleine investering met een groot rendement
 
-With these tests, readers can look at the example programs and be confident that the example *actually* works, so they can be confident in the package's claims.
+Met deze tests kunnen lezers de voorbeeldprogramma's bekijken en er zeker van zijn dat het voorbeeld *echt* werkt, zodat ze vertrouwen kunnen hebben in de claims van het pakket.
 
-Importantly, as the author, we get **fast feedback** and **massive confidence** that the package works in a real-world setting.
+Belangrijk is dat we als auteur **snelle feedback** en **enorme zekerheid** krijgen dat het pakket in de praktijk werkt.
 
 ```shell
 go test -count=1 ./...
@@ -369,32 +360,30 @@ ok  	github.com/quii/go-graceful-shutdown/acceptancetests/withoutgracefulshutdow
 ?   	github.com/quii/go-graceful-shutdown/assert	[no test files]
 ```
 
-## Wrapping up
+## Samenvattend
 
-In this blog post, we introduced acceptance tests into your testing tool belt. They are invaluable when you start to build real systems and are an important complement to your unit tests.
+In dit hoofdstuk hebben we acceptatietests geïntroduceerd in je testgereedschapskist. Ze zijn van onschatbare waarde wanneer je echte systemen gaat bouwen en vormen een belangrijke aanvulling op je unittests.
 
-The nature of *how* to write acceptance tests depends on the system you're building, but the principles stay the same. Treat your system like a "black box". If you're making a website, your tests should act like a user, so you'll want to use a headless web browser like [Selenium](https://www.selenium.dev/), to click on links, fill in forms, etc. For a RESTful API, you'll send HTTP requests using a client.
+De aard van *hoe* je acceptatietests schrijft, hangt af van het systeem dat je bouwt, maar de principes blijven hetzelfde. Behandel je systeem als een "black box". Als je een website maakt, moeten je tests zich gedragen als een gebruiker. Gebruik daarom een headless webbrowser zoals [Selenium](https://www.selenium.dev/) om op links te klikken, formulieren in te vullen, enz. Voor een RESTful API verstuur je HTTP-verzoeken via een client.
 
-### Taking it further for more complicated systems
+### Verdergaan voor complexere systemen
 
-Non-trivial systems don't tend to be single-process applications like the one we've discussed. Typically, you'll depend on other systems such as a database. For these scenarios, you'll need to automate a local environment to test with. Tools like [docker-compose](https://docs.docker.com/compose/) are useful for spinning up containers of the environment you need to run your system locally.
+Niet-triviale systemen zijn meestal geen applicaties met één proces zoals het systeem dat we hebben besproken. Meestal ben je afhankelijk van andere systemen, zoals een database. Voor deze scenario's moet je een lokale omgeving automatiseren om mee te testen. Tools zoals [docker-compose](https://docs.docker.com/compose/) zijn handig voor het opstarten van containers van de omgeving die je nodig hebt om je systeem lokaal te laten draaien.
 
-### The next chapter
+### Het volgende hoofdstuk
 
-In this post the acceptance test was written retrospectively. However, in [Growing Object-Oriented Software](http://www.growing-object-oriented-software.com) the authors show that we can use acceptance tests in a test-driven approach to act as a "north-star" to guide our efforts.
+In dit hoofdstuk is de acceptatietest retrospectief geschreven. In [Growing Object-Oriented Software](http://www.growing-object-oriented-software.com) laten de auteurs echter zien dat we acceptatietests in een testgedreven aanpak kunnen gebruiken als een "poolster" om onze inspanningen te sturen.
 
-As systems get more complex, the costs of writing and maintaining acceptance tests can quickly spiral out of control. There are countless stories of development teams being hamstrung by expensive acceptance test suites.
+Naarmate systemen complexer worden, kunnen de kosten van het schrijven en onderhouden van acceptatietests snel uit de hand lopen. Er zijn talloze verhalen over ontwikkelteams die gehinderd worden door dure acceptatietestsuites.
 
-The next chapter will introduce using acceptance test to guide our design
-along with principles and techniques for managing the costs of acceptance tests.
+Het volgende hoofdstuk introduceert het gebruik van acceptatietests als leidraad voor ons ontwerp, samen met principes en technieken voor het beheersen van de kosten van acceptatietests.
 
-### Improving the quality of open-source
+### De kwaliteit van open source verbeteren
 
-If you're writing packages you intend to share, I'd encourage you to create
-simple example programs demonstrating what your package does and invest time in having simple-to-follow acceptance tests to give yourself, and potential users of your work, confidence.
+Als je pakketten schrijft die je wilt delen, raad ik je aan om eenvoudige voorbeeldprogramma's te maken die laten zien wat je pakket doet en tijd te investeren in eenvoudig te volgen acceptatietests om jezelf en potentiële gebruikers van je werk vertrouwen te geven.
 
-Like [Testable Examples](https://go.dev/blog/examples), seeing this little extra effort in developer experience goes a long way toward building trust in your work, and will reduce your own maintenance costs.
+Net als bij [Testable Examples](https://go.dev/blog/examples) draagt deze kleine extra inspanning in de ontwikkelaarservaring enorm bij aan het opbouwen van vertrouwen in je werk en verlaagt het je eigen onderhoudskosten.
 
-## Recruitment plug for `$WORK`
+## Wervingsadvertentie voor `$WORK`
 
-If you fancy working in an environment with other engineers solving interesting problems, live near or around London or Porto, and enjoy the contents of this chapter and book -  please [reach out to me on Twitter](https://twitter.com/quii), and maybe we can work together soon!
+Als je zin hebt om samen met andere engineers interessante problemen op te lossen, in de buurt van Londen of Porto woont en de inhoud van dit hoofdstuk en boek interessant vindt, neem dan [contact met me op via Twitter](https://twitter.com/quii) en misschien kunnen we binnenkort samenwerken!
