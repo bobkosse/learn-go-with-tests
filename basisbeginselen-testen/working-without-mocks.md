@@ -125,73 +125,73 @@ Fakes zijn nuttig omdat:
 
 Observatoren, Mocks en Stubs kunnen meestal automatisch worden gegenereerd vanuit een interface met behulp van een tool of reflectie. Omdat Fakes echter het gedrag coderen van de afhankelijkheid waarvoor u een double wilt maken, moet u in ieder geval het grootste deel van de implementatie zelf schrijven.
 
-## The problem with stubs and mocks
+## Het probleem met stubs en mocks
 
-In [Anti-patterns,](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns) there are details on how using test doubles must be done carefully. Creating a messy test suite is easy if you don't use them tastefully. As a project grows though, other problems can creep in.
+In [Anti-patterns,](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns) staat beschreven hoe je voorzichtig moet zijn met het gebruik van test doubles. Het creëren van een rommelige testsuite is makkelijk als je ze niet weldoordacht gebruikt. Naarmate een project groeit, kunnen er echter andere problemen ontstaan.
 
-When you encode behaviour into test doubles, you are adding your assumptions as to how the real dependency works into the test. If there is a discrepancy between the behaviour of the double and the real dependency, or if one happens over time (e.g. the real dependency changes, which *has* to be expected), **you may have passing tests but failing software**.
+Wanneer je gedrag codeert in test doubles, voeg je je aannames over hoe de werkelijke afhankelijkheid werkt toe aan de test. Als er een discrepantie is tussen het gedrag van de double en de werkelijke afhankelijkheid, of als er een discrepantie ontstaat in de loop van de tijd (bijvoorbeeld als de werkelijke afhankelijkheid verandert, wat *te verwachten* is), **kun je geslaagde tests hebben, maar mislukte software**.
 
-Stubs, spies and mocks, in particular, represent other challenges, mainly as a project grows. To illustrate this, I will describe a project I worked on.
+Vooral stubs, spies en mocks vormen andere uitdagingen, vooral naarmate een project groeit. Om dit te illustreren, beschrijf ik een project waaraan ik heb gewerkt.
 
-### Example case study
+### Voorbeeld casestudy
 
-*Some details are changed compared to what really happened, and it has been simplified greatly for brevity. **Any resemblance to actual persons, living or dead, is purely coincidental.***
+*Sommige details zijn gewijzigd ten opzichte van wat er werkelijk gebeurde en het is sterk vereenvoudigd om het kort te houden. **Elke gelijkenis met bestaande personen, levend of overleden, berust op puur toeval.***
 
-I worked on a system that had to call **six** different APIs, written and maintained by other teams across the globe. They were _REST-ish_, and the job of our system was to create and manage resources in them all. When we called all the APIs correctly for each system, _magic_ (business value) would happen.
+Ik werkte aan een systeem dat **zes** verschillende API's moest aanroepen, geschreven en onderhouden door andere teams wereldwijd. Ze waren _REST-achtig_ en de taak van ons systeem was om resources in al deze API's aan te maken en te beheren. Wanneer we alle API's voor elk systeem correct aanriepen, ontstond er _magie_ (bedrijfswaarde).
 
-Our application was structured in a hexagonal / ports & adapters architecture. Our domain code was decoupled from the mess of the outside world we had to deal with. Our "adapters" were, in effect, Go clients that encapsulated calling the various APIs.
+Onze applicatie was gestructureerd in een hexagonale / poorten & adapters-architectuur. Onze domeincode was losgekoppeld van de chaos van de buitenwereld waarmee we te maken hadden. Onze "adapters" waren in feite Go-clients die de aanroep van de verschillende API's inkapselden.
 
-![the system architecture](https://i.imgur.com/6bqovl8.png)
+![de systeemarchitectuur](https://i.imgur.com/6bqovl8.png)
 
-#### Troubles
+#### Problemen
 
-Naturally, we took a test-driven approach to building the system. We leveraged stubs to simulate the downstream API responses and had a handful of acceptance tests to reassure ourselves everything should work.
+Natuurlijk hebben we een testgedreven aanpak gehanteerd bij het bouwen van het systeem. We gebruikten stubs om de downstream API-reacties te simuleren en voerden een handvol acceptatietests uit om onszelf ervan te verzekeren dat alles zou moeten werken.
 
-The APIs we had to call for the most part, though, were:
+De API's die we grotendeels moesten aanroepen, waren echter:
 
-- poorly documented
-- run by teams who had lots of other conflicting priorities and pressures, so it wasn't easy to get time with them
-- often lacking test coverage, so would break in fun and unexpected ways, regress, etc
-- were still being built and evolved
+- slecht gedocumenteerd
+- beheerd door teams met veel andere conflicterende prioriteiten en druk, waardoor het niet makkelijk was om tijd voor ze vrij te maken
+- vaak onvoldoende testdekking, waardoor ze op leuke en onverwachte manieren braken, terugvielen, enz.
+- nog steeds in ontwikkeling (technisch en functioneel)
 
-This led to **a lot of flaky tests** and a lot of headaches. A _significant_ amount of our time was spent pinging lots of busy people on Slack trying to get answers as to:
+Dit leidde tot **veel onbetrouwbare tests** en veel hoofdpijn. Een _aanzienlijk_ deel van onze tijd besteedden we aan het pingen van veel drukke mensen op Slack om antwoorden te krijgen op de volgende vragen:
 
-- Why has the API started doing `x`?
-- Why is the API doing something different when we do `y`?
+- Waarom is de API 'x' gaan doen?
+- Waarom doet de API iets anders als wij 'y' doen?
 
-Software development is rarely as straightforward as you'd hope; it's a learning exercise. We had to continuously learn how the external APIs worked. As we learned and adapted, we had to update and add to our test suite, in particular, **changing our stubs to match the actual behaviour of the APIs.**
+Softwareontwikkeling is zelden zo eenvoudig als je zou hopen; het is een leerzame oefening. We moesten voortdurend leren hoe de externe API's werkten. Naarmate we leerden en ons aanpasten, moesten we onze testsuite updaten en uitbreiden, met name door **onze stubs aan te passen aan het daadwerkelijke gedrag van de API's.**
 
-The trouble is, this took up much of our time and led to more mistakes. When your knowledge of a dependency changes, you must find the **right** test to update to change the stub's behaviour, and there's a real risk of neglecting to update it in other stubs representing the same dependency.
+Het probleem was dat dit veel tijd in beslag nam en tot meer fouten leidde. Wanneer je kennis van een afhankelijkheid verandert, moet je de **juiste** test vinden om het gedrag van de stub te wijzigen, en er is een reëel risico dat je deze niet bijwerkt in andere stubs die dezelfde afhankelijkheid vertegenwoordigen.
 
-#### Test strategy
+#### Teststrategie
 
-On top of this, as the system was growing and requirements were changing, we realised that our test strategy was unsuitable. We had a handful of acceptance tests that would give us confidence the system as a whole worked and then a large number of unit tests for the various packages we wrote.
+Bovendien, naarmate het systeem groeide en de eisen veranderden, realiseerden we ons dat onze teststrategie ongeschikt was. We hadden een handvol acceptatietests die ons het vertrouwen gaven dat het systeem als geheel werkte, en daarnaast een groot aantal unittests voor de verschillende pakketten die we schreven.
 
-<u>We needed something in between</u>; we often wanted to change the behaviour of various system parts together **but not have to spin up the *entire* system for an acceptance test**. Unit tests alone did not give us confidence that the various components worked as a whole; they couldn't tell (and verify) the story of what we were trying to achieve. **We wanted integration tests**.
+_We hadden iets ertussenin nodig_; we wilden vaak het gedrag van verschillende systeemonderdelen tegelijk aanpassen **maar niet het *hele* systeem opstarten voor een acceptatietest**. Unittests alleen gaven ons niet het vertrouwen dat de verschillende componenten als geheel werkten; ze konden het verhaal van wat we probeerden te bereiken niet vertellen (en verifiëren). **We wilden integratietests**.
 
-#### Integration tests
+#### Integratietests
 
-Integration tests prove that two or more "units" work correctly when combined (or integrated!). These units can be the code you write or the code you write integrated with someone else's code, such as a database.
+Integratietests bewijzen dat twee of meer "units" correct werken wanneer ze worden gecombineerd (of geïntegreerd!). Deze units kunnen de code zijn die je schrijft of de geïntegreerde code met de code van iemand anders, zoals een database.
 
-As a project grows, you want to write more integration tests to prove large parts of your system "hang together" - or integrates!
+Naarmate een project groeit, wil je meer integratietests schrijven om te bewijzen dat grote delen van het systeem "samenhangen" - of integreren!
 
-You may be tempted to write more black-box acceptance tests, but they quickly become costly regarding your build time and maintenance costs. It can be too expensive to spin up an entire system when you only want to check a *subset* of the system (but not just a single unit) behaves how it should. Writing expensive black-box tests for every bit of functionality you do is not sustainable for larger systems.
+Je kunt in de verleiding komen om meer black-box acceptatietests te schrijven, maar deze worden al snel kostbaar vanwege de bouwtijd en onderhoudskosten. Het kan te duur zijn om een heel systeem op te starten als je slechts een *subset* van het systeem (en niet slechts één unit) wilt controleren op het juiste gedrag. Het schrijven van dure black-box tests voor elk stukje functionaliteit dat je uitvoert, is niet haalbaar voor grotere systemen.
 
-#### Enter: Fakes
+#### Maak kennis met: Fakes
 
-The problem was the way our units were tested was reliant on stubs, which are, for the most part, *stateless*. We wanted to write tests covering multiple, *stateful* API calls, where we may create a resource at the start and then edit it later.
+Het probleem was dat de manier waarop onze units werden getest, afhankelijk was van stubs, die grotendeels *stateless* zijn. We wilden tests schrijven die meerdere, *stateful* API-aanroepen bestrijken, waarbij we in het begin een resource kunnen aanmaken en deze later kunnen bewerken.
 
-The following is a cut-down version of a test we want to do.
+Hieronder volgt een verkorte versie van een test die we willen uitvoeren.
 
-The SUT is a "service layer" dealing with "use case" requests. We want to prove if a customer is created, when their details change, we successfully update the resources we made in the respective APIs.
+De SUT is een "servicelaag" die "use case"-verzoeken afhandelt. We willen bewijzen dat als een klant is aangemaakt, we de resources die we in de betreffende API's hebben aangemaakt, succesvol bijwerken wanneer hun gegevens veranderen.
 
-Here are the requirements given to the team as a user story.
+Hieronder staan de vereisten die aan het team zijn meegegeven als een _user story_.
 
-> ***Given*** a user is registered with API 1, 2 and 3
+> ***Gegeven*** dat een gebruiker is geregistreerd met API 1, 2 en 3
 >
-> ***When*** the customer's social security number is changed
+> ***Wanneer*** het burgerservicenummer van de klant wordt gewijzigd
 >
-> ***Then**,* the change is propagated into APIs 1, 2 and 3
+> ***Dan**, wordt de wijziging doorgevoerd in API's 1, 2 en 3
 
 ```mermaid
 sequenceDiagram
@@ -208,15 +208,15 @@ sequenceDiagram
 	SUT->>API2: Update resource
 ```
 
-Tests that cut across multiple units are usually incompatible with stubs **because they're not suited to maintaining state**. We _could_ write a black-box acceptance test, but the costs of these tests would quickly spiral out of control.
+Tests die meerdere units bestrijken, zijn meestal niet compatibel met stubs **omdat ze niet geschikt zijn voor het bijhouden van de status**. We _zouden_ een black-box-acceptatietest kunnen schrijven, maar de kosten van deze tests zouden snel uit de hand lopen.
 
-In addition, it is complicated to test edge cases with a black-box test because you cannot control the dependencies. For instance, we wanted to prove that a rollback mechanism would be fired if one API call failed.
+Bovendien is het ingewikkeld om edge cases te testen met een black-box-test, omdat je de afhankelijkheden niet kunt controleren. We wilden bijvoorbeeld bewijzen dat een rollback-mechanisme zou worden geactiveerd als één API-aanroep mislukte.
 
-We needed to use **fakes**. By modelling our dependencies as stateful APIs with in-memory fakes, we were able to write integration tests with a much broader scope, **to allow us to test real use cases worked**, again *without* having to spin up the whole system, and instead have almost the same speed as unit tests.
+We moesten **fakes** gebruiken. Door onze afhankelijkheden te modelleren als stateful API's met in-memory fakes, konden we integratietests schrijven met een veel bredere scope, **waardoor we konden testen of echte use cases werkten**, wederom *zonder* het hele systeem te hoeven opstarten, en in plaats daarvan bijna dezelfde snelheid hadden als unittests.
 
-![integration tests with fakes](https://i.imgur.com/9Q6FMpw.png)
+![integratietests met fakes](https://i.imgur.com/9Q6FMpw.png)
 
-Using fakes, **we can make assertions based on the final states of the respective systems rather than relying on complicated spying**. We'd ask each fake what records it held for the customer and assert they were updated. This feels more natural; if we manually checked our system, we would query those APIs to check their state, not inspect our request logs to see if we sent particular JSON payloads.
+Met behulp van fakes **kunnen we beweringen doen op basis van de uiteindelijke status van de betreffende systemen in plaats van te vertrouwen op ingewikkeld spying**. We zouden elke fake vragen welke records deze voor de klant bevatte en bevestigen dat deze waren bijgewerkt. Dit voelt natuurlijker; als we ons systeem handmatig zouden controleren, zouden we die API's raadplegen om hun status te controleren, in plaats van onze aanvraaglogboeken te inspecteren om te zien of we bepaalde JSON-payloads hebben verzonden.
 
 ```go
 // take our lego-bricks and assemble the system for the test
@@ -246,33 +246,33 @@ updatedFakeAPICustomer := fakeAPI1.Get(createdCustomer.FakeAPI1Details.ID)
 assert.Equal(t, updatedFakeAPICustomer.SocialSecurityNumber, updatedCustomerRequest.SocialSecurityNumber)
 ```
 
-This is simpler to write and easier to read than checking various function call arguments made via spies.
+Dit is eenvoudiger te schrijven en te lezen dan het controleren van verschillende functieaanroepargumenten die via _spies_ zijn gemaakt.
 
-This approach lets us have tests that cut across broad parts of our system, letting us write more **meaningful** tests about the use cases we'd be discussing at stand-up whilst still executing exceptionally quickly.
+Deze aanpak stelt ons in staat om tests te gebruiken die brede delen van ons systeem bestrijken, waardoor we **zinvollere** tests kunnen schrijven over de use cases die we tijdens de stand-up bespreken, terwijl ze toch uitzonderlijk snel worden uitgevoerd.
 
-#### Fakes bring more of the benefits of encapsulation
+#### Fakes brengen meer voordelen van encapsulatie met zich mee
 
-In the example above, the tests were not concerned with how the dependencies behaved beyond verifying their end state. We created the fake versions of the dependencies and injected them into the part of the system we're testing.
+In het bovenstaande voorbeeld hielden de tests zich niet bezig met hoe de afhankelijkheden zich gedroegen, behalve met het verifiëren van hun eindstatus. We creëerden de nepversies van de afhankelijkheden en injecteerden deze in het deel van het systeem dat we testten.
 
-With mocks/stubs, we'd have to set up each dependency to handle certain scenarios, return certain data, etc. This brings behaviour and implementation detail into your tests, weakening the benefits of encapsulation.
+Met mocks/stubs zouden we elke afhankelijkheid moeten instellen om bepaalde scenario's af te handelen, bepaalde gegevens te retourneren, enz. Dit brengt gedrags- en implementatiedetails in je tests, waardoor de voordelen van encapsulatie afnemen.
 
-We model dependencies behind interfaces so that, as clients, _we don't have to care how it works_, but with a "mockist" approach, _we do have to care **in every test**_.
+We modelleren afhankelijkheden achter interfaces, zodat we ons als klanten _niet druk hoeven te maken over hoe het werkt_, maar met een "mockist"-benadering _moeten we ons er **in elke test** wel druk om maken_.
 
-#### The maintenance costs of fakes
+#### De onderhoudskosten van nep-tests
 
-Fakes are costlier than other test doubles, at least in terms of code written; they must carry state and simulate the behaviour of whatever they're faking. Any discrepancies in behaviour between your fake and the real thing **carry a risk** that your tests aren't in line with reality. This leads to the scenario where you have passing tests but broken software.
+Nep-tests zijn duurder dan andere testdubbels, tenminste wat betreft de geschreven code; ze moeten de status bevatten en het gedrag simuleren van wat ze ook maar nabootsen. Elke discrepantie in gedrag tussen je nep-test en de echte test brengt het risico met zich mee dat je tests niet overeenkomen met de werkelijkheid. Dit leidt tot een scenario waarin je wel geslaagde tests hebt, maar kapotte software.
 
-Whenever you integrate with another system, be it another team's API or a database, you'll make assumptions based on its behaviour. These could be captured from API docs, in-person conversations, emails, Slack threads, etc.
+Wanneer je integreert met een ander systeem, of het nu de API van een ander team of een database is, doe je aannames op basis van het gedrag ervan. Deze kunnen worden vastgelegd in API-documentatie, persoonlijke gesprekken, e-mails, Slack-threads, enz.
 
-Wouldn't it be helpful if we could **codify our assumptions** to run them against both our fake *and* the actual system to see if our knowledge is correct in a repeatable and documented way?
+Zou het niet handig zijn als we onze aannames konden **codificeren** om ze te vergelijken met zowel ons nep- als het daadwerkelijke systeem om te controleren of onze kennis op een herhaalbare en gedocumenteerde manier klopt?
 
-**Contracts** are the means to this end. They helped us manage the assumptions we made on the other team's systems and make them explicit. Way more explicit and useful than email exchanges or endless Slack threads!
+**Contracten** zijn hiervoor het middel. Ze hielpen ons de aannames die we over de systemen van het andere team hadden gedaan te beheren en expliciet te maken. Veel explicieter en nuttiger dan e-mailuitwisselingen of eindeloze Slack-threads!
 
-![fakes and contracts illustrated](https://i.imgur.com/l9aTe2x.png)
+![fakes en contracten geïllustreerd](https://i.imgur.com/l9aTe2x.png)
 
-By having a contract, we can assume that we can use a fake and an actual dependency interchangeably. This is not only useful for constructing tests but also for local development.
+Door een contract te hebben, kunnen we ervan uitgaan dat we een neppe en een echte afhankelijkheid door elkaar kunnen gebruiken. Dit is niet alleen handig voor het bouwen van tests, maar ook voor lokale ontwikkeling.
 
-Here is an example of a contract for one of the APIs the system depends on
+Hier is een voorbeeld van een contract voor een van de API's waarvan het systeem afhankelijk is.
 
 ```go
 type API1Customer struct {
@@ -327,14 +327,14 @@ func (c API1Contract) Test(t *testing.T) {
 }
 ```
 
-As discussed in [Scaling Acceptance Tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests), by testing against an interface rather than a concrete type, the test becomes:
+Zoals besproken in [Scaling Acceptance Tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests), wordt de test, door te testen tegen een interface in plaats van een concreet type:
 
-- Decoupled from implementation detail
-- Can be re-used in different contexts.
+- Losgekoppeld van implementatiedetails
+- eenvoudiger in verschillende contexten te (her)gebruiken.
 
-Which are the requirements for a contract. It allows us to verify and develop our fake _and_ test it against the actual implementation.
+Wat zijn de vereisten voor een contract? Het stelt ons in staat om onze `fake` te verifiëren en te ontwikkelen _en_ deze te testen tegen de daadwerkelijke implementatie.
 
-To create our in-memory fake, we can use the contract in a test.
+Om onze in-memory `fake` te creëren, kunnen we het contract in een test gebruiken.
 
 ```go
 func TestInMemoryAPI1(t *testing.T) {
@@ -344,7 +344,7 @@ func TestInMemoryAPI1(t *testing.T) {
 }
 ```
 
-And here is the fake's code
+En hier is de `fake` code
 
 ```go
 func NewAPI1() *API1 {
@@ -382,44 +382,44 @@ func (a *API1) UpdateCustomer(ctx context.Context, id string, name string) error
 }
 ```
 
-### Evolving software
+### Evoluerende Software
 
-Most software is not built and "finished" forever, in one release.
+De meeste software wordt niet voor altijd in één release gebouwd en "af" gemaakt.
 
-It's an incremental learning exercise, adapting to customer demands and other external changes. In the example, the APIs we were calling were also evolving and changing; plus, as we developed _our_ software, we learned more about what system we _really_ needed to make. Assumptions we made in our contracts turned out to be wrong or _became_ wrong.
+Het is een stapsgewijze leeroefening, die zich aanpast aan de eisen van de klant en andere externe veranderingen. In het voorbeeld evolueerden en veranderden de API's die we aanriepen ook; bovendien leerden we tijdens de ontwikkeling van _onze_ software meer over welk systeem we _echt_ nodig hadden. Aannames die we in onze contracten hadden gedaan, bleken onjuist of _werden_ onjuist.
 
-Thankfully, once the setup for the contracts was made, we had a simple way to deal with change. Once we learned something new, as a result of a bug being fixed or a colleague informing us that the API was changing, we'd:
+Gelukkig hadden we, zodra de contracten waren opgezet, een eenvoudige manier om met veranderingen om te gaan. Zodra we iets nieuws leerden, doordat een bug was opgelost of een collega ons informeerde dat de API aan het veranderen was, deden we het volgende:
 
-1. Write a test to exercise the new scenario. A part of this will involve changing the contract to **drive** you to simulate the behaviour in the fake
-2. Running the test should fail, but before anything else, run the contract against the real dependency to ensure the change to the contract is valid.
-3. Update the fake so it conforms to the contract.
-4. Make the test pass.
+1. Schrijf een test om het nieuwe scenario te oefenen. Een onderdeel hiervan is het aanpassen van het contract om je ertoe aan te zetten het gedrag in de nepversie te **simuleren**.
+2. Het uitvoeren van de test zou moeten mislukken, maar voer eerst het contract uit tegen de echte afhankelijkheid om ervoor te zorgen dat de wijziging in het contract geldig is.
+3. Werk de fake-versie bij zodat deze voldoet aan het contract.
+4. Laat de test slagen.
 5. Refactor.
-6. Run all the tests and ship.
+6. Voer alle tests uit en verzend.
 
-Running the _full_ test suite before checking in _may_ result in other tests failing due to the fake having a different behaviour. This is a **good thing**!  You can now fix all the other areas of the system depending on the changed system; confident they will also handle this scenario in production. Without this approach, you'd have to *remember* to find all the relevant tests and update the stubs. Error-prone, labourious and boring.
+Het uitvoeren van de volledige testsuite vóór het inchecken kan ertoe leiden dat andere tests mislukken omdat de fake-versie zich anders gedraagt. Dit is een **goede zaak**! Je kunt nu alle andere onderdelen van het systeem repareren, afhankelijk van het gewijzigde systeem; je kunt er zeker van zijn dat ze dit scenario ook in productie zullen afhandelen. Zonder deze aanpak zou je *eraan moeten denken* om alle relevante tests te vinden en de stubs bij te werken. Foutgevoelig, arbeidsintensief en saai.
 
-### Superior developer experience
+### Superieure ontwikkelaarservaring
 
-Having the suite of fakes with corresponding contracts felt like a superpower. We could finally tame the complexity of the APIs we had to deal with.
+Het hebben van een suite met fakes en bijbehorende contracten voelde als een superkracht. We konden eindelijk de complexiteit van de API's waarmee we te maken hadden, temmen.
 
-Writing tests for various scenarios became much simpler. We no longer had to assemble a series of stubs and spies for every test; we could take our set of units or modules (the fakes, our own "services") and assemble them very easily to exercise the various weird and wonderful scenarios we needed.
+Het schrijven van tests voor verschillende scenario's werd veel eenvoudiger. We hoefden niet langer voor elke test een reeks stubs en spies te assembleren; we konden onze set units of modules (de fakes, onze eigen "services") heel eenvoudig assembleren om de verschillende vreemde en wonderlijke scenario's die we nodig hadden te oefenen.
 
-Every test with a stub, spy or mock has to _care_ about how the external system behaves, due to the ad-hoc setup. On the other hand, fakes can be treated like any other well-encapsulated unit of code, where the details are hidden away from you, and you can just use them.
+Elke test met een stub, spie of mock moet _zorgen_ voor hoe het externe systeem zich gedraagt, dankzij de ad-hoc-opstelling. Aan de andere kant kunnen fakes worden behandeld als elke andere goed ingekapselde code-eenheid, waarbij de details voor je verborgen blijven en je ze gewoon kunt gebruiken.
 
-We could run a very realistic version of the system locally, and as it was all in memory, it would start and run extremely quickly. This meant our test times were extremely fast, which felt very impressive, given how comprehensive the suite was.
+We konden een zeer realistische versie van het systeem lokaal draaien, en omdat het allemaal in het geheugen stond, startte en draaide het extreem snel. Dit betekende dat onze testtijden extreem laag waren, wat erg indrukwekkend was, gezien hoe uitgebreid de suite was.
 
-If our acceptance tests failed in our staging environment, our first step was to run our contracts against the APIs we depended on. We often identified issues **before the other systems' developers did**.
+Als onze acceptatietests in onze testomgeving mislukten, was onze eerste stap het uitvoeren van onze contracten op de API's waarvan we afhankelijk waren. Vaak ontdekten we problemen **vóórdat de ontwikkelaars van de andere systemen dat deden**.
 
-### Off the happy path with decorators
+### Van het happy path af met decorators
 
-For error scenarios, stubs are more convenient because you have direct access to *how* it behaves in the test, whereas fakes tend to be fairly black-box. This is a deliberate design choice, as we want the users of them (e.g. tests) not to be concerned with how they work; they should trust they do the right thing due to the backing of the contract.
+Voor foutscenario's zijn stubs handiger omdat je direct toegang hebt tot *hoe* ze zich gedragen in de test, terwijl fakes vaak vrij black-box zijn. Dit is een bewuste ontwerpkeuze, omdat we willen dat de gebruikers ervan (bijv. tests) zich geen zorgen hoeven te maken over hoe ze werken; ze moeten erop kunnen vertrouwen dat ze het juiste doen dankzij de ondersteuning van het contract.
 
-How do we make the fakes fail, to exercise non-happy path concerns?
+Hoe zorgen we ervoor dat de fakes mislukken, zodat we non-happy path zorgen kunnen oefenen?
 
-There are plenty of scenarios where, as a developer, you need to modify the behaviour of some code without changing its source. The **decorator pattern** is often a way to take a unit of code and add things like logging, telemetry, retries and more. We can use it to wrap our fakes to override behaviours when necessary.
+Er zijn talloze scenario's waarin je als ontwikkelaar het gedrag van code moet aanpassen zonder de broncode te wijzigen. Het **decoratorpatroon** is vaak een manier om een code-eenheid te nemen en zaken toe te voegen zoals logging, telemetrie, retries en meer. We kunnen het gebruiken om onze fakes te verpakken om gedragingen indien nodig te overschrijven.
 
-Returning to the `API1` example, we can create a type that implements the needed interface and wraps around the fake.
+Terugkerend naar het `API1`-voorbeeld: we kunnen een type maken dat de benodigde interface implementeert en de fake omhult.
 
 ```go
 type API1Decorator struct {
@@ -458,7 +458,7 @@ func (a *API1Decorator) UpdateCustomer(ctx context.Context, id string, name stri
 }
 ```
 
-In our tests, we can then use the `XXXFunc` field to modify the behaviour of the test-double, just like you would with stubs, spies or mocks.
+In onze tests kunnen we vervolgens het veld `XXXFunc` gebruiken om het gedrag van de test-double te wijzigen, net zoals je dat met stubs, spies of mocks zou doen.
 
 ```go
 failingAPI1 = NewAPI1Decorator(inmemory.NewAPI1())
@@ -467,48 +467,48 @@ failingAPI1.UpdateCustomerFunc = func(ctx context.Context, id string, name strin
 }
 ```
 
-However, this _is_ awkward and requires you to exercise some judgement. With this approach, you are losing the guarantees from your contract as you are introducing ad-hoc behaviour to your fake in tests.
+Dit is echter _onhandig_ en vereist een zekere mate van beoordelingsvermogen. Met deze aanpak verlies je de garanties uit je contract, omdat je ad-hocgedrag introduceert in je fake-tests.
 
-It would be best to examine your context, you may conclude it would be simpler to test specific unhappy paths at the unit test level using a stub.
+Het is verstandig om de context te onderzoeken; je zou kunnen concluderen dat het eenvoudiger is om specifieke, un-happy paden op unit testniveau te testen met behulp van een stub.
 
-### Isn't this extra code waste?
+### Is dit geen extra codeverspilling?
 
-It is wishful thinking to believe we should only ever write code that serves customers and expect a system we can build on efficiently. People have a very warped opinion of what waste is (see my post: [The ghost of Henry Ford is ruining your development team](https://quii.dev/The_ghost_of_Henry_Ford_is_ruining_your_development_team)).
+Het is wishful thinking om te geloven dat we alleen code moeten schrijven die klanten bedient en een systeem verwachten waarop we efficiënt kunnen bouwen. Mensen hebben een zeer verdraaide mening over wat verspilling is (zie mijn bericht: [The ghost of Henry Ford is ruining your development team](https://quii.dev/The_ghost_of_Henry_Ford_is_ruining_your_development_team)).
 
-Automated tests do not directly benefit customers, but we write them to make ourselves more efficient with our work (you don't write tests to chase coverage scores, right?).
+Geautomatiseerde tests leveren klanten geen direct voordeel op, maar we schrijven ze om onszelf efficiënter te maken in ons werk (je schrijft toch geen tests om dekkingsscores te behalen?).
 
-Engineers must easily simulate scenarios (in a repeatable fashion, not ad-hocly) to debug, test, and fix issues. **In-memory fakes and good modular design allow us to isolate the relevant actors for a scenario to write fast, appropriate tests extremely cheaply**. This flexibility enables developers to iterate on a system far more manageably than a tangled mess, tested via expensive to-write and run black-box tests or, worse, manual testing on a shared environment.
+Engineers moeten scenario's eenvoudig kunnen simuleren (op een herhaalbare manier, niet ad-hoc) om te debuggen, testen en problemen op te lossen. **In-memory fakes en een goed modulair ontwerp stellen ons in staat om de relevante actoren voor een scenario te isoleren en extreem goedkoop snelle, geschikte tests te schrijven**. Deze flexibiliteit stelt ontwikkelaars in staat om iteraties uit te voeren op een systeem dat veel beter beheersbaar is dan een wirwar van tests, die worden getest met dure schrijf- en uitvoeringsblackboxtests of, erger nog, handmatige tests in een gedeelde omgeving.
 
-This is an example of [simple vs. easy](https://www.youtube.com/watch?v=SxdOUGdseq4). Of course, fakes and contracts will result in more code being written than stubs and spies in the short term, but the result is a more straightforward and cheaper-to-maintain system in the longer run. Updating spies, stubs and mocks piecemeal is labour-intensive and error-prone, as you won't have corresponding contracts to check your test doubles behave correctly.
+Dit is een voorbeeld van [simpel versus makkelijk](https://www.youtube.com/watch?v=SxdOUGdseq4). Natuurlijk zullen fakes en contracten op de korte termijn leiden tot meer geschreven code dan stubs en spies, maar het resultaat is een eenvoudiger en goedkoper te onderhouden systeem op de lange termijn. Het stukje bij beetje updaten van spies, stubs en mocks is arbeidsintensief en foutgevoelig, omdat je geen bijbehorende contracten hebt om te controleren of je testdubbels correct functioneren.
 
-This approach represents a _slightly_ increased upfront cost but with far lower costs once the contracts and fakes are set up. Fakes are more reusable and reliable than ad-hoc test doubles like stubs.
+Deze aanpak brengt _iets_ hogere initiële kosten met zich mee, maar met veel lagere kosten zodra de contracten en fakes zijn opgezet. Fakes zijn herbruikbaarder en betrouwbaarder dan ad-hoc testdubbels zoals stubs.
 
-It feels *very* liberating and gives you **confidence** when using an existing, battle-tested fake rather than setting up a stub when writing a new test.
+Het voelt *erg* bevrijdend en geeft je **vertrouwen** wanneer je een bestaande, in de praktijk geteste fake-test gebruikt, in plaats van een stub op te zetten bij het schrijven van een nieuwe test.
 
-### How does this fit into TDD?
+### Hoe past dit in TDD?
 
-I wouldn't recommend _starting_ with a contract; that's bottom-up design, which, in general, I find I need to be more clever for, and there's a danger I'll overthink hypothetical requirements.
+Ik zou niet aanraden om met een contract te _beginnen_; dat is bottom-up design, waar je over het algemeen slimmer mee om moet gaan, en het gevaar bestaat dat je te veel nadenkt over hypothetische vereisten.
 
-This technique is compatible with the "acceptance test driven approach" as discussed in earlier chapters, [The Why of TDD](https://quii.dev/The_Why_of_TDD) and in [GOOS](http://www.growing-object-oriented-software.com)
+Deze techniek is compatibel met de "acceptatietest-gedreven aanpak" zoals besproken in eerdere hoofdstukken, [The Why of TDD](https://quii.dev/The_Why_of_TDD) en in [GOOS](http://www.growing-object-oriented-software.com)
 
-- Write a failing [acceptance test](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests).
-- Drive out enough code to make it pass, which usually will result in some "service layer" that'll depend on an API, a database, or whatever. Usually, you will have business logic code decoupled from external concerns (such as persistence, calling a database, etc.) via an interface.
-- Implement the interface with an in-memory fake at first to make all the tests pass locally and validate the initial design.
-- To push to production, you can't use in-memory! Encode the assumptions you made against the fake into a contract.
-- Use the contract to create the actual dependency, such as a MySQL version of a store.
-- Ship.
+- Schrijf een falende [acceptatietest](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests).
+- Stuur voldoende code uit om de test te laten slagen, wat meestal resulteert in een "servicelaag" die afhankelijk is van een API, een database of iets dergelijks. Meestal heb je businesslogica die losgekoppeld is van externe factoren (zoals persistentie, het aanroepen van een database, enz.) via een interface.
+- Implementeer de interface eerst met een in-memory fake om alle tests lokaal te laten slagen en het initiële ontwerp te valideren.
+- Om naar productie te pushen, kun je geen in-memory gebruiken! Codeer de aannames die je hebt gemaakt ten opzichte van de fake in een contract.
+- Gebruik het contract om de daadwerkelijke afhankelijkheid te creëren, zoals een MySQL-versie van een opslag.
+- Verscheep naar productie.
 
-##  Where's the chapter on testing databases?
+## Waar is het hoofdstuk over het testen van databases?
 
-This has been a common request that I have put off for over five years. The reason is this chapter will always be my answer.
+Dit is een veelgehoorde vraag die ik al meer dan vijf jaar uitstel. De reden is dat dit hoofdstuk altijd mijn antwoord zal zijn.
 
-<u>Don't mock the database driver and spy on calls</u>. These tests are difficult to write and potentially bring very little value. You shouldn't assert whether a particular `SQL` statement was sent to the database, that is, implementation detail; **your tests should only care about behaviour**. Proving a specific SQL statement was compiled _does not_ prove your code _behaves_ how you need it to.
+_Maak de databasedriver niet belachelijk en spy geen oproepen_. Deze tests zijn moeilijk te schrijven en hebben mogelijk weinig waarde. Je moet niet beweren of een specifieke `SQL`-instructie naar de database is verzonden, dat wil zeggen implementatiedetails; **je tests zouden alleen op gedrag moeten letten**. Het bewijzen dat een specifieke SQL-instructie is gecompileerd, bewijst _niet_ dat je code _zich gedraagt_ zoals je wilt.
 
-**Contracts** force you to decouple your tests from implementation details and focus on behaviour.
+**Contracten** dwingen je om je tests los te koppelen van implementatiedetails en je te concentreren op gedrag.
 
-Follow the TDD approach described above to drive out your persistence needs.
+Volg de hierboven beschreven TDD-aanpak om je persistentiebehoeften te versoepelen.
 
-[The example repository](https://github.com/quii/go-fakes-and-contracts) has some examples of contracts, and how they're used to test in-memory and SQLite implementations of some persistence needs.
+[De voorbeeldrepository](https://github.com/quii/go-fakes-and-contracts) bevat enkele voorbeelden van contracten en laat zien hoe deze worden gebruikt om in-memory- en SQLite-implementaties van bepaalde persistentiebehoeften te testen.
 
 ```go
 package inmemory_test
@@ -553,47 +553,47 @@ func TestSQLitePantry(t *testing.T) {
 }
 ```
 
-Whilst Docker et al. _do_ make running databases locally easier, they can still carry a significant performance overhead. Fakes with contracts allow you to use restrict the need to use the "heavier" dependency to only when you're validating the contract, and not needed for other kinds of tests.
+Hoewel Docker et al. het lokaal draaien van databases _wel_ eenvoudiger maken, kunnen ze nog steeds een aanzienlijke prestatieoverhead met zich meebrengen. Fakes met contracten stellen je in staat om de noodzaak om de "zwaardere" afhankelijkheid te gebruiken te beperken tot alleen wanneer je het contract valideert, en niet voor andere soorten tests.
 
-Using in-memory fakes for acceptance and integration tests for *the rest* of the system provides a much faster and simpler developer experience.
+Het gebruik van in-memory fakes voor acceptatie- en integratietests voor *de rest* van het systeem biedt een veel snellere en eenvoudigere ontwikkelervaring.
 
-## Wrapping up
+## Samenvattend
 
-It’s common for software projects to be organised with various teams building systems concurrently to try to reach a common goal.
+Het komt vaak voor dat softwareprojecten worden georganiseerd met verschillende teams die tegelijkertijd systemen bouwen om een gemeenschappelijk doel te bereiken.
 
-This method of work requires a high degree of collaboration and communication. Many feel with an "API first" approach, we can define some API contracts (often on a wiki page!) and then work independently for six months and stick it all together. This rarely works well in practice because as we start writing code, we understand the domain and the problem better, which challenges our assumptions. We have to react to these changes in knowledge, which often require cross-team changes.
+Deze werkwijze vereist een hoge mate van samenwerking en communicatie. Velen denken dat we met een "API first"-aanpak een aantal API-contracten kunnen definiëren (vaak op een wikipagina!) en vervolgens zes maanden zelfstandig kunnen werken om alles aan elkaar te plakken. Dit werkt in de praktijk zelden goed, omdat we, zodra we beginnen met het schrijven van code, het domein en het probleem beter begrijpen, wat onze aannames op de proef stelt. We moeten reageren op deze veranderingen in kennis, die vaak teamoverstijgende veranderingen vereisen.
 
-So, if you're in this situation, you need to structure and test your system optimally to deal with unpredictable changes, both inside and outside of the system you're working on.
+Dus, als je je in deze situatie bevindt, moet je je systeem optimaal structureren en testen om te kunnen omgaan met onvoorspelbare veranderingen, zowel binnen als buiten het systeem waaraan je werkt.
 
-> “One of the defining characteristics of high-performing teams in software development is their ability to make progress and to change their minds, without asking for permission from any person or group outside of their small team.”
+> "Een van de bepalende kenmerken van goed presterende teams in softwareontwikkeling is hun vermogen om vooruitgang te boeken en van gedachten te veranderen, zonder toestemming te vragen aan iemand of groep buiten hun kleine team."
 >
-> Modern Software Engineering
+> Moderne software engineering
 > David Farley
 
-Don't rely on weekly meetings or Slack threads to flesh out changes. **Codify your assumptions in contracts**. Run those contracts against the systems in your build pipelines so you get fast feedback if new information comes to light. These contracts, in conjunction with **fakes,** mean you can work independently and manage external changes sustainably.
+Vertrouw niet op wekelijkse vergaderingen of Slack-discussies om wijzigingen uit te werken. **Leg je aannames vast in contracten**. Vergelijk die contracten met de systemen in je build-pipelines, zodat je snel feedback krijgt als er nieuwe informatie aan het licht komt. Deze contracten, in combinatie met **fake-contracten**, zorgen ervoor dat je zelfstandig kunt werken en externe wijzigingen duurzaam kunt beheren.
 
-### Your system as a collection of modules
+### Je systeem als een verzameling modules
 
-Referring back to Farley's book, I'm describing the idea of **incrementalism**. Building software is a *constant learning exercise*. Understanding the requirements we must solve for a given system to deliver value up-front is unrealistic. So, we have to optimise our systems and ways of work to **gather feedback quickly and experiment**.
+Verwijzend naar Farley's boek, beschrijf ik het idee van **incrementalisme**. Software bouwen is een *voortdurende leeroefening*. Het begrijpen van de vereisten waaraan een bepaald systeem moet voldoen om direct waarde te leveren, is onrealistisch. Daarom moeten we onze systemen en werkwijzen optimaliseren om **snel feedback te verzamelen en te experimenteren**.
 
-You need a **modular system** to take advantage of the ideas discussed in this chapter. If you have modular code with reliable fakes, it allows you to experiment with your system via automated tests cheaply.
+Je hebt een **modulair systeem** nodig om te profiteren van de ideeën die in dit hoofdstuk worden besproken. Als je modulaire code hebt met betrouwbare fake-versies, kun je goedkoop met je systeem experimenteren via geautomatiseerde tests.
 
-We found it extremely easy to translate weird, hypothetical (but possible) scenarios into self-contained tests to help us understand the problem and drive out more robust software by composing our modules together and trying out different data in different order, with some APIs failing, etc.
+We vonden het extreem gemakkelijk om vreemde, hypothetische (maar mogelijke) scenario's te vertalen naar zelfstandige tests om ons te helpen het probleem te begrijpen en robuustere software te ontwikkelen door onze modules samen te stellen en verschillende gegevens in verschillende volgordes uit te proberen, waarbij sommige API's faalden, enz.
 
-Well-defined, well-tested modules allow you to increment your system without changing and understanding _everything_ at once.
+Goed gedefinieerde, goed geteste modules stellen je in staat om je systeem te incrementeren zonder veranderingen en om _alles_ in één keer te begrijpen.
 
-### But I'm working on something small with stable APIs
+### Maar ik werk aan iets kleins met stabiele API's
 
-Even with stable APIs, you do not want your developer experience, builds and so on to be tightly coupled to other people’s code. When you get this approach right, you end up with a composable set of modules to piece together your system for production, running locally and writing different kinds of tests with doubles you trust.
+Zelfs met stabiele API's wil je niet dat je ontwikkelervaring, builds en dergelijke nauw verbonden zijn met de code van anderen. Wanneer je deze aanpak goed aanpakt, krijg je een samenstelbare set modules om je systeem samen te stellen voor productie, lokaal te draaien en verschillende soorten tests te schrijven met doubles die je vertrouwt.
 
-It allows you to isolate the parts of your system you're concerned about and write meaningful tests about the real problem you're trying to solve.
+Het stelt je in staat om de onderdelen van je systeem waar je je zorgen over maakt te isoleren en zinvolle tests te schrijven over het echte probleem dat je probeert op te lossen.
 
-### Make your dependencies first-class citizens.
+### Maak van je afhankelijkheden eersteklas burgers.
 
-Of course, stubs and spies have their place. Simulating different behaviours of your dependencies ad-hocly in tests will always have its use, but be careful not to let the costs go out of control.
+Natuurlijk hebben stubs en spies hun nut. Het ad-hoc simuleren van verschillend gedrag van je afhankelijkheden in tests zal altijd nuttig zijn, maar pas op dat de kosten niet uit de hand lopen.
 
-So many times in my career, I have seen carefully written software written by talented devs fall apart due to integration problems. Integration is challenging for engineers _because_ it's hard to reproduce the exact behaviours of a system written by other engineers, who also change it simultaneously.
+Zo vaak in mijn carrière heb ik zorgvuldig geschreven software van getalenteerde ontwikkelaars zien mislukken door integratieproblemen. Integratie is een uitdaging voor engineers _omdat_ het moeilijk is om het exacte gedrag te reproduceren van een systeem dat is geschreven door andere engineers, die het ook tegelijkertijd wijzigen.
 
-Some teams rely on everyone deploying to a shared environment and testing there. The problem is this doesn't give you **isolated** feedback, and the **feedback is slow**. You still won't be able to construct different experiments with how your system works with other dependencies, at least not efficiently.
+Sommige teams vertrouwen erop dat iedereen in een gedeelde omgeving implementeert en daar test. Het probleem is dat dit je geen **geïsoleerde** feedback geeft, en de **feedback is traag**. Je zult nog steeds niet in staat zijn om verschillende experimenten uit te voeren met hoe je systeem werkt met andere afhankelijkheden, althans niet efficiënt.
 
-**We have to tame this complexity by adopting more sophisticated ways of modelling our dependencies** to quickly test/experiment on our dev machines before it gets to production. Create realistic and manageable fakes of your dependencies, verified by contracts. Then, you can start writing more meaningful tests and experimenting with your system, making you more likely to succeed.
+**We moeten deze complexiteit temmen door geavanceerdere manieren te gebruiken om onze afhankelijkheden te modelleren** om snel te kunnen testen/experimenteren op onze ontwikkelmachines voordat het in productie gaat. Creëer realistische en beheersbare fake-versies van je afhankelijkheden, geverifieerd door contracten. Vervolgens kun je zinvollere tests schrijven en experimenteren met je systeem, waardoor je kans op succes toeneemt.
