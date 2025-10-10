@@ -1,32 +1,32 @@
-# Refactoring step, starting checklist
+# Refactoring stap, checklist voor beginners
 
-Refactoring is a skill that, once practised enough, becomes, in most cases, second nature reasonably easy.
+Refactoring is een vaardigheid die, eenmaal voldoende geoefend, in de meeste gevallen een tweede natuur wordt.
 
-The activity often gets conflated with more significant design changes, but they are separate. Delineating between refactoring and other programming activities is helpful because it allows me to work with clarity and discipline.
+De activiteit wordt vaak verward met ingrijpendere ontwerpwijzigingen, maar die staan los van elkaar. Het is nuttig om onderscheid te maken tussen refactoring en andere programmeeractiviteiten, omdat het me in staat stelt om helder en gedisciplineerd te werken.
 
-## Refactoring vs other activities
+## Refactoring versus andere activiteiten
 
-Refactoring is just improving existing code and <u>not changing behaviour</u>; therefore, tests shouldn't have to change.
+Refactoring is gewoon het verbeteren van bestaande code en _niet het veranderen van gedrag_; tests zouden daarom niet hoeven te veranderen.
 
-This is why it's the 3rd step of the TDD cycle. Once you have added a behaviour and a test to back it up, refactoring should be an activity which requires no change to your test code. **You're doing something else** if you are "refactoring" some code and having to change tests at the same time.
+Daarom is het de derde stap in de TDD-cyclus. Zodra je een gedrag en een test hebt toegevoegd om dit te ondersteunen, zou refactoring een activiteit moeten zijn die geen wijziging in je testcode vereist. **Je doet iets anders** als je code "refactored" en tegelijkertijd tests moet wijzigen.
 
-Many very helpful refactorings are simple to learn and easy to do (your IDE almost entirely automates many) but, over time, become hugely impactful to the quality of our system.
+Veel zeer nuttige refactorings zijn eenvoudig te leren en gemakkelijk uit te voeren (je IDE automatiseert er vaak al veel volledig automatisch), maar na verloop van tijd hebben ze een enorme impact op de kwaliteit van ons systeem.
 
-### Other activities, such as "big" design
+### Andere activiteiten, zoals "groot" ontwerp
 
-> So I'm not changing the "real" behaviour, but I must change my tests? What is that?
+> Dus ik verander het "echte" gedrag niet, maar ik moet mijn tests wel aanpassen? Wat is dat?
 
-Let's say you're working on a type and want to improve its code's quality. *Refactoring shouldn't require you to change the tests*, so you can't:
+Stel dat je aan een type werkt en de kwaliteit van de code wilt verbeteren. *Refactoring zou niet moeten vereisen dat je de tests aanpast*, dus je kunt niet:
 
-- Change behaviour
-- Change method signatures
+- Gedrag aanpassen
+- Methodehandtekeningen aanpassen
 
-...as your tests are coupled to those two things, but you can:
+...omdat je tests aan die twee dingen gekoppeld zijn, maar je kunt wel:
 
-- Introduce private methods, fields and even new types & interfaces
-- Change the internals of public methods
+- Private methoden, velden en zelfs nieuwe typen en interfaces introduceren
+- De interne werking van publieke methoden aanpassen
 
-What if you want to change the signature of a method?
+Wat als je de handtekening van een methode wilt aanpassen?
 
 ```go
 func (b BirthdayGreeter) WishHappyBirthday(age int, firstname, lastname string, email Email) {
@@ -34,90 +34,90 @@ func (b BirthdayGreeter) WishHappyBirthday(age int, firstname, lastname string, 
 }
 ```
 
-You may feel its argument list is too long and want to bring more cohesion and meaning to the code.
+Mogelijk vindt je de lijst met argumenten te lang en wil je meer samenhang en betekenis aan de code toevoegen.
 
 ```go
 func (b BirthdayGreeter) WishHappyBirthday(person Person)
 ```
 
-Well, you're **designing** now and must ensure you tread carefully. If you don't do this with discipline, you can make a mess of your code, the test behind it, *and* probably the things that depend on it - remember, it's not just your tests using `WishHappyBirthday`. Hopefully, it's used by "real" code too!
+Nou, je bent nu aan het **ontwerpen** en moet ervoor zorgen dat je voorzichtig te werk gaat. Als je dit niet gedisciplineerd doet, kun je een puinhoop maken van je code, de test erachter, *en* waarschijnlijk ook van de dingen die ervan afhankelijk zijn. Onthoud: het zijn niet alleen je tests die `WishHappyBirthday` gebruiken. Hopelijk wordt het ook door "echte" code gebruikt!
 
-**You should still be able to drive this change with a test first**. You can split hairs over whether this is a "behaviour" change, but you want your method to behave differently.
+**Je zou deze wijziging eerst met een test moeten kunnen doorvoeren**. Je kunt erover twisten of dit een "gedrags"-wijziging is, maar je wilt dat je methode zich anders gedraagt.
 
-As this is a behaviour change, apply the TDD process here too. One benefit of TDD is that it gives you a simple, safe, repeatable way of driving behaviour change in your system; why abandon it in these situations just because it *feels* different?
+Omdat dit een gedragsverandering is, pas je hier ook het TDD-proces toe. Een voordeel van TDD is dat het je een eenvoudige, veilige en herhaalbare manier biedt om gedragsverandering in je systeem door te voeren; waarom zou je het in deze situaties laten varen alleen maar omdat het *anders* aanvoelt?
 
-In this case, you'll change your existing tests to use the new type. The iterative, small steps you usually do with TDD to reduce risk and bring discipline & clarity will help you in these situations, too.
+In dit geval verander je je bestaande tests om het nieuwe type te gebruiken. De iteratieve, kleine stappen die je normaal gesproken met TDD zet om risico's te verminderen en discipline en duidelijkheid te brengen, zullen je ook in deze situaties helpen.
 
-Chances are you'll have several tests that call `WishHappyBirthday`; in these scenarios, I'd suggest commenting out all but one of the tests, driving out the change, and then working through the rest of the tests as you see fit.
+De kans is groot dat je meerdere tests hebt die `WishHappyBirthday` aanroepen. In deze scenario's raad ik aan om alle tests behalve één uit te schakelen, de wijziging door te voeren en vervolgens de rest van de tests naar eigen inzicht af te werken.
 
-### Big design
+### Ingrijpend ontwerp
 
-Design can require more significant changes and more extensive conversations and usually has a level of subjectivity to it. Changing the design of parts of your system is usually a longer process than refactoring; nonetheless, you should still endeavour to reduce risk by thinking about how to do it in small steps.
+Ontwerp kan ingrijpender wijzigingen en uitgebreidere gesprekken vereisen en kent meestal een zekere mate van subjectiviteit. Het wijzigen van het ontwerp van onderdelen van je systeem is meestal een langer proces dan refactoring; desalniettemin moet je proberen risico's te beperken door na te denken over hoe je het in kleine stapjes kunt doen.
 
-### Seeing the wood for the trees
+### Door de bomen het bos niet meer zien
 
-> [If someone can't **see the wood for the trees** in British English, or can't see the forest for the trees in American English, they are very involved in the details of something and so they do not notice what is important about the thing as a whole.](https://www.collinsdictionary.com/dictionary/english/cant-see-the-wood-for-the-trees)
+> [Als iemand **door de bomen het bos niet meer ziet**, is hij of zij erg betrokken bij de details van iets en ziet daardoor niet wat belangrijk is aan het geheel.](https://www.collinsdictionary.com/dictionary/english/cant-see-the-wood-for-the-trees)
 
-Talking about the "big" design issues is more accessible when the **underlying code is well-factored**. If you and your colleagues have to spend a significant amount of time mentally parsing a mess of code every time they open a file, what chance do you have to think about the design of the code?
+Het praten over de "grote" ontwerpproblemen is toegankelijker wanneer de **onderliggende code goed gefactoriseerd** is. Als jij en je collega's, elke keer als er een bestand geopend wordt, veel tijd moeten besteden aan het mentaal parsen van een wirwar aan code, hoe groot is dan de kans dat je nadenkt over het ontwerp van de code?
 
-This is why **constant refactoring is so significant in the TDD process**. If we fail to address the minor design issues, we'll find it hard to engineer the overall design of our more extensive system.
+Daarom is **constante refactoring zo belangrijk in het TDD-proces**. Als we de kleine ontwerpproblemen niet aanpakken, zullen we het moeilijk vinden om het algehele ontwerp van ons uitgebreidere systeem te ontwikkelen.
 
-Sadly, badly-factored code gets exponentially worse as engineers pile on complexity on top of shaky foundations.
+Helaas wordt slecht gefactoriseerde code exponentieel slechter naarmate engineers complexiteit opstapelen op een wankel fundament.
 
-## Starting mental-checklist
+## Beginnen met een mentale checklist
 
-**Get in the habit of running through a mental checklist every TDD cycle.** The more you force yourself to practice, the easier it gets. **It is a skill that needs practice.** Remember, each of these changes should not require any change in your tests.
+**Maak er een gewoonte van om elke TDD-cyclus een mentale checklist door te nemen.** Hoe meer je jezelf dwingt om te oefenen, hoe makkelijker het wordt. **Het is een vaardigheid die oefening vereist.** Onthoud dat al deze veranderingen geen enkele aanpassing in je tests zouden moeten vereisen.
 
-I have included shortcuts for IntelliJ/GoLand, which my colleagues and I use. Whenever I coach a new engineer, I encourage them to try and gain the muscle memory and habit of using these tools to refactor quickly and safely.
+Ik heb snelkoppelingen toegevoegd voor IntelliJ/GoLand, die mijn collega's en ik gebruiken. Wanneer ik een nieuwe engineer coach, moedig ik hem of haar aan om te proberen het spiergeheugen en de gewoonte te ontwikkelen om deze tools te gebruiken om snel en veilig te refactoren.
 
-### Inline variables
+### Inline variabelen
 
-If you create a variable, only for it to be passed on to another method/function:
+Als u een variabele aanmaakt, alleen om deze door te geven aan een andere methode/functie:
 
 ```go
 url := baseURL + "/user/" + id
 res, err := client.Get(url)
 ```
 
-Consider inlining it (`command+option+n`) *unless* the variable name adds significant meaning.
+Overweeg om het inline te gebruiken (`command+option+n`) *tenzij* de variabelenaam een waardevolle betekenis toevoegt.
 
 ```go
 res, err := client.Get(baseURL + "/user/" + id)
 ```
 
-Don't be _too_ clever about inlining; the goal is not to have zero variables and instead have ridiculous one-liners that no one can read. If you can add significant naming to a value, it might be best to leave it be.
+Wees niet _te_ slim met inlining; het doel is niet om nul variabelen te hebben, maar in plaats daarvan belachelijke oneliners die niemand kan lezen. Als je een waarde een betekenisvolle naam kunt geven, is het misschien het beste om die zo te laten.
 
-### DRY up values with extract variables
+### DRY up waarden met geëxtraheerde variabelen
 
-"Don't repeat yourself" (DRY). Using the same value multiple times in a function? Consider extracting and capturing a variable in a meaningful variable name (`command+option+v`).
+"Herhaal jezelf niet" (Don't Repeat Yourself: DRY). Gebruik je dezelfde waarde meerdere keren in een functie? Overweeg dan om een variabele te extraheren en vast te leggen in een betekenisvolle variabelenaam (`command+option+v`).
 
-This helps with readability and makes changing the value easier in future, as you won't have to remember to update multiple occurrences of the same value.
+Dit verbetert de leesbaarheid en maakt het wijzigen van de waarde in de toekomst eenvoudiger, omdat je niet hoeft te onthouden om dezelfde waarde meerdere keren te wijzigen.
 
-### DRY up stuff in general
+### DRY up dingen in het algemeen
 
-[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) gets a bad rep these days, with some justification. DRY is one of those concepts that is *too* easy to understand at a superficial level and then gets misapplied.
+[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) heeft tegenwoordig een slechte reputatie, en dat is niet helemaal onterecht. DRY is een van die concepten die *te* gemakkelijk te begrijpen is op een oppervlakkig niveau en vervolgens verkeerd wordt toegepast.
 
-An engineer can easily take DRY too far, creating baffling, entangled abstractions to save some lines of code rather than the *real* idea of DRY, which is capturing an _idea_ in one place. Reducing the number of lines of code is often a side-effect of DRY, **but it is not the actual goal**.
+Een ontwikkelaar kan DRY gemakkelijk te ver doorvoeren en verbijsterende, verstrengelde abstracties creëren om een paar regels code te besparen in plaats van het *echte* idee van DRY, namelijk het vastleggen van een _idee_ op één plek. Het verminderen van het aantal regels code is vaak een bijwerking van DRY, **maar het is niet het werkelijke doel**.
 
-So yes, DRY can be misapplied, but the extreme opposite of refusing to DRY up anything is also evil. Repeated code adds noise and increases maintenance costs. A refusal to gather related concepts or values into one thing due to fear of DRY misuse causes *different* problems.
+Dus ja, DRY kan verkeerd worden toegepast, maar het tegenovergestelde van weigeren om iets op de DRY manier te doen, is ook slecht. Herhaalde code voegt ruis toe en verhoogt de onderhoudskosten. Een weigering om gerelateerde concepten of waarden in één ding te verzamelen uit angst voor verkeerd gebruik van DRY veroorzaakt *andere* problemen.
 
-So rather than being extremist on either side of "must DRY everything" or "DRY is bad", engage your brain and think about the code you see in front of you. What is repeated? Does it need to be? Does the parameter list look sensible if you encapsulate some repeated code into a method? Does it feel self-documenting and encapsulate the "idea" clearly?
+Dus in plaats van extremistisch te zijn over "alles moet DRY" of "DRY is slecht", zet je hersenen aan het werk en denk na over de code die je voor je ziet. Wat wordt herhaald? Moet dat? Ziet de parameterlijst er logisch uit als je herhaalde code in een methode encapsuleert? Voelt het zelfdocumenterend aan en vat het het "idee" duidelijk samen?
 
-Nine times out of 10, you can look at the argument list of a function, and if it looks messy and confusing, then it is likely to be a poor application of DRY.
+Negen van de tien keer kun je naar de argumentenlijst van een functie kijken, en als die er rommelig en verwarrend uitziet, is het waarschijnlijk een slechte toepassing van DRY.
 
-If making some code DRY feels hard, you're probably making things more complex; consider stopping.
+Als het moeilijk voelt om code DRY te maken, maak je het waarschijnlijk complexer; overweeg om te stoppen.
 
-DRY with care, **but practising this frequently will improve your judgement**. I encourage my colleagues to "just try it" and use source control to get back to safety if it is wrong.
+DRY met zorg, **maar door dit regelmatig te oefenen, verbeter je je beoordelingsvermogen**. Ik moedig mijn collega's aan om "het gewoon te proberen" en broncodebeheer te gebruiken om terug te keren naar de veilige haven als het fout gaat.
 
-<u>**Trying these things will teach you more than discussing it**</u>, and source control coupled with good automated tests gives you the perfect setup to experiment and learn.
+_**Door deze dingen te proberen leer je meer dan er over te praten**_. Met broncodebeheer in combinatie met goede geautomatiseerde tests heb je de perfecte setting om te experimenteren en te leren.
 
-### Extract "Magic" values.
+### Extraheer "Magische" waarden.
 
-> [Unique values with unexplained meaning or multiple occurrences which could (preferably) be replaced with named constants](https://en.wikipedia.org/wiki/Magic_number_(programming))
+> [Unieke waarden met een onverklaarbare betekenis of meerdere waarden die (bij voorkeur) vervangen kunnen worden door benoemde constanten](https://en.wikipedia.org/wiki/Magic_number_(programming))
 
-Use extract variable (command+option+v) or constant (command+option+c) to give meaning to magic values. This can be seen as the inverse of the inlining refactor. I often find myself "toggling" the code with inline and extract to help me judge what I think reads better.
+Gebruik extractvariabele `(command+option+v)` of constante `(command+option+c)` om betekenis te geven aan magische waarden. Dit kan worden gezien als de inverse van de inlining-refactoring. Ik merk dat ik de code vaak "wissel" met inline en extract om te beoordelen wat ik beter vind lezen.
 
-Remember that extracting repeated values also adds a level of _coupling_. Everything that uses that value is now coupled. Consider the following code:
+Onthoud dat het extraheren van herhaalde waarden ook een niveau van _koppeling_ toevoegt. Alles wat die waarde gebruikt, is nu gekoppeld. Bekijk de volgende code:
 
 ```go
 func main() {
@@ -134,11 +134,11 @@ func main() {
 }
 ```
 
-We are setting up some HTTP clients for our application. There are some _magic values_ here, and we could DRY up the `Timeout` by extracting a variable and giving it a meaningful name.
+We zijn bezig met het instellen van een aantal HTTP-clients voor onze applicatie. Er zijn hier een aantal _magische waarden_, en we zouden de `Time-out` meer DRY kunnen maken door een variabele te extraheren en deze een betekenisvolle naam te geven.
 
 ![A screenshot of me extracting variable](https://i.imgur.com/4sgUG7L.png)
 
-Now the code looks like this
+Nu ziet de code er zo uit:
 
 ```go
 func main() {
@@ -156,17 +156,18 @@ func main() {
 }
 ```
 
-We no longer have a magic value; we have given it a meaningful name, but we have also made it so all three clients **share the same timeout**. That _may_ be what you want; refactors are quite context-specific, but it's something to be wary of.
+We hebben geen magische waarde meer; we hebben er een betekenisvolle naam aan gegeven, maar we hebben er ook voor gezorgd dat alle drie de clients **dezelfde time-out delen**. Dat is misschien wat je wilt; refactors zijn behoorlijk contextspecifiek, maar het is iets om rekening mee te houden.
 
-If you can use your IDE well, you can do the _inline_ refactor to let the clients have separate `Timeout` values again.
+Als je je IDE goed kunt gebruiken, kun je de _inline_ refactoring uitvoeren om de clients weer aparte `Time-out`-waarden te geven.
 
-### Make public methods/functions easy to scan
+### Maak openbare methoden/functies eenvoudig te scannen
 
-Does your code have excessively long public methods or functions?
+Heeft je code buitensporig lange openbare methoden of functies?
 
-Encapsulate the steps in private methods/functions with the extract method (`command+option+m`) refactor.
+Verpak de stappen in privémethoden/functies met de extractmethode (`command+option+m`) refactoring.
 
-The code below has some boring, distracting ceremony around creating a JSON string and turning it into an `io.Reader` so that we can `POST` it in an HTTP request.
+De onderstaande code bevat een saaie, afleidende ceremonie rond het aanmaken van een JSON-string en het omzetten ervan in een `io.Reader`, zodat we deze in een HTTP-verzoek kunnen `POST`en.
+
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -182,7 +183,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-First, use the inline variable refactor (command+option+n) to put the `payload` into the buffer creation.
+Gebruik eerst de inline variabele refactor `(command+option+n)` om de `payload` in de buffercreatie te plaatsen.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -196,7 +197,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Now, we can extract the creation of the JSON payload into a function using the extract method refactor (`command+option+m`) to remove the noise from the method.
+Nu kunnen we de aanmaak van de JSON-payload extraheren naar een functie met behulp van de extract-methode refactoring (`command+option+m`) om de ruis uit de methode te verwijderen.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -210,33 +211,33 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Public methods and functions should describe *what* they do rather than *how* they do it.
+Publieke methoden en functies zouden moeten beschrijven *wat* ze doen in plaats van *hoe* ze het doen.
 
-> **Whenever I have to think to understand what the code is doing, I ask myself if I can refactor the code to make that understanding more immediately apparent**
+> **Wanneer ik moet nadenken om te begrijpen wat de code doet, vraag ik mezelf af of ik de code kan refactoren om dat inzicht directer duidelijk te maken**
+>
+> -- Martin Fowler
 
--- Martin Fowler
+Dit helpt je het algehele ontwerp beter te begrijpen en stelt je vervolgens in staat vragen te stellen over verantwoordelijkheden:
 
-This helps you understand the overall design better, and it then allows you to ask questions about responsibilities:
+> Waarom doet deze methode X? Zou dat niet in Y moeten staan?
 
->  Why does this method do X? Shouldn't that live in Y?
+> Waarom voert deze methode zoveel taken uit? Kunnen we dit elders onderbrengen?
 
-> Why does this method do so many tasks? Can we consolidate this elsewhere?
+Private functies en -methoden zijn geweldig; ze laten je irrelevante "hoe's" samenvatten in "wat's".
 
-Private functions and methods are great; they let you wrap up irrelevant hows into whats.
+#### Maar nu weet ik niet meer hoe het werkt!
 
-#### But now I don't know how it works!
+Een veelgehoord bezwaar tegen deze refactoring, die de voorkeur geeft aan kleinere functies en methoden die uit andere bestaan, is dat het de werking van de code moeilijk kan begrijpen. Mijn botte antwoord hierop is:
 
-A common objection to this refactoring, favouring smaller functions and methods composed of others, is that it can make understanding how the code works difficult. My blunt reply to this is
+> Heb je geleerd hoe je effectief door codebases kunt navigeren met je tooling?
 
-> Have you learned how to navigate codebases using your tooling effectively?
+Als _schrijver_ van `CreateWidget` wil ik bewust niet dat het aanmaken van een specifieke string een essentieel onderdeel is in de beschrijving van de methode. Het is in 99% van de gevallen afleidende, irrelevante ruis voor de lezer.
 
-Quite deliberately, as the _writer_ of `CreateWidget`, I do not want the creation of a specific string to be an essential character in the narration of the method. It is distracting, irrelevant noise for the reader 99% of the time.
+Maar als iemand het _wel_ interesseert, druk je op `command+b` (of wat "navigeer naar symbool" voor jou ook is) op `createWidgetPayload` ... en lees je het. Druk op `command+pijltje naar links` om weer terug te gaan.
 
-However, if someone _does_ care, you press `command+b`  (or whatever "navigate to symbol" is for you) on `createWidgetPayload` ... and read it. Press `command+left-arrow` to go back again.
+### Verplaats de waardecreatie naar de constructietijd.
 
-### Move value creation to construction time.
-
-Methods often have to create value and use them, like the `url` in our `CreateWidget` method from before.
+Methoden moeten vaak waarde creëren en gebruiken, zoals de `url` in onze `CreateWidget`-methode van eerder.
 
 ```go
 type WidgetService struct {
@@ -262,7 +263,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-A refactoring technique you could apply here is, if a value is being created **that is not dependant on the arguments to the method**, then you can instead create a _field_ in your type and calculate it in your constructor function.
+Een refactoringtechniek die je hierbij kunt toepassen, is dat als er een waarde wordt aangemaakt **die niet afhankelijk is van de argumenten voor de methode**, je in plaats daarvan een _veld_ in je type kunt maken en deze in je constructorfunctie kunt berekenen.
 
 ```go
 type WidgetService struct {
@@ -290,11 +291,11 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-By moving them to construction time, you can simplify your methods.
+Door ze naar de bouwtijd te verplaatsen, kun je de methoden vereenvoudigen.
 
-#### Comparing and contrasting `CreateWidget`
+#### `CreateWidget` vergelijken en contrasteren
 
-Starting with
+Beginnend met
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -310,7 +311,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 
 ```
 
-With a few basic refactors, driven almost entirely using automated tooling, we resulted in
+Met een paar basisrefactoringen, die bijna volledig werden aangestuurd door geautomatiseerde tools, hebben we het volgende resultaat bereikt:
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -323,51 +324,50 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-This is a small improvement, but it undoubtedly reads better. If you are well-practised, this kind of improvement will barely take you a minute, and so long as you have applied TDD well, you'll have the safety net of tests to ensure you're not breaking anything. These continuous minor improvements are vital to the long-term health of a codebase.
+Dit is een kleine verbetering, maar hij leest ongetwijfeld prettiger. Als je goed geoefend bent, kost dit soort verbeteringen je amper een minuut, en zolang je TDD goed toepast, heb je het vangnet van tests om ervoor te zorgen dat je niets kapotmaakt. Deze voortdurende kleine verbeteringen zijn essentieel voor de gezondheid van een codebase op de lange termijn.
 
-### Try to remove comments.
+### Probeer comments te verwijderen.
 
-> A heuristic we follow is that whenever we feel the need to comment something, we write a method instead.
+> Een heuristiek die we volgen, is dat wanneer we de behoefte voelen om iets te becommentariëren, we in plaats daarvan een methode schrijven.
+>
+> -- Martin Fowler
 
--- Martin Fowler
+Ook hier kan de extract-methode-refactoring je vriend zijn.
 
-Again, the extract method refactor can be your friend here.
+## Uitzonderingen op de regel
 
-## Exceptions to the rule
+Er zijn verbeteringen die je in je code kunt aanbrengen die een wijziging in je tests vereisen. Die zou ik nog steeds graag in de categorie "refactoring" plaatsen, ook al overtreedt het de regel.
 
-There are improvements you can make to your code that require a change in your tests, which I would still be happy to put into the "refactoring" bucket, even though it breaks the rule.
+Een eenvoudig voorbeeld is het hernoemen van een openbaar symbool (bijvoorbeeld een methode, type of functie) met `shift+F6`. Dit zal natuurlijk de productie- en testcodes wijzigen.
 
-A simple example would be renaming a public symbol (e.g., a method, type, or function) with `shift+F6`. This will, of course, change the production and test codes.
+Omdat het echter een **geautomatiseerde en veilige** wijziging is, is het risico dat je in een spiraal terechtkomt van het breken van tests en productiecode, waar zovelen in terechtkomen bij andere soorten *ontwerp*-wijzigingen, minimaal.
 
-However, as it is an **automated and safe** change, the risk of going into a spiral of breaking tests and production code that so many fall into with other kinds of *design* changes is minimal.
+Om die reden zou ik alle wijzigingen die je veilig met je IDE/editor kunt uitvoeren, nog steeds graag refactoring noemen.
 
-For that reason, any changes you can safely perform with your IDE/editor, I would still happily call refactoring.
+## Gebruik je tools om te oefenen met refactoren.
 
-## Use your tools to help you practice refactoring.
+- Voer je unit tests uit elke keer dat je een van deze kleine wijzigingen doorvoert. We investeren tijd in het unit-testbaar maken van onze code, en de feedbackloop van een paar milliseconden is een van de belangrijkste voordelen; maak er gebruik van!
+- Vertrouw op bronbeheer. Je moet je niet schamen om ideeën uit te proberen. Als je tevreden bent, commit het; zo niet, draai het terug. Dit moet comfortabel en gemakkelijk aanvoelen en geen probleem zijn.
+- Hoe beter je je unit tests en bronbeheer benut, hoe gemakkelijker het is om te *oefenen* met refactoren. Zodra je deze discipline onder de knie hebt, **verbeteren je ontwerpvaardigheden snel** omdat je een betrouwbare en effectieve feedbackloop en vangnet hebt.
+- Te vaak in mijn carrière heb ik ontwikkelaars horen klagen dat ze geen tijd hebben om te refactoren; helaas is het duidelijk dat het hen zoveel tijd kost omdat ze het niet gedisciplineerd doen, en ze hebben het niet genoeg geoefend.
+- Hoewel typen nooit de bottleneck is, zou je elke editor/IDE die je gebruikt veilig en snel moeten kunnen gebruiken om te refactoren. Als je tool bijvoorbeeld niet in staat is om variabelen met één toetsaanslag te extraheren, zul je het minder vaak doen, omdat het arbeidsintensiever en riskanter is.
 
-- You should run your unit tests every time you do one of these small changes. We invest time in making our code unit-testable, and the feedback loop of a few milliseconds is one of the significant benefits; use it!
-- Lean on source control. You shouldn't feel shy about trying out ideas. If you're happy, commit it; if not, revert. This should feel comfortable and easy and not a big deal.
-- The better you leverage your unit tests and source control, the easier to *practice* refactoring. Once you master this discipline, **your design skills increase quickly** because you have a reliable and effective feedback loop and safety net.
-- Too often in my career, I've heard developers complain about not having time to refactor; unfortunately, it is clear that it takes so much time for them because they don't do it with discipline - and they have not practised it enough.
-- Whilst typing is never the bottleneck, you should be able to use whatever editor/IDE you use to refactor safely and quickly. For instance, if your tool doesn't let you extract variables at a keystroke, you'll do it less because it's more labour-intensive and risky.
+## Vraag geen toestemming om te refactoren
 
-## Don't ask permission to refactor
+Refactoren zou een frequente gebeurtenis in je werk moeten zijn, iets wat je constant doet. Het zou ook geen tijdrovende bezigheid moeten zijn, vooral niet als je het in kleine stappen en vaak doet.
 
-Refactoring should be a frequent occurrence in your work, something you're doing all the time. It also, shouldn't be a time-sink, especially if it's done little and often.
+Als je niet refactored, zal je interne code kwaliteit eronder lijden, zal de capaciteit van je team afnemen en zal de druk toenemen.
 
-If you don't refactor, your internal quality will suffer, your team's capacity will drop, and pressure will increase.
+Martin Fowler heeft nog een fantastische quote voor ons.
 
-Martin Fowler has one more fantastic quote for us.
+> Behalve wanneer je heel dicht bij een deadline zit, moet je refactoren niet uitstellen omdat je er geen tijd voor hebt. Ervaring met verschillende projecten heeft geleerd dat refactoren resulteert in een hogere productiviteit. Te weinig tijd is meestal een teken dat je moet refactoren.
 
-> Other than when you are very close to a deadline, however, you should not put off refactoring because you haven’t got time. Experience with several projects has shown that a bout of refactoring results in increased productivity. Not having enough time usually is a sign that you need to do some refactoring.
+## Samenvattend
 
-## Wrap up
+Dit is geen uitgebreide lijst, maar slechts een begin. Lees Martin Fowler's Refactoring-boek (2e editie) om een professional te worden.
 
-This is not an extensive list, just a start. Read Martin Fowler's Refactoring book (2nd ed) to become a pro.
+Refactoring zou extreem snel en veilig moeten zijn als je voldoende ervaring hebt, dus er zijn weinig excuses om het niet te doen. Te veel mensen zien refactoring als een beslissing die anderen moeten nemen in plaats van een vaardigheid die je moet leren, waardoor het een vast onderdeel van je werk wordt.
 
-Refactoring should be extremely quick and safe when you're well-practised, so there's little excuse not to do it. Too many view refactoring as a decision for others to make rather than a skill to learn to where it's a regular part of your work.
+We moeten er altijd naar streven om code in een *voorbeeldige* staat op te leveren.
 
-We should always strive to leave code in an *exemplary* state.
-
-Good refactoring leads to code that is easier to understand. An understanding of the code means better designs are easier to spot. It is much harder to find designs in systems with massive functions, needlessly duplicated code, deep nesting, etc. **Frequent, small refactoring is necessary for better design**.
-
+Goede refactoring leidt tot code die gemakkelijker te begrijpen is. Begrip van de code betekent dat betere ontwerpen gemakkelijker te herkennen zijn. Het is veel moeilijker om ontwerpen te vinden in systemen met enorme functies, onnodig gedupliceerde code, diepe nesting, enz. **Regelmatige, kleine refactoring is noodzakelijk voor een beter ontwerp**.
