@@ -12,7 +12,7 @@ Dit is een langer hoofdstuk dan normaal, dus om het palet op te schonen, is het 
 
 ---
 
-In [Mocking](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking) hebben we geleerd hoe mocks, stubs en Spies nuttige tools zijn voor het controleren en inspecteren van het gedrag van code-eenheden in combinatie met [Dependency Injection](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
+In [Mocking](https://bobkosse.gitbook.io/leer-go-met-tests/basisbeginselen-go/mocking) hebben we geleerd hoe mocks, stubs en Spies nuttige tools zijn voor het controleren en inspecteren van het gedrag van code-eenheden in combinatie met [Dependency Injection](https://bobkosse.gitbook.io/leer-go-met-tests/basisbeginselen-go/dependency-injection).
 
 Naarmate een project groeit, *kunnen* dit soort testdoubles echter een onderhoudslast worden, en zouden we in plaats daarvan naar andere ontwerpideeën moeten kijken om ons systeem eenvoudig te kunnen begrijpen en testen.
 
@@ -127,7 +127,7 @@ Observatoren, Mocks en Stubs kunnen meestal automatisch worden gegenereerd vanui
 
 ## Het probleem met stubs en mocks
 
-In [Anti-patterns,](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns) staat beschreven hoe je voorzichtig moet zijn met het gebruik van test doubles. Het creëren van een rommelige testsuite is makkelijk als je ze niet weldoordacht gebruikt. Naarmate een project groeit, kunnen er echter andere problemen ontstaan.
+In [Anti-patterns,](https://bobkosse.gitbook.io/leer-go-met-tests/meta/anti-patterns) staat beschreven hoe je voorzichtig moet zijn met het gebruik van test doubles. Het creëren van een rommelige testsuite is makkelijk als je ze niet weldoordacht gebruikt. Naarmate een project groeit, kunnen er echter andere problemen ontstaan.
 
 Wanneer je gedrag codeert in test doubles, voeg je je aannames over hoe de werkelijke afhankelijkheid werkt toe aan de test. Als er een discrepantie is tussen het gedrag van de double en de werkelijke afhankelijkheid, of als er een discrepantie ontstaat in de loop van de tijd (bijvoorbeeld als de werkelijke afhankelijkheid verandert, wat *te verwachten* is), **kun je geslaagde tests hebben, maar mislukte software**.
 
@@ -210,7 +210,7 @@ sequenceDiagram
 
 Tests die meerdere units bestrijken, zijn meestal niet compatibel met stubs **omdat ze niet geschikt zijn voor het bijhouden van de status**. We _zouden_ een black-box-acceptatietest kunnen schrijven, maar de kosten van deze tests zouden snel uit de hand lopen.
 
-Bovendien is het ingewikkeld om edge cases te testen met een black-box-test, omdat je de afhankelijkheden niet kunt controleren. We wilden bijvoorbeeld bewijzen dat een rollback-mechanisme zou worden geactiveerd als één API-aanroep mislukte.
+Bovendien is het ingewikkeld om grensgevallen te testen met een black-box-test, omdat je de afhankelijkheden niet kunt controleren. We wilden bijvoorbeeld bewijzen dat een rollback-mechanisme zou worden geactiveerd als één API-aanroep mislukte.
 
 We moesten **fakes** gebruiken. Door onze afhankelijkheden te modelleren als stateful API's met in-memory fakes, konden we integratietests schrijven met een veel bredere scope, **waardoor we konden testen of echte use cases werkten**, wederom *zonder* het hele systeem te hoeven opstarten, en in plaats daarvan bijna dezelfde snelheid hadden als unittests.
 
@@ -327,7 +327,7 @@ func (c API1Contract) Test(t *testing.T) {
 }
 ```
 
-Zoals besproken in [Scaling Acceptance Tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests), wordt de test, door te testen tegen een interface in plaats van een concreet type:
+Zoals besproken in [Scaling Acceptance Tests](https://bobkosse.gitbook.io/leer-go-met-tests/basisbeginselen-testen/scaling-acceptance-tests), wordt de test, door te testen tegen een interface in plaats van een concreet type:
 
 - Losgekoppeld van implementatiedetails
 - eenvoudiger in verschillende contexten te (her)gebruiken.
@@ -491,7 +491,7 @@ Ik zou niet aanraden om met een contract te _beginnen_; dat is bottom-up design,
 
 Deze techniek is compatibel met de "acceptatietest-gedreven aanpak" zoals besproken in eerdere hoofdstukken, [The Why of TDD](https://quii.dev/The_Why_of_TDD) en in [GOOS](http://www.growing-object-oriented-software.com)
 
-- Schrijf een falende [acceptatietest](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests).
+- Schrijf een falende [acceptatietest](https://bobkosse.gitbook.io/leer-go-met-tests/basisbeginselen-testen/scaling-acceptance-tests).
 - Stuur voldoende code uit om de test te laten slagen, wat meestal resulteert in een "servicelaag" die afhankelijk is van een API, een database of iets dergelijks. Meestal heb je businesslogica die losgekoppeld is van externe factoren (zoals persistentie, het aanroepen van een database, enz.) via een interface.
 - Implementeer de interface eerst met een in-memory fake om alle tests lokaal te laten slagen en het initiële ontwerp te valideren.
 - Om naar productie te pushen, kun je geen in-memory gebruiken! Codeer de aannames die je hebt gemaakt ten opzichte van de fake in een contract.

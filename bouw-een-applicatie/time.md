@@ -899,7 +899,7 @@ Here is an example of one of the tests being fixed; try and do the rest yourself
 	})
 ```
 
-Now that we have a clean separation of concerns, checking edge cases around IO in our `CLI` should be easier.
+Now that we have a clean separation of concerns, checking grensgevallen around IO in our `CLI` should be easier.
 
 We need to address the scenario where a user puts a non numeric value when prompted for the number of players:
 

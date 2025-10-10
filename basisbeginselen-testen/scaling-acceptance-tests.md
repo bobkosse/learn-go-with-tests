@@ -1,6 +1,6 @@
 # Leer Go met Tests - Acceptatietests opschalen (en een korte introductie tot gRPC)
 
-Dit hoofdstuk is een vervolg op [Inleiding tot acceptatietests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/intro-to-acceptance-tests). Je kunt [de voltooide code voor dit hoofdstuk vinden op GitHub](https://github.com/quii/go-specs-greet).
+Dit hoofdstuk is een vervolg op [Inleiding tot acceptatietests](https://bobkosse.gitbook.io/leer-go-met-tests/basisbeginselen-testen/intro-to-acceptance-tests). Je kunt [de voltooide code voor dit hoofdstuk vinden op GitHub](https://github.com/quii/go-specs-greet).
 
 Acceptatietests zijn essentieel en hebben een directe invloed op je vermogen om je systeem in de loop der tijd met vertrouwen te ontwikkelen, tegen redelijke kosten.
 
@@ -1539,7 +1539,7 @@ Vergeet niet om in kleine stapjes te werken, commit en voer je tests regelmatig 
 
 ## Verbeter beide systemen door de domeinlogica bij te werken met een unittest
 
-Zoals gezegd, hoeft niet elke wijziging in een systeem via een acceptatietest te worden uitgevoerd. Permutaties van bedrijfsregels en edge cases moeten eenvoudig via een unittest kunnen worden uitgevoerd als je de aandachtspunten goed hebt gescheiden.
+Zoals gezegd, hoeft niet elke wijziging in een systeem via een acceptatietest te worden uitgevoerd. Permutaties van bedrijfsregels en grensgevallen moeten eenvoudig via een unittest kunnen worden uitgevoerd als je de aandachtspunten goed hebt gescheiden.
 
 Voeg een unittest toe aan onze `Greet`-functie om de `name` standaard in te stellen op `World` als deze leeg is. Je zult zien hoe eenvoudig dit is, en de bedrijfsregels worden vervolgens "gratis" in beide applicaties weergegeven.
 
