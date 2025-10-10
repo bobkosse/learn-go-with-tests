@@ -1,59 +1,59 @@
 # HTTP Server
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/http-server)**
+**[Je kunt alle code voor dit hoofdstuk hier vinden](https://github.com/quii/learn-go-with-tests/tree/main/http-server)**
 
-You have been asked to create a web server where users can track how many games players have won.
+Je bent gevraagd een webserver te maken waar gebruikers kunnen bijhouden hoeveel games spelers hebben gewonnen.
 
--   `GET /players/{name}` should return a number indicating the total number of wins
--   `POST /players/{name}` should record a win for that name, incrementing for every subsequent `POST`
+- `GET /players/{name}` moet een getal retourneren dat het totale aantal overwinningen aangeeft.
+- `POST /players/{name}` moet een overwinning voor die naam registreren, oplopend bij elke volgende `POST`.
 
-We will follow the TDD approach, getting working software as quickly as we can and then making small iterative improvements until we have the solution. By taking this approach we
+We volgen de TDD-aanpak: zo snel mogelijk werkende software krijgen en gaan vervolgens kleine iteratieve verbeteringen aanbrengen totdat we de oplossing hebben. Door deze aanpak te volgen:
 
--   Keep the problem space small at any given time
--   Don't go down rabbit holes
--   If we ever get stuck/lost, doing a revert wouldn't lose loads of work.
+- Houden we het probleemgebied te allen tijde klein.
+- Vermijden we valkuilen.
+- Mochten we ooit vastlopen/verdwalen, dan gaat er door versiebeheer geen werk verloren.
 
-## Red, green, refactor
+## Rood, groen, refactor
 
-Throughout this book, we have emphasised the TDD process of write a test & watch it fail (red), write the _minimal_ amount of code to make it work (green) and then refactor.
+In dit boek hebben we de nadruk gelegd op het TDD-proces: schrijf een test en zie hem falen (rood), schrijf de _minimale_ hoeveelheid code om hem te laten werken (groen) en refactor vervolgens.
 
-This discipline of writing the minimal amount of code is important in terms of the safety TDD gives you. You should be striving to get out of "red" as soon as you can.
+Deze discipline van het schrijven van de minimale hoeveelheid code is belangrijk vanwege de veiligheid die TDD biedt. Je moet ernaar streven om zo snel mogelijk uit de "rode" situatie te komen.
 
-Kent Beck describes it as:
+Kent Beck beschrijft het als volgt:
 
-> Make the test work quickly, committing whatever sins necessary in process.
+> Zorg dat de test snel werkt en bega daarbij alle nodige fouten.
 
-You can commit these sins because you will refactor afterwards backed by the safety of the tests.
+Je kunt deze fouten begaan, omdat je daarna refactored, ondersteund door de veiligheid van de tests.
 
-### What if you don't do this?
+### Wat als je dit niet doet?
 
-The more changes you make while in red, the more likely you are to add more problems, not covered by tests.
+Hoe meer wijzigingen je aanbrengt terwijl je in het rood staat, hoe groter de kans dat je meer problemen toevoegt die niet door tests worden gedekt.
 
-The idea is to be iteratively writing useful code with small steps, driven by tests so that you don't fall into a rabbit hole for hours.
+Het idee is om iteratief nuttige code te schrijven met kleine stapjes, aangestuurd door tests, zodat je niet urenlang na uren werk in een valkuil stapt.
 
-### Chicken and egg
+### Kip en ei
 
-How can we incrementally build this? We can't `GET` a player without having stored something and it seems hard to know if `POST` has worked without the `GET` endpoint already existing.
+Hoe kunnen we dit incrementeel bouwen? We kunnen geen speler ophalen met `GET` zonder iets opgeslagen te hebben en het lijkt moeilijk om te weten of `POST` heeft gewerkt zonder dat het `GET`-eindpunt al bestaat.
 
-This is where _mocking_ shines.
+Dit is waar _mocking_ schittert.
 
--   `GET` will need a `PlayerStore` _thing_ to get scores for a player. This should be an interface so when we test we can create a simple stub to test our code without needing to have implemented any actual storage code.
--   For `POST` we can _spy_ on its calls to `PlayerStore` to make sure it stores players correctly. Our implementation of saving won't be coupled to retrieval.
--   For having some working software quickly we can make a very simple in-memory implementation and then later we can create an implementation backed by whatever storage mechanism we prefer.
+- `GET` heeft een `PlayerStore`-_ding_ nodig om scores voor een speler op te halen. Dit zou een interface moeten zijn, zodat we tijdens het testen een eenvoudige stub kunnen maken om onze code te testen zonder dat we daadwerkelijke opslagcode hoeven te implementeren.
+- Voor `POST` kunnen we de aanroepen van `PlayerStore` _bespioneren_ om er zeker van te zijn dat spelers correct worden opgeslagen. Onze implementatie van opslaan zal niet gekoppeld zijn aan ophalen.
+- Om snel werkende software te hebben, kunnen we een zeer eenvoudige in-memory implementatie maken en later een implementatie creëren die wordt ondersteund door het opslagmechanisme dat we verkiezen.
 
-## Write the test first
+## Schrijf eerst de test
 
-We can write a test and make it pass by returning a hard-coded value to get us started. Kent Beck refers this as "Faking it". Once we have a working test we can then write more tests to help us remove that constant.
+We kunnen een test schrijven en deze laten slagen door een hardgecodeerde waarde te retourneren om ons op weg te helpen. Kent Beck noemt dit "faken". Zodra we een werkende test hebben, kunnen we meer tests schrijven om die constante te verwijderen.
 
-By doing this very small step, we can make the important start of getting an overall project structure working correctly without having to worry too much about our application logic.
+Door deze zeer kleine stap te zetten, kunnen we de belangrijke start maken om een algehele projectstructuur correct te laten werken, zonder ons al te veel zorgen te hoeven maken over onze applicatielogica.
 
-To create a web server in Go you will typically call [ListenAndServe](https://golang.org/pkg/net/http/#ListenAndServe).
+Om een webserver in Go te maken, roep je doorgaans [ListenAndServe](https://golang.org/pkg/net/http/#ListenAndServe) aan.
 
 ```go
 func ListenAndServe(addr string, handler Handler) error
 ```
 
-This will start a web server listening on a port, creating a goroutine for every request and running it against a [`Handler`](https://golang.org/pkg/net/http/#Handler).
+Hiermee start je een webserver die op een poort luistert, voor elke aanvraag een goroutine aanmaakt en deze uitvoert op een [`Handler`](https://golang.org/pkg/net/http/#Handler).
 
 ```go
 type Handler interface {
@@ -61,9 +61,10 @@ type Handler interface {
 }
 ```
 
-A type implements the Handler interface by implementing the `ServeHTTP` method which expects two arguments, the first is where we _write our response_ and the second is the HTTP request that was sent to the server.
+Een type implementeert de Handler-interface door de `ServeHTTP`-methode te implementeren, die twee argumenten verwacht: het eerste is waar we _ons antwoord schrijven_ en het tweede is het HTTP-verzoek dat naar de server is verzonden.
 
-Let's create a file named `server_test.go` and write a test for a function `PlayerServer` that takes in those two arguments. The request sent in will be to get a player's score, which we expect to be `"20"`.
+Laten we een bestand met de naam `server_test.go` aanmaken en een test schrijven voor een functie `PlayerServer` die deze twee argumenten accepteert. Het verzonden verzoek is bedoeld om de score van een speler op te vragen, waarvan we verwachten dat deze `"20"` is.
+
 ```go
 func TestGETPlayers(t *testing.T) {
 	t.Run("returns Pepper's score", func(t *testing.T) {
@@ -82,26 +83,26 @@ func TestGETPlayers(t *testing.T) {
 }
 ```
 
-In order to test our server, we will need a `Request` to send in and we'll want to _spy_ on what our handler writes to the `ResponseWriter`.
+Om onze server te testen, hebben we een `Request` nodig om te versturen en willen we met _spy_ in de gaten houden wat onze handler naar de `ResponseWriter` schrijft.
 
--   We use `http.NewRequest` to create a request. The first argument is the request's method and the second is the request's path. The `nil` argument refers to the request's body, which we don't need to set in this case.
--   `net/http/httptest` has a spy already made for us called `ResponseRecorder` so we can use that. It has many helpful methods to inspect what has been written as a response.
+- We gebruiken `http.NewRequest` om een request aan te maken. Het eerste argument is de methode van de request en het tweede is het pad van de request. Het `nil`-argument verwijst naar de body van de request, die we in dit geval niet hoeven in te stellen.
+- `net/http/httptest` heeft een spy die al voor ons is aangemaakt: `ResponseRecorder`, dus die kunnen we gebruiken. Deze heeft veel handige methoden om te controleren wat er als antwoord is geschreven.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 `./server_test.go:13:2: undefined: PlayerServer`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test om uit te voeren en controleer de mislukte testuitvoer.
 
-The compiler is here to help, just listen to it.
+De compiler staat klaar om te helpen, luister daar naar.
 
-Create a file named `server.go` and define `PlayerServer`
+Maak een bestand met de naam `server.go` en definieer `PlayerServer`
 
 ```go
 func PlayerServer() {}
 ```
 
-Try again
+Probeer opnieuw
 
 ```
 ./server_test.go:13:14: too many arguments in call to PlayerServer
@@ -109,7 +110,7 @@ Try again
     want ()
 ```
 
-Add the arguments to our function
+Voeg de argumenten toe aan de functie
 
 ```go
 import "net/http"
@@ -119,7 +120,7 @@ func PlayerServer(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The code now compiles and the test fails
+De code compileert nu en de test mislukt
 
 ```
 === RUN   TestGETPlayers/returns_Pepper's_score
@@ -127,9 +128,9 @@ The code now compiles and the test fails
         server_test.go:20: got '', want '20'
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-From the DI chapter, we touched on HTTP servers with a `Greet` function. We learned that net/http's `ResponseWriter` also implements io `Writer` so we can use `fmt.Fprint` to send strings as HTTP responses.
+In het DI-hoofdstuk hebben we HTTP-servers met een `Greet`-functie besproken. We hebben geleerd dat de `ResponseWriter` van net/http ook de `Writer` van io implementeert, zodat we `fmt.Fprint` kunnen gebruiken om strings als HTTP-reacties te versturen.
 
 ```go
 func PlayerServer(w http.ResponseWriter, r *http.Request) {
@@ -137,16 +138,16 @@ func PlayerServer(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The test should now pass.
+De test zou nu moeten slagen.
 
-## Complete the scaffolding
+## Voltooi de voorbereiding
 
-We want to wire this up into an application. This is important because
+We willen dit in een applicatie integreren. Dit is belangrijk omdat
 
--   We'll have _actual working software_, we don't want to write tests for the sake of it, it's good to see the code in action.
--   As we refactor our code, it's likely we will change the structure of the program. We want to make sure this is reflected in our application too as part of the incremental approach.
+- We _werkelijke werkende software_ hebben, we willen geen tests schrijven zonder doel, het is goed om de code in actie te zien.
+- Naarmate we onze code refactoren, is het waarschijnlijk dat we de structuur van het programma zullen wijzigen. We willen ervoor zorgen dat dit ook in onze applicatie tot uiting komt als onderdeel van de incrementele aanpak.
 
-Create a new `main.go` file for our application and put this code in
+Maak een nieuw `main.go`-bestand voor onze applicatie en plaats daar deze code in
 
 ```go
 package main
@@ -162,34 +163,34 @@ func main() {
 }
 ```
 
-So far all of our application code has been in one file, however, this isn't best practice for larger projects where you'll want to separate things into different files.
+Tot nu toe staat al onze applicatiecode in één bestand. Dit is echter niet de beste manier voor grotere projecten waarbij je dingen in verschillende bestanden wilt splitsen.
 
-To run this, do `go build` which will take all the `.go` files in the directory and build you a program. You can then execute it with `./myprogram`.
+Om dit uit te voeren, voer je `go build` uit. Dit programma neemt alle `.go`-bestanden in de directory en bouwt een programma voor je. Je kunt het vervolgens uitvoeren met `./myprogram`.
 
 ### `http.HandlerFunc`
 
-Earlier we explored that the `Handler` interface is what we need to implement in order to make a server. _Typically_ we do that by creating a `struct` and make it implement the interface by implementing its own ServeHTTP method. However the use-case for structs is for holding data but _currently_ we have no state, so it doesn't feel right to be creating one.
+Eerder hebben we besproken dat de `Handler`-interface is wat we moeten implementeren om een server te maken. _Normaal gesproken_ doen we dat door een `struct` te creëren en deze de interface te laten implementeren door zijn eigen ServeHTTP-methode te implementeren. De use-case voor structs is echter om data te bewaren, maar _momenteel_ hebben we geen status, dus het voelt niet goed om er een te creëren.
 
-[HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc) lets us avoid this.
+[HandlerFunc](https://golang.org/pkg/net/http/#HandlerFunc) laat ons dit vermijden.
 
-> The HandlerFunc type is an adapter to allow the use of ordinary functions as HTTP handlers. If f is a function with the appropriate signature, HandlerFunc(f) is a Handler that calls f.
+> Het type HandlerFunc is een adapter die het gebruik van gewone functies als HTTP-handlers mogelijk maakt. Als f een functie is met de juiste signatuur, is HandlerFunc(f) een Handler die f aanroept.
 
 ```go
 type HandlerFunc func(ResponseWriter, *Request)
 ```
 
-From the documentation, we see that type `HandlerFunc` has already implemented the `ServeHTTP` method.
-By type casting our `PlayerServer` function with it, we have now implemented the required `Handler`.
+Uit de documentatie blijkt dat het type `HandlerFunc` de `ServeHTTP`-methode al heeft geïmplementeerd.
+Door onze `PlayerServer`-functie ermee te typecasten, hebben we nu de vereiste `Handler` geïmplementeerd.
 
 ### `http.ListenAndServe(":5000"...)`
 
-`ListenAndServe` takes a port to listen on a `Handler`. If there is a problem the web server will return an error, an example of that might be the port already being listened to. For that reason we wrap the call in `log.Fatal` to log the error to the user.
+`ListenAndServe` accepteert een poort om te luisteren op een `Handler`. Als er een probleem is, retourneert de webserver een foutmelding. Een voorbeeld hiervan is de poort waarnaar al wordt geluisterd. Daarom verpakken we de aanroep in `log.Fatal` om de fout aan de gebruiker te loggen.
 
-What we're going to do now is write _another_ test to force us into making a positive change to try and move away from the hard-coded value.
+Wat we nu gaan doen, is een _andere_ test schrijven om onszelf te dwingen een positieve wijziging aan te brengen om te proberen af te stappen van de hardgecodeerde waarde.
 
-## Write the test first
+## Schrijf eerst de test
 
-We'll add another subtest to our suite which tries to get the score of a different player, which will break our hard-coded approach.
+We voegen nog een subtest toe aan onze suite die de score van een andere speler probeert te bepalen, wat onze hardgecodeerde aanpak zal verstoren.
 
 ```go
 t.Run("returns Floyd's score", func(t *testing.T) {
@@ -207,13 +208,13 @@ t.Run("returns Floyd's score", func(t *testing.T) {
 })
 ```
 
-You may have been thinking
+Je hebt misschien gedacht:
 
-> Surely we need some kind of concept of storage to control which player gets what score. It's weird that the values seem so arbitrary in our tests.
+> We hebben toch wel een soort opslagconcept nodig om te bepalen welke speler welke score krijgt? Het is vreemd dat de waarden in onze tests zo willekeurig lijken.
 
-Remember we are just trying to take as small as steps as reasonably possible, so we're just trying to break the constant for now.
+Bedenk dat we gewoon proberen zo klein mogelijke stappen te zetten, dus we proberen voorlopig alleen de constante te doorbreken.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 === RUN   TestGETPlayers/returns_Pepper's_score
@@ -223,7 +224,7 @@ Remember we are just trying to take as small as steps as reasonably possible, so
         server_test.go:34: got '20', want '10'
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om de test te laten slagen
 
 ```go
 //server.go
@@ -242,17 +243,17 @@ func PlayerServer(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-This test has forced us to actually look at the request's URL and make a decision. So whilst in our heads, we may have been worrying about player stores and interfaces the next logical step actually seems to be about _routing_.
+Deze test dwong ons om daadwerkelijk naar de URL van het verzoek te kijken en een beslissing te nemen. Dus hoewel we ons in gedachten misschien zorgen maakten over de store en interfaces van de speler, lijkt de volgende logische stap eigenlijk te gaan over _routing_.
 
-If we had started with the store code the amount of changes we'd have to do would be very large compared to this. **This is a smaller step towards our final goal and was driven by tests**.
+Als we met de store-code waren begonnen, zouden we in vergelijking hiermee veel meer wijzigingen moeten doorvoeren. **Dit is een kleinere stap richting ons uiteindelijke doel en is gebaseerd op tests**.
 
-We're resisting the temptation to use any routing libraries right now, just the smallest step to get our test passing.
+We weerstaan nu de verleiding om routingbibliotheken te gebruiken, alleen de kleinste stap om onze test te laten slagen.
 
-`r.URL.Path` returns the path of the request which we can then use [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix) to trim away `/players/` to get the requested player. It's not very robust but will do the trick for now.
+`r.URL.Path` retourneert het pad van het verzoek, waarmee we vervolgens [`strings.TrimPrefix`](https://golang.org/pkg/strings/#TrimPrefix) kunnen gebruiken om `/players/` weg te halen en de gevraagde speler te krijgen. Het is niet erg robuust, maar het voldoet voorlopig.
 
 ## Refactor
 
-We can simplify the `PlayerServer` by separating out the score retrieval into a function
+We kunnen de `PlayerServer` vereenvoudigen door het ophalen van de score op te splitsen in een functie
 
 ```go
 //server.go
@@ -275,7 +276,7 @@ func GetPlayerScore(name string) string {
 }
 ```
 
-And we can DRY up some of the code in the tests by making some helpers
+En we kunnen een deel van de code in de tests _DRY_ maken door een aantal helpers te maken
 
 ```go
 //server_test.go
@@ -312,13 +313,13 @@ func assertResponseBody(t testing.TB, got, want string) {
 }
 ```
 
-However, we still shouldn't be happy. It doesn't feel right that our server knows the scores.
+Toch zouden we niet blij moeten zijn. Het voelt niet goed dat onze server de scores kent.
 
-Our refactoring has made it pretty clear what to do.
+Onze refactoring heeft het vrij duidelijk gemaakt wat we moeten doen.
 
-We moved the score calculation out of the main body of our handler into a function `GetPlayerScore`. This feels like the right place to separate the concerns using interfaces.
+We hebben de scoreberekening uit de hoofdtekst van onze handler verplaatst naar de functie `GetPlayerScore`. Dit voelt als de juiste plek om de problemen te scheiden met behulp van interfaces.
 
-Let's move our function we re-factored to be an interface instead
+Laten we de functie die we hebben gerefactored, verplaatsen naar een interface.
 
 ```go
 type PlayerStore interface {
@@ -326,7 +327,7 @@ type PlayerStore interface {
 }
 ```
 
-For our `PlayerServer` to be able to use a `PlayerStore`, it will need a reference to one. Now feels like the right time to change our architecture so that our `PlayerServer` is now a `struct`.
+Om onze `PlayerServer` een `PlayerStore` te laten gebruiken, heeft deze een verwijzing naar een `PlayerStore` nodig. Dit voelt als het juiste moment om onze architectuur aan te passen, zodat onze `PlayerServer` nu een `struct` is.
 
 ```go
 type PlayerServer struct {
@@ -334,7 +335,7 @@ type PlayerServer struct {
 }
 ```
 
-Finally, we will now implement the `Handler` interface by adding a method to our new struct and putting in our existing handler code.
+Ten slotte implementeren we de `Handler`-interface door een methode toe te voegen aan onze nieuwe struct en onze bestaande handlercode te plaatsen.
 
 ```go
 func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -343,9 +344,9 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The only other change is we now call our `store.GetPlayerScore` to get the score, rather than the local function we defined (which we can now delete).
+De enige andere verandering is dat we nu onze `store.GetPlayerScore` aanroepen om de score op te halen, in plaats van de lokale functie die we hebben gedefinieerd (die we nu kunnen verwijderen).
 
-Here is the full code listing of our server
+Hier is de volledige code van onze server.
 
 ```go
 //server.go
@@ -363,13 +364,13 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-### Fix the issues
+### Los de problemen op
 
-This was quite a few changes and we know our tests and application will no longer compile, but just relax and let the compiler work through it.
+Dit waren nogal wat wijzigingen en we weten dat onze tests en applicatie niet meer zullen compileren, maar ontspan en laat de compiler het werk doen.
 
 `./main.go:9:58: type PlayerServer is not an expression`
 
-We need to change our tests to instead create a new instance of our `PlayerServer` and then call its method `ServeHTTP`.
+We moeten onze tests aanpassen om in plaats daarvan een nieuwe instantie van onze `PlayerServer` te maken en vervolgens de methode `ServeHTTP` aan te roepen.
 
 ```go
 //server_test.go
@@ -396,13 +397,13 @@ func TestGETPlayers(t *testing.T) {
 }
 ```
 
-Notice we're still not worrying about making stores _just yet_, we just want the compiler passing as soon as we can.
+Merk op dat we ons nog niet druk maken over het maken van stores (nog niet), we willen alleen dat de compiler zo snel mogelijk reageert.
 
-You should be in the habit of prioritising having code that compiles and then code that passes the tests.
+Je zou er een gewoonte van moeten maken om prioriteit te geven aan code die compileert en vervolgens code die de tests doorstaat.
 
-By adding more functionality (like stub stores) whilst the code isn't compiling, we are opening ourselves up to potentially _more_ compilation problems.
+Door meer functionaliteit toe te voegen (zoals stub stores) terwijl de code niet compileert, stellen we onszelf bloot aan mogelijk _meer_ compilatieproblemen.
 
-Now `main.go` won't compile for the same reason.
+Nu compileert `main.go` om dezelfde reden niet.
 
 ```go
 func main() {
@@ -411,7 +412,8 @@ func main() {
 }
 ```
 
-Finally, everything is compiling but the tests are failing
+Eindelijk wordt alles gecompileerd, maar de tests mislukken
+
 
 ```
 === RUN   TestGETPlayers/returns_the_Pepper's_score
@@ -419,7 +421,7 @@ panic: runtime error: invalid memory address or nil pointer dereference [recover
     panic: runtime error: invalid memory address or nil pointer dereference
 ```
 
-This is because we have not passed in a `PlayerStore` in our tests. We'll need to make a stub one up.
+Dit komt omdat we in onze tests geen `PlayerStore` hebben ingevoerd. We moeten er een stub van maken.
 
 ```go
 //server_test.go
@@ -433,7 +435,7 @@ func (s *StubPlayerStore) GetPlayerScore(name string) int {
 }
 ```
 
-A `map` is a quick and easy way of making a stub key/value store for our tests. Now let's create one of these stores for our tests and send it into our `PlayerServer`.
+Een `map` is een snelle en gemakkelijke manier om een stub-sleutel/waarde-opslag voor onze tests te maken. Laten we nu een van deze opslagplaatsen voor onze tests maken en deze naar onze `PlayerServer` sturen.
 
 ```go
 //server_test.go
@@ -466,15 +468,15 @@ func TestGETPlayers(t *testing.T) {
 }
 ```
 
-Our tests now pass and are looking better. The _intent_ behind our code is clearer now due to the introduction of the store. We're telling the reader that because we have _this data in a `PlayerStore`_ that when you use it with a `PlayerServer` you should get the following responses.
+Onze tests zijn nu geslaagd en zien er beter uit. De bedoeling van onze code is nu duidelijker dankzij de introductie van de store. We vertellen de lezer dat, omdat we deze gegevens in een `PlayerStore` hebben staan, je de volgende reacties zou moeten krijgen wanneer je ze gebruikt met een `PlayerServer`.
 
-### Run the application
+### Voer de applicatie uit
 
-Now our tests are passing the last thing we need to do to complete this refactor is to check if our application is working. The program should start up but you'll get a horrible response if you try and hit the server at `http://localhost:5000/players/Pepper`.
+Nu onze tests succesvol zijn, moeten we als laatste nog controleren of onze applicatie werkt om deze refactoring te voltooien. Het programma zou moeten opstarten, maar je krijgt een vreselijke reactie als je probeert de server te bereiken via `http://localhost:5000/players/Pepper`.
 
-The reason for this is that we have not passed in a `PlayerStore`.
+De reden hiervoor is dat we geen `PlayerStore` hebben ingevoerd.
 
-We'll need to make an implementation of one, but that's difficult right now as we're not storing any meaningful data so it'll have to be hard-coded for the time being.
+We moeten er een implementeren, maar dat is momenteel lastig omdat we geen relevante gegevens opslaan, dus die moeten we voorlopig hardcoderen.
 
 ```go
 //main.go
@@ -490,19 +492,19 @@ func main() {
 }
 ```
 
-If you run `go build` again and hit the same URL you should get `"123"`. Not great, but until we store data that's the best we can do.
-It also didn't feel great that our main application was starting up but not actually working. We had to manually test to see the problem.
+Als je `go build` opnieuw uitvoert en dezelfde URL gebruikt, zou je `"123"` moeten krijgen. Niet geweldig, maar totdat we gegevens hebben opgeslagen, is dit het beste wat we kunnen doen.
+Het voelde ook niet geweldig dat onze hoofdapplicatie wel opstartte, maar niet echt werkte. We moesten handmatig testen om het probleem te achterhalen.
 
-We have a few options as to what to do next
+We hebben een paar opties voor de volgende stap:
 
--   Handle the scenario where the player doesn't exist
--   Handle the `POST /players/{name}` scenario
+- Het scenario afhandelen waarin de speler niet bestaat
+- Het scenario `POST /players/{name}` afhandelen
 
-Whilst the `POST` scenario gets us closer to the "happy path", I feel it'll be easier to tackle the missing player scenario first as we're in that context already. We'll get to the rest later.
+Hoewel het `POST`-scenario ons dichter bij het "happy path" brengt, denk ik dat het makkelijker zal zijn om eerst het scenario met de ontbrekende speler aan te pakken, omdat we ons al in die context bevinden. We komen later op de rest.
 
-## Write the test first
+## Schrijf eerst de test
 
-Add a missing player scenario to our existing suite
+Voeg een ontbrekend spelerscenario toe aan onze bestaande suite
 
 ```go
 //server_test.go
@@ -521,7 +523,7 @@ t.Run("returns 404 on missing players", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 === RUN   TestGETPlayers/returns_404_on_missing_players
@@ -529,7 +531,7 @@ t.Run("returns 404 on missing players", func(t *testing.T) {
         server_test.go:56: got status 200 want 404
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om het te laten slagen
 
 ```go
 //server.go
@@ -542,15 +544,15 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Sometimes I heavily roll my eyes when TDD advocates say "make sure you just write the minimal amount of code to make it pass" as it can feel very pedantic.
+Soms rol ik echt met mijn ogen als voorstanders van TDD zeggen: "Zorg ervoor dat je alleen de minimale hoeveelheid code schrijft om het te laten slagen", want dat kan nogal overdreven perfectionistisch overkomen.
 
-But this scenario illustrates the example well. I have done the bare minimum (knowing it is not correct), which is write a `StatusNotFound` on **all responses** but all our tests are passing!
+Maar dit scenario illustreert het voorbeeld goed. Ik heb het absolute minimum gedaan (wetende dat het niet correct is), namelijk een `StatusNotFound` schrijven voor **alle reacties**, maar al onze tests slagen!
 
-**By doing the bare minimum to make the tests pass it can highlight gaps in your tests**. In our case, we are not asserting that we should be getting a `StatusOK` when players _do_ exist in the store.
+**Door het absolute minimum te doen om de tests te laten slagen, kunnen hiaten in je tests zichtbaar worden**. In ons geval beweren we niet dat we een `StatusOK` zouden moeten krijgen wanneer spelers _wel_ in de winkel staan.
 
-Update the other two tests to assert on the status and fix the code.
+Werk de andere twee tests bij om de status te bevestigen en de code te corrigeren.
 
-Here are the new tests
+Hier zijn de nieuwe tests
 
 ```go
 //server_test.go
@@ -613,9 +615,9 @@ func assertResponseBody(t testing.TB, got, want string) {
 }
 ```
 
-We're checking the status in all our tests now so I made a helper `assertStatus` to facilitate that.
+We controleren nu de status in al onze tests, dus ik heb een helper aangemaakt: `assertStatus` om dat te vergemakkelijken.
 
-Now our first two tests fail because of the 404 instead of 200, so we can fix `PlayerServer` to only return not found if the score is 0.
+Onze eerste twee tests mislukken nu vanwege de 404 in plaats van 200, dus we kunnen `PlayerServer` zo instellen dat het alleen 'niet gevonden' retourneert als de score 0 is.
 
 ```go
 //server.go
@@ -632,11 +634,11 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-### Storing scores
+### Scores opslaan
 
-Now that we can retrieve scores from a store it now makes sense to be able to store new scores.
+Nu we scores uit een opslag kunnen halen, is het logisch om nieuwe scores op te slaan.
 
-## Write the test first
+## Schrijf eerst de test
 
 ```go
 //server_test.go
@@ -657,9 +659,9 @@ func TestStoreWins(t *testing.T) {
 }
 ```
 
-For a start let's just check we get the correct status code if we hit the particular route with POST. This lets us drive out the functionality of accepting a different kind of request and handling it differently to `GET /players/{name}`. Once this works we can then start asserting on our handler's interaction with the store.
+Laten we om te beginnen controleren of we de juiste statuscode krijgen als we de specifieke route met POST bereiken. Dit stelt ons in staat om een ander type verzoek te accepteren en anders af te handelen dan `GET /players/{name}`. Zodra dit werkt, kunnen we beginnen met het claimen van de interactie van onze handler met de opslag.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 === RUN   TestStoreWins/it_returns_accepted_on_POST
@@ -667,9 +669,9 @@ For a start let's just check we get the correct status code if we hit the partic
         server_test.go:70: did not get correct status, got 404, want 202
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-Remember we are deliberately committing sins, so an `if` statement based on the request's method will do the trick.
+Onthoud dat we opzettelijk zonden begaan, dus een `if`-statement gebaseerd op de methode van het verzoek is voldoende.
 
 ```go
 //server.go
@@ -694,7 +696,7 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 ## Refactor
 
-The handler is looking a bit muddled now. Let's break the code up to make it easier to follow and isolate the different functionality into new functions.
+De handler ziet er nu wat rommelig uit. Laten we de code opsplitsen om het makkelijker te volgen te maken en de verschillende functionaliteiten isoleren in nieuwe functies.
 
 ```go
 //server.go
@@ -726,13 +728,13 @@ func (p *PlayerServer) processWin(w http.ResponseWriter) {
 }
 ```
 
-This makes the routing aspect of `ServeHTTP` a bit clearer and means our next iterations on storing can just be inside `processWin`.
+Dit maakt het routingaspect van `ServeHTTP` iets duidelijker en betekent dat onze volgende iteraties voor opslag gewoon binnen `processWin` kunnen plaatsvinden.
 
-Next, we want to check that when we do our `POST /players/{name}` that our `PlayerStore` is told to record the win.
+Vervolgens willen we controleren of onze `PlayerStore` de opdracht krijgt om de winst te registreren wanneer we onze `POST /players/{name}` uitvoeren.
 
-## Write the test first
+## Schrijf eerst de test
 
-We can accomplish this by extending our `StubPlayerStore` with a new `RecordWin` method and then spy on its invocations.
+We kunnen dit bereiken door onze `StubPlayerStore` uit te breiden met een nieuwe `RecordWin`-methode en vervolgens de aanroepen ervan te bespioneren.
 
 ```go
 //server_test.go
@@ -751,7 +753,7 @@ func (s *StubPlayerStore) RecordWin(name string) {
 }
 ```
 
-Now extend our test to check the number of invocations for a start
+Breid nu onze test uit om het aantal aanroepen voor een start te controleren
 
 ```go
 //server_test.go
@@ -781,16 +783,16 @@ func newPostWinRequest(name string) *http.Request {
 }
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./server_test.go:26:20: too few values in struct initializer
 ./server_test.go:65:20: too few values in struct initializer
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code om de test uit te voeren en controleer de mislukte testuitvoer.
 
-We need to update our code where we create a `StubPlayerStore` as we've added a new field
+We moeten onze code bijwerken waar we een `StubPlayerStore` aanmaken, omdat we een nieuw veld hebben toegevoegd.
 
 ```go
 //server_test.go
@@ -806,11 +808,11 @@ store := StubPlayerStore{
         server_test.go:80: got 0 calls to RecordWin want 1
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-As we're only asserting the number of calls rather than the specific values it makes our initial iteration a little smaller.
+Omdat we alleen het aantal aanroepen aangeven in plaats van de specifieke waarden, wordt onze initiële iteratie iets kleiner.
 
-We need to update `PlayerServer`'s idea of what a `PlayerStore` is by changing the interface if we're going to be able to call `RecordWin`.
+We moeten het idee van `PlayerServer` over wat een `PlayerStore` is bijwerken door de interface aan te passen, zodat we `RecordWin` kunnen aanroepen.
 
 ```go
 //server.go
@@ -820,14 +822,14 @@ type PlayerStore interface {
 }
 ```
 
-By doing this `main` no longer compiles
+Door dit te doen compileert `main` niet meer
 
 ```
 ./main.go:17:46: cannot use InMemoryPlayerStore literal (type *InMemoryPlayerStore) as type PlayerStore in field value:
     *InMemoryPlayerStore does not implement PlayerStore (missing RecordWin method)
 ```
 
-The compiler tells us what's wrong. Let's update `InMemoryPlayerStore` to have that method.
+De compiler vertelt ons wat er mis is. Laten we `InMemoryPlayerStore` updaten zodat deze methode beschikbaar is.
 
 ```go
 //main.go
@@ -836,9 +838,9 @@ type InMemoryPlayerStore struct{}
 func (i *InMemoryPlayerStore) RecordWin(name string) {}
 ```
 
-Try and run the tests and we should be back to compiling code - but the test is still failing.
+Probeer de tests uit te voeren en we zouden weer code moeten kunnen compileren, maar de test mislukt nog steeds.
 
-Now that `PlayerStore` has `RecordWin` we can call it within our `PlayerServer`
+Nu `PlayerStore` een `RecordWin` heeft, kunnen we het binnen onze `PlayerServer` aanroepen.
 
 ```go
 //server.go
@@ -848,9 +850,9 @@ func (p *PlayerServer) processWin(w http.ResponseWriter) {
 }
 ```
 
-Run the tests and it should be passing! Obviously `"Bob"` isn't exactly what we want to send to `RecordWin`, so let's further refine the test.
+Voer de tests uit en het zou moeten lukken! `"Bob"` is duidelijk niet precies wat we naar `RecordWin` willen sturen, dus laten we de test verder verfijnen.
 
-## Write the test first
+## Schrijf eerst de test
 
 ```go
 //server_test.go
@@ -882,9 +884,9 @@ func TestStoreWins(t *testing.T) {
 }
 ```
 
-Now that we know there is one element in our `winCalls` slice we can safely reference the first one and check it is equal to `player`.
+Nu we weten dat er één element in onze `winCalls`-slice zit, kunnen we veilig naar het eerste element verwijzen en controleren of het gelijk is aan `player`.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 === RUN   TestStoreWins/it_records_wins_on_POST
@@ -892,7 +894,7 @@ Now that we know there is one element in our `winCalls` slice we can safely refe
         server_test.go:86: did not store correct winner got 'Bob' want 'Pepper'
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om het te laten slagen
 
 ```go
 //server.go
@@ -903,11 +905,11 @@ func (p *PlayerServer) processWin(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-We changed `processWin` to take `http.Request` so we can look at the URL to extract the player's name. Once we have that we can call our `store` with the correct value to make the test pass.
+We hebben `processWin` aangepast om `http.Request` te gebruiken, zodat we de URL kunnen bekijken om de naam van de speler te extraheren. Zodra we die hebben, kunnen we onze `store` aanroepen met de juiste waarde om de test te laten slagen.
 
 ## Refactor
 
-We can DRY up this code a bit as we're extracting the player name the same way in two places
+We kunnen deze code wat opschonen met DRY principes, aangezien we de naam van de speler op twee plaatsen op dezelfde manier extraheren.
 
 ```go
 //server.go
@@ -938,25 +940,25 @@ func (p *PlayerServer) processWin(w http.ResponseWriter, player string) {
 }
 ```
 
-Even though our tests are passing we don't really have working software. If you try and run `main` and use the software as intended it doesn't work because we haven't got round to implementing `PlayerStore` correctly. This is fine though; by focusing on our handler we have identified the interface that we need, rather than trying to design it up-front.
+Hoewel onze tests succesvol zijn, hebben we nog geen werkende software. Als je `main` probeert te draaien en de software gebruikt zoals bedoeld, werkt het niet omdat we er nog niet aan toegekomen zijn om `PlayerStore` correct te implementeren. Dit is echter prima; door ons te concentreren op onze handler hebben we de interface geïdentificeerd die we nodig hebben, in plaats van te proberen deze van tevoren te ontwerpen.
 
-We _could_ start writing some tests around our `InMemoryPlayerStore` but it's only here temporarily until we implement a more robust way of persisting player scores (i.e. a database).
+We _zouden_ kunnen beginnen met het schrijven van tests rond onze `InMemoryPlayerStore`, maar die is er slechts tijdelijk totdat we een robuustere manier implementeren om spelersscores te bewaren (d.w.z. een database).
 
-What we'll do for now is write an _integration test_ between our `PlayerServer` and `InMemoryPlayerStore` to finish off the functionality. This will let us get to our goal of being confident our application is working, without having to directly test `InMemoryPlayerStore`. Not only that, but when we get around to implementing `PlayerStore` with a database, we can test that implementation with the same integration test.
+Wat we nu gaan doen, is een _integratietest_ schrijven tussen onze `PlayerServer` en `InMemoryPlayerStore` om de functionaliteit af te ronden. Dit stelt ons in staat om ons doel te bereiken: er zeker van zijn dat onze applicatie werkt, zonder `InMemoryPlayerStore` direct te hoeven testen. Sterker nog, zodra we `PlayerStore` met een database implementeren, kunnen we die implementatie testen met dezelfde integratietest.
 
-### Integration tests
+### Integratietests
 
-Integration tests can be useful for testing that larger areas of your system work but you must bear in mind:
+Integratietests kunnen nuttig zijn om te testen of grotere delen van je systeem werken, maar je moet rekening houden met het volgende:
 
--   They are harder to write
--   When they fail, it can be difficult to know why (usually it's a bug within a component of the integration test) and so can be harder to fix
--   They are sometimes slower to run (as they often are used with "real" components, like a database)
+- Ze zijn moeilijker te schrijven.
+- Als ze mislukken, kan het moeilijk zijn om te achterhalen waarom (meestal is het een bug in een component van de integratietest) en dus moeilijker te verhelpen.
+- Ze zijn soms trager in uitvoering (omdat ze vaak worden gebruikt met "echte" componenten, zoals een database).
 
-For that reason, it is recommended that you research _The Test Pyramid_.
+Daarom is het raadzaam om _De Testpiramide_ te onderzoeken.
 
-## Write the test first
+## Schrijf eerst de test.
 
-In the interest of brevity, I am going to show you the final refactored integration test.
+Om het kort te houden, laat ik je de definitieve refactored integratietest zien.
 
 ```go
 // server_integration_test.go
@@ -985,24 +987,24 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 }
 ```
 
--   We are creating our two components we are trying to integrate with: `InMemoryPlayerStore` and `PlayerServer`.
--   We then fire off 3 requests to record 3 wins for `player`. We're not too concerned about the status codes in this test as it's not relevant to whether they are integrating well.
--   The next response we do care about (so we store a variable `response`) because we are going to try and get the `player`'s score.
+- We zijn bezig met het creëren van de twee componenten waarmee we proberen te integreren: `InMemoryPlayerStore` en `PlayerServer`.
+- Vervolgens versturen we 3 verzoeken om 3 overwinningen voor `player` te registreren. We maken ons in deze test niet al te veel zorgen over de statuscodes, omdat die niet relevant zijn voor de goede integratie.
+- Het volgende antwoord vinden we wel belangrijk (daarom slaan we een variabele `response` op), omdat we de score van `player` willen achterhalen.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 --- FAIL: TestRecordingWinsAndRetrievingThem (0.00s)
     server_integration_test.go:24: response body is wrong, got '123' want '3'
 ```
 
-## Write enough code to make it pass
+## Schrijf genoeg code om het te laten slagen
 
-I am going to take some liberties here and write more code than you may be comfortable with without writing a test.
+Ik neem hier wat vrijheden en schrijf meer code dan je misschien prettig vindt zonder een test te schrijven.
 
-_This is allowed!_ We still have a test checking things should be working correctly but it is not around the specific unit we're working with (`InMemoryPlayerStore`).
+_Dit is toegestaan!_ We hebben nog steeds een test die controleert of alles correct zou moeten werken, maar deze test is niet gericht op de specifieke unit waarmee we werken (`InMemoryPlayerStore`).
 
-If I were to get stuck in this scenario, I would revert my changes back to the failing test and then write more specific unit tests around `InMemoryPlayerStore` to help me drive out a solution.
+Mocht ik in dit scenario vastlopen, dan zou ik mijn wijzigingen terugdraaien naar de mislukte test en vervolgens specifiekere unittests schrijven rond `InMemoryPlayerStore` om me te helpen een oplossing te vinden.
 
 ```go
 //in_memory_player_store.go
@@ -1023,16 +1025,17 @@ func (i *InMemoryPlayerStore) GetPlayerScore(name string) int {
 }
 ```
 
--   We need to store the data so I've added a `map[string]int` to the `InMemoryPlayerStore` struct
--   For convenience I've made `NewInMemoryPlayerStore` to initialise the store, and updated the integration test to use it:
+- We moeten de gegevens opslaan, dus heb ik een `map[string]int` toegevoegd aan de `InMemoryPlayerStore`-structuur.
+- Voor het gemak heb ik `NewInMemoryPlayerStore` gemaakt om de opslag te initialiseren en de integratietest bijgewerkt om deze te gebruiken:
     ```go
     //server_integration_test.go
     store := NewInMemoryPlayerStore()
     server := PlayerServer{store}
     ```
--   The rest of the code is just wrapping around the `map`
+- De rest van de code draait gewoon om de `map`.
 
-The integration test passes, now we just need to change `main` to use `NewInMemoryPlayerStore()`
+De integratietest is geslaagd, nu hoeven we alleen nog `main` te wijzigen om `NewInMemoryPlayerStore()` te gebruiken.
+
 
 ```go
 // main.go
@@ -1049,47 +1052,47 @@ func main() {
 }
 ```
 
-Build it, run it and then use `curl` to test it out.
+Bouw het, voer het uit en gebruik vervolgens `curl` om het te testen.
 
--   Run this a few times, change the player names if you like `curl -X POST http://localhost:5000/players/Pepper`
--   Check scores with `curl http://localhost:5000/players/Pepper`
+- Voer dit een paar keer uit, verander eventueel de spelersnamen `curl -X POST http://localhost:5000/players/Pepper`
+- Controleer de scores met `curl http://localhost:5000/players/Pepper`
 
-Great! You've made a REST-ish service. To take this forward you'd want to pick a data store to persist the scores longer than the length of time the program runs.
+Geweldig! Je hebt een REST-achtige service gemaakt. Om dit verder te ontwikkelen, kun je een dataopslag kiezen die de scores langer bewaart dan de looptijd van het programma.
 
--   Pick a store (Bolt? Mongo? Postgres? File system?)
--   Make `PostgresPlayerStore` implement `PlayerStore`
--   TDD the functionality so you're sure it works
--   Plug it into the integration test, check it's still ok
--   Finally plug it into `main`
+- Kies een opslag (Bolt? Mongo? Postgres? Bestandssysteem?)
+- Laat `PostgresPlayerStore` `PlayerStore` implementeren (of welke opslag je ook gekozen hebt)
+- TDD de functionaliteit zodat je zeker weet dat het werkt
+- Sluit het aan op de integratietest en controleer of het nog steeds werkt
+- Sluit het ten slotte aan op `main`
 
 ## Refactor
 
-We are almost there! Lets take some effort to prevent concurrency errors like these
+We zijn er bijna! Laten we ons inspannen om gelijktijdigheidsfouten zoals deze te voorkomen.
 
 ```
 fatal error: concurrent map read and map write
 ```
 
-By adding mutexes, we enforce concurrency safety especially for the counter in our `RecordWin` function. Read more about mutexes in the sync chapter.
+Door mutexen toe te voegen, zorgen we voor gelijktijdigheidsbeveiliging, met name voor de teller in onze `RecordWin`-functie. Lees meer over mutexen in het hoofdstuk over synchronisatie.
 
-## Wrapping up
+## Samenvattend
 
 ### `http.Handler`
 
--   Implement this interface to create web servers
--   Use `http.HandlerFunc` to turn ordinary functions into `http.Handler`s
--   Use `httptest.NewRecorder` to pass in as a `ResponseWriter` to let you spy on the responses your handler sends
--   Use `http.NewRequest` to construct the requests you expect to come in to your system
+- Implementeer deze interface om webservers te maken
+- Gebruik `http.HandlerFunc` om gewone functies om te zetten in `http.Handler`s
+- Gebruik `httptest.NewRecorder` om in te voeren als een `ResponseWriter`, zodat je de reacties die je handler verstuurt kunt bespioneren
+- Gebruik `http.NewRequest` om de verzoeken te construeren die je verwacht in je systeem
 
-### Interfaces, Mocking and DI
+### Interfaces, Mocking en DI
 
--   Lets you iteratively build the system up in smaller chunks
--   Allows you to develop a handler that needs a storage without needing actual storage
--   TDD to drive out the interfaces you need
+- Hiermee kun je het systeem iteratief in kleinere delen opbouwen
+- Hiermee kun je een handler ontwikkelen die opslagruimte nodig heeft zonder daadwerkelijke opslagruimte
+- TDD om de benodigde interfaces aan te sturen
 
-### Commit sins, then refactor (and then commit to source control)
+### Zonden committen, vervolgens refactoren (en vervolgens committen naar bronbeheer)
 
--   You need to treat having failing compilation or failing tests as a red situation that you need to get out of as soon as you can.
--   Write just the necessary code to get there. _Then_ refactor and make the code nice.
--   By trying to do too many changes whilst the code isn't compiling or the tests are failing puts you at risk of compounding the problems.
--   Sticking to this approach forces you to write small tests, which means small changes, which helps keep working on complex systems manageable.
+- Je moet falende compilatie of falende tests behandelen als een rode situatie waar je zo snel mogelijk uit moet komen.
+- Schrijf alleen de code die nodig is om dit te bereiken. _Refactor_ vervolgens en maak de code netjes.
+- Door te veel wijzigingen door te voeren terwijl de code niet compileert of de tests mislukken, loop je het risico de problemen te verergeren.
+- Door deze aanpak te volgen, dwing je jezelf om kleine tests te schrijven, wat kleine wijzigingen betekent, wat helpt om het werken aan complexe systemen beheersbaar te houden.
