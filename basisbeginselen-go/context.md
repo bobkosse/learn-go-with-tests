@@ -32,7 +32,7 @@ type Store interface {
 
 De geretourneerde functie roept de `Fetch`-methode van de `store` aan om de gegevens op te halen en schrijft deze naar het antwoord.
 
-We hebben een overeenkomstige spion voor `Store` die we in een test gebruiken.
+We hebben een overeenkomstige observator voor `Store` die we in een test gebruiken.
 
 ```go
 type SpyStore struct {
@@ -71,7 +71,7 @@ type Store interface {
 }
 ```
 
-We moeten onze spion aanpassen, zodat het enige tijd duurt om gegevens te retourneren en een manier om te weten dat de opdracht is gegeven om te annuleren. We moeten `Cancel` toevoegen als methode om de `Store`-interface te implementeren.
+We moeten onze observator aanpassen, zodat het enige tijd duurt om gegevens te retourneren en een manier om te weten dat de opdracht is gegeven om te annuleren. We moeten `Cancel` toevoegen als methode om de `Store`-interface te implementeren.
 
 ```go
 type SpyStore struct {
@@ -202,7 +202,7 @@ Om dit te regelen, draaien we `Fetch` in een goroutine en schrijven we het resul
 
 ## Refactor
 
-We kunnen onze testcode een beetje refactoren door asser methoden op onze spion te maken
+We kunnen onze testcode een beetje refactoren door asser methoden op onze observator te maken
 
 ```go
 type SpyStore struct {
@@ -341,7 +341,7 @@ func (s *SpyStore) Fetch(ctx context.Context) (string, error) {
 }
 ```
 
-We moeten onze spion laten functioneren als een echte methode die met de `context` werkt.
+We moeten onze observator laten functioneren als een echte methode die met de `context` werkt.
 
 We simuleren een langzaam proces waarbij we het resultaat langzaam opbouwen door de string, teken voor teken, toe te voegen in een goroutine. Wanneer de goroutine klaar is met zijn werk, schrijft hij de string naar het `data`kanaal. De goroutine luistert naar de `ctx.Done` en stopt met werken als er een signaal in dat kanaal wordt verzonden.
 
@@ -394,7 +394,7 @@ Ons gelukkige pad zou... gelukkig moeten zijn. Nu kunnen we de andere test oplos
 
 ## Schrijf eerst je test
 
-We moeten testen of we geen enkel antwoord op de foutmelding schrijven. Helaas heeft `httptest.ResponseRecorder` geen manier om dit te achterhalen, dus we zullen onze eigen spion moeten bouwen om dit te testen.
+We moeten testen of we geen enkel antwoord op de foutmelding schrijven. Helaas heeft `httptest.ResponseRecorder` geen manier om dit te achterhalen, dus we zullen onze eigen observator moeten bouwen om dit te testen.
 
 ```go
 type SpyResponseWriter struct {
@@ -476,7 +476,7 @@ Hierna kunnen we zien dat de servercode is vereenvoudigd, omdat deze niet langer
 * Hoe je context kunt gebruiken om annuleringen te beheren.
 * Hoe je een functie schrijft die `context` accepteert en deze gebruikt om zichzelf te annuleren met behulp van goroutines, `select` en channels.
 * Volg de richtlijnen van Google om annuleringen te beheren door de context van het verzoekbereik via uw call-stack te verspreiden.
-* Hoe je zelf een spion voor `http.ResponseWriter` kunt maken als je dat nodig hebt.
+* Hoe je zelf een observator voor `http.ResponseWriter` kunt maken als je dat nodig hebt.
 
 ### Hoe zit het met context.Value ?
 

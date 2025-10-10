@@ -90,7 +90,7 @@ FAIL
 
 ## Schrijf genoeg code om de test te laten slagen
 
-We kunnen de spion met een willekeurige tekenreeks aanroepen om dit te doen.
+We kunnen de observator met een willekeurige tekenreeks aanroepen om dit te doen.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
