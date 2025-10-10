@@ -234,7 +234,7 @@ Als we `time.Sleep` kunnen _mocken_, kunnen we _dependency injection_ gebruiken 
 
 ## Schrijf eerst je test
 
-Laten we onze afhankelijkheid definiëren als een interface. Dit stelt ons in staat om een ​​echte Sleeper in `main` en een _spionage sleeper_ in onze tests te gebruiken. Door een interface te gebruiken, heeft onze `Countdown`-functie hier geen weet van en voegt wat flexibiliteit toe voor de aanroeper.
+Laten we onze afhankelijkheid definiëren als een interface. Dit stelt ons in staat om een ​​echte Sleeper in `main` en een _spy sleeper_ in onze tests te gebruiken. Door een interface te gebruiken, heeft onze `Countdown`-functie hier geen weet van en voegt wat flexibiliteit toe voor de aanroeper.
 
 ```go
 type Sleeper interface {
@@ -383,7 +383,7 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 
 Als je je tests uitvoert, zouden ze nog steeds moeten slagen, ook al is de implementatie verkeerd.
 
-Laten we spionage opnieuw gebruiken met een nieuwe test om te controleren of de volgorde van de bewerkingen correct is.
+Laten we spying opnieuw gebruiken met een nieuwe test om te controleren of de volgorde van de bewerkingen correct is.
 
 We hebben twee verschillende afhankelijkheden en we willen al hun bewerkingen in één lijst vastleggen. Daarom maken we voor beide één spion.
 
