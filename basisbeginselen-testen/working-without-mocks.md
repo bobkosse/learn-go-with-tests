@@ -1,38 +1,38 @@
-# Working without mocks, stubs and spies
+# Werken zonder mocks, stubs en observatoren
 
-This chapter delves into the world of test doubles and explores how they influence the testing and development process. We'll uncover the limitations of traditional mocks, stubs, and spies and introduce a more efficient and adaptable approach using fakes and contracts.
+Dit hoofdstuk duikt in de wereld van testdoubles en onderzoekt hoe ze het test- en ontwikkelingsproces beïnvloeden. We leggen de beperkingen van traditionele mocks, stubs en Spies bloot en introduceren een efficiëntere en flexibelere aanpak met behulp van fakes en contracten.
 
 ## tl;dr
 
-- Mocks, spies and stubs encourage you to encode assumptions of the behaviour of your dependencies ad-hocly in each test.
-- These assumptions are usually not validated beyond manual checking, so they threaten your test suite's usefulness.
-- Fakes and contracts give us a more sustainable method for creating test doubles with validated assumptions and better reuse than the alternatives.
+- Mocks, Spies en stubs moedigen je aan om ad-hoc aannames over het gedrag van je afhankelijkheden in elke test te coderen.
+- Deze aannames worden meestal niet gevalideerd buiten handmatige controle, waardoor ze de bruikbaarheid van je testsuite bedreigen.
+- Fakes en contracten bieden ons een duurzamere methode voor het maken van testdoubles met gevalideerde aannames en beter hergebruik dan de alternatieven.
 
-This is a longer chapter than normal, so as a palette cleanser, you should explore an [example repo first](https://github.com/quii/go-fakes-and-contracts). In particular, check out the [planner test](https://github.com/quii/go-fakes-and-contracts/blob/main/domain/planner/planner_test.go).
+Dit is een langer hoofdstuk dan normaal, dus om het palet op te schonen, is het raadzaam om eerst een [voorbeeldrepository](https://github.com/quii/go-fakes-and-contracts) te verkennen. Bekijk in het bijzonder de [plannertest](https://github.com/quii/go-fakes-and-contracts/blob/main/domain/planner/planner_test.go).
 
 ---
 
-In [Mocking,](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking) we learned how mocks, stubs and spies are useful tools for controlling and inspecting the behaviour of units of code in conjunction with [Dependency Injection](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
+In [Mocking](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking) hebben we geleerd hoe mocks, stubs en Spies nuttige tools zijn voor het controleren en inspecteren van het gedrag van code-eenheden in combinatie met [Dependency Injection](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
 
-As a project grows, though, these kinds of test doubles *can* become a maintenance burden, and we should instead look to other design ideas to keep our system easy to reason and test.
+Naarmate een project groeit, *kunnen* dit soort testdoubles echter een onderhoudslast worden, en zouden we in plaats daarvan naar andere ontwerpideeën moeten kijken om ons systeem eenvoudig te kunnen begrijpen en testen.
 
-**Fakes** and **contracts** allow developers to test their systems with more realistic scenarios, improve local development experience with faster and more accurate feedback loops, and manage the complexity of evolving dependencies.
+**Fakes** en **contracten** stellen ontwikkelaars in staat hun systemen te testen met realistischere scenario's, de lokale ontwikkelervaring te verbeteren met snellere en nauwkeurigere feedbackloops en de complexiteit van evoluerende afhankelijkheden te beheren.
 
-### A primer on test doubles
+### Een inleiding tot testdoubles
 
-It's easy to roll your eyes when people like me are pedantic about the nomenclature of test doubles, but the distinctive kinds of test doubles help us talk about this topic and the trade-offs we're making with clarity.
+Het is makkelijk om met je ogen te rollen als mensen zoals ik zo precies zijn over de terminologie van testdoubles, maar de verschillende soorten testdoubles helpen ons om dit onderwerp en de afwegingen die we maken helder te bespreken.
 
-**Test doubles** is the collective noun for the different ways you can construct dependencies that you can control for a **subject under test** **(SUT)**, the thing you're testing. Test doubles are often a better alternative than using the real dependency as it can avoid issues like
+**Testdoubles** is de verzamelnaam voor de verschillende manieren waarop je afhankelijkheden kunt construeren die je kunt beheren voor een **onderwerp dat wordt getest** **(Subject Under Test(SUT))**, het object dat je test. Testdoubles zijn vaak een beter alternatief dan het gebruik van de echte afhankelijkheid, omdat het problemen kan vermijden zoals:
 
-- Needing the internet to use an API
-- Avoid latency and other performance issues
-- Unable to exercise non-happy path cases
-- Decoupling your build from another team's.
-  - You wouldn't want to prevent deployments if an engineer in another team accidentally shipped a bug
+- Internet nodig hebben om een API te gebruiken
+- Latency en andere prestatieproblemen vermijden
+- Niet in staat zijn om non-happy path cases uit te voeren
+- Jouw build loskoppelen van die van een ander team
+- Je wilt geen implementaties voorkomen als een engineer in een ander team per ongeluk een bug heeft verzonden
 
-In Go, you'll typically model a dependency with an interface, then implement your version to control the behaviour in a test. **Here are the kinds of test doubles covered in this post**.
+In Go modelleer je meestal een afhankelijkheid met een interface en implementeer je vervolgens je eigen versie om het gedrag in een test te beheren. **Dit zijn de soorten testdubbels die in dit hoofdstuk worden behandeld**.
 
-Given this interface of a hypothetical recipe API:
+Gegeven deze interface van een hypothetische recepten-API:
 
 ```go
 type RecipeBook interface {
@@ -41,9 +41,9 @@ type RecipeBook interface {
 }
 ```
 
-We can construct test doubles in various ways, depending on how we're trying to test something that uses a `RecipeBook`.
+We kunnen testdubbels op verschillende manieren construeren, afhankelijk van hoe we iets proberen te testen dat een `Receptenboek` gebruikt.
 
-**Stubs** return the same canned data every time they are called
+**Stubs** retourneren telkens dezelfde standaardgegevens wanneer ze worden aangeroepen.
 
 ```go
 type StubRecipeStore struct {
@@ -65,7 +65,7 @@ stubStore := &StubRecipeStore{
 }
 ```
 
-**Spies** are like stubs but also record how they were called so the test can assert that the SUT calls the dependencies in specific ways.
+**Observatoren** zijn vergelijkbaar met stubs, maar registreren ook hoe ze zijn aangeroepen. Zo kan de test bevestigen dat de SUT de afhankelijkheden op specifieke manieren aanroept.
 
 ```go
 type SpyRecipeStore struct {
@@ -90,7 +90,7 @@ sut.DoStuff()
 // now we can check the store had the right recipes added by inspectiong spyStore.AddCalls
 ```
 
-**Mocks** are like a superset of the above, but they only respond with specific data to specific invocations. If the SUT calls the dependencies with the wrong arguments, it'll typically panic.
+**Mocks** zijn een soort superset van de bovenstaande, maar ze reageren alleen met specifieke gegevens op specifieke aanroepen. Als de SUT de afhankelijkheden met de verkeerde argumenten aanroept, geeft de code vaak een `panic`.
 
 ```go
 // set up the mock with expected calls
@@ -100,7 +100,7 @@ mockStore.WhenCalledWith(someRecipes).Return(someError)
 // when the sut uses the dependency, if it doesn't call it with someRecipes, usually mocks will panic
 ```
 
-**Fakes** are like a genuine version of the dependency but implemented in a way more suited to fast running, reliable tests and local development. Often, your system will have some abstraction around persistence, which will be implemented with a database, but in your tests, you could use an in-memory fake instead.
+**Fakes** lijken op een echte versie van de afhankelijkheid, maar zijn geïmplementeerd op een manier die geschikter is voor snel draaiende, betrouwbare tests en lokale ontwikkeling. Vaak heeft je systeem een abstractie rond dataopslag, die wordt geïmplementeerd met een database, maar in je tests kun je in plaats daarvan een in-memory fake gebruiken.
 
 ```go
 type FakeRecipeStore struct {
@@ -117,13 +117,13 @@ func (f *FakeRecipeStore) AddRecipes(r ...Recipe) error {
 }
 ```
 
-Fakes are useful because:
+Fakes zijn nuttig omdat:
 
-- Their statefulness is useful for tests involving multiple subjects and invocations, such as an integration test. Managing state with the other kinds of test doubles is generally discouraged.
-- If they have a sensible API, offer a more natural way of asserting state. Rather than spying on specific calls to a dependency, you can query its final state to see if the real effect you want happened.
-- You can use them to run your application locally without spinning up or depending on real dependencies. This will usually improve developer experience (DX) because the fakes will be faster and more reliable than their real counterparts.
+- Hun statefulness nuttig is voor tests met meerdere onderwerpen en aanroepen, zoals een integratietest. Het beheren van de status met andere soorten testdoubles wordt over het algemeen afgeraden.
+- Als ze een verstandige API hebben, bieden ze een meer natuurlijke manier om de status te bepalen. In plaats van specifieke aanroepen van een afhankelijkheid te observeren, kun je de uiteindelijke status ervan opvragen om te zien of het gewenste effect daadwerkelijk is bereikt.
+- Je kunt ze gebruiken om je applicatie lokaal uit te voeren zonder dat deze hoeft te worden opgestart of afhankelijk is van echte afhankelijkheden. Dit verbetert meestal de ontwikkelaarservaring (DX), omdat de fakes sneller en betrouwbaarder zijn dan hun echte tegenhangers.
 
-Spies, Mocks and Stubs can typically be autogenerated from an interface using a tool or using reflection. However, as Fakes encode the behaviour of the dependency you're trying to make a double for, you'll have to write at least most of the implementation yourself
+Observatoren, Mocks en Stubs kunnen meestal automatisch worden gegenereerd vanuit een interface met behulp van een tool of reflectie. Omdat Fakes echter het gedrag coderen van de afhankelijkheid waarvoor u een double wilt maken, moet u in ieder geval het grootste deel van de implementatie zelf schrijven.
 
 ## The problem with stubs and mocks
 
@@ -254,9 +254,9 @@ This approach lets us have tests that cut across broad parts of our system, lett
 
 In the example above, the tests were not concerned with how the dependencies behaved beyond verifying their end state. We created the fake versions of the dependencies and injected them into the part of the system we're testing.
 
-With mocks/stubs, we'd have to set up each dependency to handle certain scenarios, return certain data, etc. This brings behaviour and implementation detail into your tests, weakening the benefits of encapsulation. 
+With mocks/stubs, we'd have to set up each dependency to handle certain scenarios, return certain data, etc. This brings behaviour and implementation detail into your tests, weakening the benefits of encapsulation.
 
-We model dependencies behind interfaces so that, as clients, _we don't have to care how it works_, but with a "mockist" approach, _we do have to care **in every test**_. 
+We model dependencies behind interfaces so that, as clients, _we don't have to care how it works_, but with a "mockist" approach, _we do have to care **in every test**_.
 
 #### The maintenance costs of fakes
 
