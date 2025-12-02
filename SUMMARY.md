@@ -29,7 +29,7 @@
 ## Basisbeginselen Testen
 
 * [Introductie acceptatie testen](basisbeginselen-testen/intro-to-acceptance-tests.md)
-* [Scaling acceptance tests](basisbeginselen-testen/scaling-acceptance-tests.md)
+* [Schalen van acceptatie testen](basisbeginselen-testen/scaling-acceptance-tests.md)
 * [Working without mocks](basisbeginselen-testen/working-without-mocks.md)
 * [Refactoring Checklist](basisbeginselen-testen/refactoring-checklist.md)
 
