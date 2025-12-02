@@ -1,14 +1,14 @@
-# Error types
+# Fout types
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/error-types)**
+**[Je kunt alle code voor dit hoofdstuk hier vinden](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/error-types)**
 
-**Creating your own types for errors can be an elegant way of tidying up your code, making your code easier to use and test.**
+**Het aanmaken van je eigen typen voor fouten kan een elegante manier zijn om je code op te schonen, waardoor je code gemakkelijker te gebruiken en te testen is.**
 
-Pedro on the Gopher Slack asks
+Pedro op de Gopher Slack vraagt:
 
-> If I’m creating an error like `fmt.Errorf("%s must be foo, got %s", bar, baz)`, is there a way to test equality without comparing the string value?
+> Als ik een fout aanmaak zoals `fmt.Errorf("%s must be foo, got %s", bar, baz)`, is er dan een manier om gelijkheid te testen zonder de stringwaarde te vergelijken?
 
-Let's make up a function to help explore this idea.
+Laten we een functie bedenken om dit idee te verkennen.
 
 ```go
 // DumbGetter will get the string body of url if it gets a 200
@@ -30,9 +30,9 @@ func DumbGetter(url string) (string, error) {
 }
 ```
 
-It's not uncommon to write a function that might fail for different reasons and we want to make sure we handle each scenario correctly.
+Het is niet ongebruikelijk om een functie te schrijven die om verschillende redenen kan mislukken en we willen er zeker van zijn dat we elk scenario correct afhandelen.
 
-As Pedro says, we _could_ write a test for the status error like so.
+Zoals Pedro zegt, _zouden_ we een test voor de statusfout als volgt kunnen schrijven.
 
 ```go
 t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
@@ -57,29 +57,29 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-This test creates a server which always returns `StatusTeapot` and then we use its URL as the argument to `DumbGetter` so we can see it handles non `200` responses correctly.
+Deze test creëert een server die altijd `StatusTeapot` retourneert. Vervolgens gebruiken we de URL ervan als argument voor `DumbGetter`, zodat we kunnen zien dat deze niet-`200`-reacties correct verwerkt.
 
-## Problems with this way of testing
+## Problemen met deze manier van testen
 
-This book tries to emphasise _listen to your tests_ and this test doesn't _feel_ good:
+Dit boek benadrukt het belang van _luister naar je tests_ en deze test voelt niet _goed_ aan:
 
-- We're constructing the same string as production code does to test it
-- It's annoying to read and write
-- Is the exact error message string what we're _actually concerned with_ ?
+- We construeren dezelfde string als productiecode om deze te testen.
+- Het is vervelend om te lezen en te schrijven.
+- Is de exacte string met de foutmelding waar we _eigenlijk mee bezig zijn_?
 
-What does this tell us? The ergonomics of our test would be reflected on another bit of code trying to use our code.
+Wat vertelt dit ons? De ergonomie van onze test zou zich weerspiegelen in een ander stukje code dat onze code probeert te gebruiken.
 
-How does a user of our code react to the specific kind of errors we return? The best they can do is look at the error string which is extremely error prone and horrible to write.
+Hoe reageert een gebruiker van onze code op het specifieke soort fouten dat we retourneren? Het beste wat ze kunnen doen is kijken naar de string met de fout, die extreem foutgevoelig en moeilijk te schrijven is.
 
-## What we should do
+## Wat we zouden moeten doen
 
-With TDD we have the benefit of getting into the mindset of:
+Met TDD hebben we het voordeel dat we in de volgende mindset komen:
 
-> How would _I_ want to use this code?
+> Hoe zou _ik_ deze code willen gebruiken?
 
-What we could do for `DumbGetter` is provide a way for users to use the type system to understand what kind of error has happened.
+Wat we voor `DumbGetter` zouden kunnen doen, is gebruikers een manier bieden om het typesysteem te gebruiken om te begrijpen wat voor soort fout er is opgetreden.
 
-What if `DumbGetter` could return us something like
+Wat als `DumbGetter` ons zoiets zou kunnen teruggeven?
 
 ```go
 type BadStatusError struct {
@@ -88,9 +88,9 @@ type BadStatusError struct {
 }
 ```
 
-Rather than a magical string, we have actual _data_ to work with.
+In plaats van een magische string hebben we daadwerkelijke _data_ om mee te werken.
 
-Let's change our existing test to reflect this need
+Laten we onze bestaande test aanpassen om aan deze behoefte te voldoen.
 
 ```go
 t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
@@ -120,7 +120,7 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-We'll have to make `BadStatusError` implement the error interface.
+We moeten ervoor zorgen dat `BadStatusError` de foutinterface implementeert.
 
 ```go
 func (b BadStatusError) Error() string {
@@ -128,11 +128,11 @@ func (b BadStatusError) Error() string {
 }
 ```
 
-### What does the test do?
+### Wat doet de test?
 
-Instead of checking the exact string of the error, we are doing a [type assertion](https://tour.golang.org/methods/15) on the error to see if it is a `BadStatusError`. This reflects our desire for the _kind_ of error clearer. Assuming the assertion passes we can then check the properties of the error are correct.
+In plaats van de exacte string van de fout te controleren, voeren we een [type assertion](https://tour.golang.org/methods/15) uit op de fout om te zien of het een `BadStatusError` is. Dit weerspiegelt onze wens voor een _soort_ foutopheldering. Ervan uitgaande dat de assertion slaagt, kunnen we vervolgens controleren of de eigenschappen van de fout correct zijn.
 
-When we run the test, it tells us we didn't return the right kind of error
+Wanneer we de test uitvoeren, geeft deze aan dat we niet het juiste type fout hebben geretourneerd.
 
 ```
 --- FAIL: TestDumbGetter (0.00s)
@@ -140,7 +140,7 @@ When we run the test, it tells us we didn't return the right kind of error
     	error-types_test.go:56: was not a BadStatusError, got *errors.errorString
 ```
 
-Let's fix `DumbGetter` by updating our error handling code to use our type
+Laten we `DumbGetter` repareren door onze foutverwerkingscode bij te werken om ons type te gebruiken
 
 ```go
 if res.StatusCode != http.StatusOK {
@@ -148,23 +148,23 @@ if res.StatusCode != http.StatusOK {
 }
 ```
 
-This change has had some _real positive effects_
+Deze wijziging heeft een aantal _echt positieve effecten_ gehad.
 
-- Our `DumbGetter` function has become simpler, it's no longer concerned with the intricacies of an error string, it just creates a `BadStatusError`.
-- Our tests now reflect (and document) what a user of our code _could_ do if they decided they wanted to do some more sophisticated error handling than just logging. Just do a type assertion and then you get easy access to the properties of the error.
-- It is still "just" an `error`, so if they choose to they can pass it up the call stack or log it like any other `error`.
+- Onze `DumbGetter`-functie is eenvoudiger geworden. Hij houdt zich niet langer bezig met de complexiteit van een foutstring, maar creëert gewoon een `BadStatusError`.
+- Onze tests weerspiegelen (en documenteren) nu wat een gebruiker van onze code _zou_ kunnen doen als hij besluit om geavanceerdere foutafhandeling te gebruiken dan alleen loggen. Voer gewoon een type-assertie uit en je krijgt eenvoudig toegang tot de eigenschappen van de fout.
+- Het is nog steeds "gewoon" een `fout`, dus als ze dat willen, kunnen ze deze doorgeven aan de call stack of loggen zoals elke andere `fout`.
 
-## Wrapping up
+## Samenvattend
 
-If you find yourself testing for multiple error conditions don't fall in to the trap of comparing the error messages.
+Als je test op meerdere foutcondities, trap dan niet in de valkuil van het vergelijken van de foutmeldingen.
 
-This leads to flaky and difficult to read/write tests and it reflects the difficulties the users of your code will have if they also need to start doing things differently depending on the kind of errors that have occurred.
+Dit leidt tot onbetrouwbare en moeilijk te lezen/schrijven tests en het weerspiegelt de moeilijkheden die de gebruikers van je code zullen ondervinden als ze ook dingen anders moeten gaan doen, afhankelijk van het soort fouten dat is opgetreden.
 
-Always make sure your tests reflect how _you'd_ like to use your code, so in this respect consider creating error types to encapsulate your kinds of errors. This makes handling different kinds of errors easier for users of your code and also makes writing your error handling code simpler and easier to read.
+Zorg er altijd voor dat je tests weerspiegelen hoe je je code wilt gebruiken. Overweeg daarom om fouttypen te creëren die je fouten inkapselen. Dit maakt het verwerken van verschillende soorten fouten eenvoudiger voor gebruikers van je code en maakt het schrijven van je code voor foutverwerking eenvoudiger en leesbaarder.
 
 ## Addendum
 
-As of Go 1.13 there are new ways to work with errors in the standard library which is covered in the [Go Blog](https://blog.golang.org/go1.13-errors)
+Vanaf Go 1.13 zijn er nieuwe manieren om met fouten om te gaan in de standaardbibliotheek. Deze worden behandeld in de [Go Blog](https://blog.golang.org/go1.13-errors)
 
 ```go
 t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
@@ -194,4 +194,4 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-In this case we are using [`errors.As`](https://pkg.go.dev/errors#example-As) to try and extract our error into our custom type. It returns a `bool` to denote success and extracts it into `got` for us.
+In dit geval gebruiken we [`errors.As`](https://pkg.go.dev/errors#example-As) om te proberen onze fout in ons aangepaste type te extraheren. Het retourneert een `bool` om succes aan te geven en extraheert deze voor ons naar `got`.
