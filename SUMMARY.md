@@ -37,7 +37,7 @@
 
 * [Intro](bouw-een-applicatie/app-intro.md)
 * [HTTP server](bouw-een-applicatie/http-server.md)
-* [JSON, routing and embedding](bouw-een-applicatie/json.md)
+* [JSON, routing en embedding](bouw-een-applicatie/json.md)
 * [IO and sorting](bouw-een-applicatie/io.md)
 * [Command line & package structure](bouw-een-applicatie/command-line.md)
 * [Time](bouw-een-applicatie/time.md)
