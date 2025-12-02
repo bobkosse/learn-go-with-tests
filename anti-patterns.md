@@ -1,54 +1,55 @@
-# TDD Anti-patterns
+# TDD-antipatronen
 
-From time to time it's necessary to review your TDD techniques and remind yourself of behaviours to avoid.
+Van tijd tot tijd is het nodig om je TDD-technieken te herzien en jezelf te herinneren aan gedrag dat je moet vermijden.
 
-The TDD process is conceptually simple to follow, but as you do it you'll find it challenging your design skills. **Don't mistake this for TDD being hard, it's design that's hard!**
+Het TDD-proces is conceptueel eenvoudig te volgen, maar je zult merken dat het je ontwerpvaardigheden op de proef stelt. **Verwar dit niet met TDD als moeilijk, het is juist het ontwerp dat moeilijk is!**
 
-This chapter lists a number of TDD and testing anti-patterns, and how to remedy them.
+Dit hoofdstuk somt een aantal TDD- en test-antipatronen op, en hoe je deze kunt verhelpen.
 
-## Not doing TDD at all
+## Helemaal geen TDD gebruiken
 
-Of course, it is possible to write great software without TDD but, a lot of problems I've seen with the design of code and the quality of tests would be very difficult to arrive at if a disciplined approach to TDD had been used.
+Natuurlijk is het mogelijk om geweldige software te schrijven zonder TDD, maar veel problemen die ik heb gezien met het ontwerp van code en de kwaliteit van tests zouden erg moeilijk op te lossen zijn als er geen gedisciplineerde aanpak voor TDD was gebruikt.
 
-One of the strengths of TDD is that it gives you a formal process to break down problems, understand what you're trying to achieve (red), get it done (green), then have a good think about how to make it right (blue/refactor).
+Een van de sterke punten van TDD is dat het je een formeel proces biedt om problemen op te splitsen, te begrijpen wat je probeert te bereiken (rood), het voor elkaar te krijgen (groen) en vervolgens goed na te denken over hoe je het goed kunt maken (blauw/refactoren).
 
-Without this, the process is often ad-hoc and loose, which _can_ make engineering more difficult than it _could_ be.
+Zonder dit is het proces vaak ad-hoc en losjes, wat engineering moeilijker _kan_ maken dan het _zou_ kunnen_ zijn.
 
-## Misunderstanding the constraints of the refactoring step
+## De beperkingen van de refactoringstap verkeerd begrijpen
 
-I have been in a number of workshops, mobbing or pairing sessions where someone has made a test pass and is in the refactoring stage. After some thought, they think it would be good to abstract away some code into a new struct; a budding pedant yells:
+Ik heb een aantal workshops, mobbing- of pairingsessies bijgewoond waarbij iemand een testpass had gemaakt en zich in de refactoringfase bevond. Na enig nadenken dachten ze dat het een goed idee zou zijn om wat code te abstraheren tot een nieuwe struct; een beginnende betweter schreeuwde:
 
-> You're not allowed to do this! You should write a test for this first, we're doing TDD!
+> Dit mag je niet doen! Je zou hier eerst een test voor moeten schrijven, we zijn bezig met TDD!
 
-This seems to be a common misunderstanding. **You can do whatever you like to the code when the tests are green**, the only thing you're not allowed to do is **add or change behaviour**.
+Dit lijkt een veelvoorkomend misverstand te zijn. **Je mag doen wat je wilt met de code als de tests groen zijn**, het enige wat je niet mag doen is **gedrag toevoegen of wijzigen**.
 
-The point of these tests are to give you the _freedom to refactor_, find the right abstractions and make the code easier to change and understand.
+Het doel van deze tests is om je de _vrijheid te geven om te refactoren_, de juiste abstracties te vinden en de code gemakkelijker te veranderen en te begrijpen te maken.
 
-## Having tests that won't fail (or, evergreen tests)
+## Tests hebben die niet falen (oftewel evergreen tests)
 
-It's astonishing how often this comes up. You start debugging or changing some tests and realise: there are no scenarios where this test can fail. Or at least, it won't fail in the way the test is _supposed_ to be protecting against.
+Het is verbazingwekkend hoe vaak dit voorkomt. Je begint met debuggen of het wijzigen van tests en realiseert je: er zijn geen scenario's waarin deze test kan falen. Of in ieder geval, hij zal niet falen op de manier waarop de test _hoort_ te beschermen.
 
-This is _next to impossible_ with TDD if you're following **the first step**,
+Dit is _bijna onmogelijk_ met TDD als je **de eerste stap** volgt,
 
-> Write a test, see it fail
+> Schrijf een test, zie hem falen
 
-This is almost always done when developers write tests _after_ code is written, and/or chasing test coverage rather than creating a useful test suite.
+Dit gebeurt bijna altijd wanneer ontwikkelaars tests schrijven _nadat_ de code is geschreven, en/of om testdekking na te streven in plaats van een bruikbare testsuite te creëren.
 
-## Useless assertions
+## Nutteloze vergelijkingen
 
-Ever worked on a system, and you've broken a test, then you see this?
+Heb je ooit aan een systeem gewerkt en een test stuk gemaakt, en dan zie je dit?
 
 > `false was not equal to true`
 
-I know that false is not equal to true. This is not a helpful message; it doesn't tell me what I've broken. This is a symptom of not following the TDD process and not reading the failure error message.
+Ik weet dat false niet gelijk is aan true. Dit is geen nuttige melding; het vertelt me niet wat ik stuk gemaakt heb. Dit is een symptoom van het niet volgen van het TDD-proces en het niet lezen van de foutmelding.
 
-Going back to the drawing board,
+Terug naar de tekentafel:
 
-> Write a test, see it fail (and don't be ashamed of the error message)
+> Schrijf een test, zie hem falen (en schaam je niet voor de foutmelding)
 
-## Asserting on irrelevant detail
 
-An example of this is making an assertion on a complex object, when in practice all you care about in the test is the value of one of the fields.
+## Vergelijkingen op basis van irrelevante details
+
+Een voorbeeld hiervan is het doen van een vergelijking op basis van een complex object, terwijl het in de praktijk alleen om de waarde van een van de velden gaat.
 
 ```go
 // not this, now your test is tightly coupled to the whole object
@@ -63,67 +64,67 @@ if got != want {
 }
 ```
 
-Additional assertions not only make your test more difficult to read by creating 'noise' in your documentation, but also needlessly couples the test with data it doesn't care about. This means if you happen to change the fields for your object, or the way they behave you may get unexpected compilation problems or failures with your tests.
+Extra vergelijkingen maken je test niet alleen moeilijker leesbaar door 'ruis' in je documentatie te creëren, maar koppelen de test ook onnodig aan data die er niet toe doet. Dit betekent dat als je de velden voor je object of het gedrag ervan wijzigt, je onverwachte compilatieproblemen of fouten in je tests kunt krijgen.
 
-This is an example of not following the red stage strictly enough.
+Dit is een voorbeeld van het niet strikt genoeg volgen van de rode fase.
 
-- Letting an existing design influence how you write your test **rather than thinking of the desired behaviour**
-- Not giving enough consideration to the failing test's error message
+- Een bestaand ontwerp laten beïnvloeden hoe je je test schrijft **in plaats van na te denken over het gewenste gedrag**
+- Niet genoeg aandacht besteden aan de foutmelding van de falende test
 
-## Lots of assertions within a single scenario for unit tests
+## Veel vergelijkingen binnen één scenario voor unittests
 
-Many assertions can make tests difficult to read and challenging to debug when they fail.
+Veel vergelijkingen kunnen tests moeilijk leesbaar en debuggend maken wanneer ze mislukken.
 
-They often creep in gradually, especially if test setup is complicated because you're reluctant to replicate the same horrible setup to assert on something else. Instead of this you should fix the problems in your design which are making it difficult to assert on new things.
+Ze sluipen er vaak geleidelijk in, vooral als de testopstelling ingewikkeld is, omdat je aarzelt om dezelfde vreselijke opstelling te repliceren om vergelijkingen op iets anders te doen. In plaats daarvan zou je de problemen in je ontwerp moeten oplossen die het moeilijk maken om beweringen op nieuwe dingen te doen.
 
-A helpful rule of thumb is to aim to make one assertion per test. In Go, take advantage of subtests to clearly delineate between assertions on the occasions where you need to. This is also a handy technique to separate assertions on behaviour vs implementation detail.
+Een handige vuistregel is om te streven naar één vergelijking per test. Maak in Go gebruik van subtests om een duidelijk onderscheid te maken tussen vergelijkingen wanneer dat nodig is. Dit is ook een handige techniek om vergelijkingen over gedrag te scheiden van implementatiedetails.
 
-For other tests where setup or execution time may be a constraint (e.g an acceptance test driving a web browser), you need to weigh up the pros and cons of slightly trickier to debug tests against test execution time.
+Voor andere tests waarbij de opzet- of uitvoeringstijd een vergelijking kan zijn (bijvoorbeeld een acceptatietest die een webbrowser bestuurt), moet je de voor- en nadelen van iets lastiger te debuggen tests afwegen tegen de uitvoeringstijd van de test.
 
-## Not listening to your tests
+## Niet luisteren naar je tests
 
-[Dave Farley in his video "When TDD goes wrong"](https://www.youtube.com/watch?v=UWtEVKVPBQ0&feature=youtu.be) points out,
+[Dave Farley wijst er in zijn video "When TDD goes wrong"](https://www.youtube.com/watch?v=UWtEVKVPBQ0&feature=youtu.be) op:
 
-> TDD gives you the fastest feedback possible on your design
+> TDD geeft je de snelst mogelijke feedback op je ontwerp
 
-From my own experience, a lot of developers are trying to practice TDD but frequently ignore the signals coming back to them from the TDD process. So they're still stuck with fragile, annoying systems, with a poor test suite.
+Uit eigen ervaring weet ik dat veel ontwikkelaars proberen TDD te oefenen, maar vaak de signalen negeren die ze uit het TDD-proces krijgen. Daardoor zitten ze nog steeds vast aan kwetsbare, irritante systemen met een slechte testsuite.
 
-Simply put, if testing your code is difficult, then _using_ your code is difficult too. Treat your tests as the first user of your code and then you'll see if your code is pleasant to work with or not.
+Simpel gezegd: als het testen van je code moeilijk is, dan is het _gebruiken_ van je code ook moeilijk. Beschouw je tests als de eerste gebruiker van je code en dan zul je zien of je code prettig is om mee te werken of niet.
 
-I've emphasised this a lot in the book, and I'll say it again **listen to your tests**.
+Ik heb dit vaak benadrukt in het boek, en ik herhaal het nog een keer: **luister naar je tests**.
 
-### Excessive setup, too many test doubles, etc.
+### Overmatige setup, te veel testdubbels, enz.
 
-Ever looked at a test with 20, 50, 100, 200 lines of setup code before anything interesting in the test happens? Do you then have to change the code and revisit the mess and wish you had a different career?
+Heb je ooit naar een test gekeken met 20, 50, 100, 200 regels setupcode voordat er iets interessants in de test gebeurt? Moet je dan de code aanpassen, de chaos opnieuw bekijken en wensen dat je een andere carrière had?
 
-What are the signals here? _Listen_, complicated tests `==` complicated code. Why is your code complicated? Does it have to be?
+Wat zijn hier de signalen? _Luister_, gecompliceerde tests `==` gecompliceerde code. Waarom is je code ingewikkeld? Moet dat zo zijn?
 
-- When you have lots of test doubles in your tests, that means the code you're testing has lots of dependencies - which means your design needs work.
-- If your test is reliant on setting up various interactions with mocks, that means your code is making lots of interactions with its dependencies. Ask yourself whether these interactions could be simpler.
+- Als je veel testdubbels in je tests hebt, betekent dit dat de code die je test veel afhankelijkheden heeft, wat betekent dat je ontwerp moet worden aangepast.
+- Als je test afhankelijk is van het instellen van verschillende interacties met mocks, betekent dit dat je code veel interacties met zijn afhankelijkheden maakt. Vraag jezelf af of deze interacties eenvoudiger kunnen.
 
-#### Leaky interfaces
+#### Lekkende interfaces
 
-If you have declared an `interface` that has many methods, that points to a leaky abstraction. Think about how you could define that collaboration with a more consolidated set of methods, ideally one.
+Als je een `interface` hebt gedeclareerd die veel methoden heeft, verwijst dat naar een lekkende abstractie. Denk na over hoe je die samenwerking zou kunnen definiëren met een meer geconsolideerde set methoden, idealiter één.
 
-#### Interface pollution
+#### Interfacevervuiling
 
-As a Go proverb says, *the bigger the interface, the weaker the abstraction*. If you expose a huge interface to the users of your package, you force them to create in their tests a stub/mock that matches the entire API, providing an implementation also for methods they do not use (sometimes, they just panic to make clear that they should not be used). This situation is an anti-pattern known as [interface pollution](https://rakyll.org/interface-pollution/) and this is the reason why the standard library offers you just tiny little interfaces. 
+Zoals een Go-spreekwoord luidt: *hoe groter de interface, hoe zwakker de abstractie*. Als je een enorme interface beschikbaar stelt aan de gebruikers van je pakket, dwing je ze om in hun tests een stub/mock te maken die overeenkomt met de volledige API, en zo ook een implementatie te bieden voor methoden die ze niet gebruiken (soms raken ze gewoon in paniek om duidelijk te maken dat ze niet gebruikt moeten worden). Deze situatie is een antipatroon dat bekend staat als [interfacevervuiling](https://rakyll.org/interface-pollution/) en dit is de reden waarom de standaardbibliotheek je slechts kleine interfaces biedt.
 
-Instead, you should expose from your package a bare struct with all relevant methods exported, leaving to the clients of your API the freedom to declare their own interfaces abstracting over the subset of the methods they need: e.g [go-redis](https://github.com/redis/go-redis) exposes a struct (`redis.Client`) to the API clients.
+In plaats daarvan zou je vanuit je pakket een kale struct met alle relevante methoden geëxporteerd moeten maken, zodat de clients van je API de vrijheid hebben om hun eigen interfaces te declareren en te abstraheren over de subset van de methoden die ze nodig hebben: bijvoorbeeld [go-redis](https://github.com/redis/go-redis) stelt een struct (`redis.Client`) beschikbaar aan de API-clients.
 
-Generally speaking, you should expose an interface to the clients only when:
-- the interface consists of a small and coherent set of functions.
-- the interface and its implementation need to be decoupled (e.g. because users can choose among multiple implementations or they need to mock an external dependency).
+Over het algemeen moet je een interface alleen aan clients beschikbaar stellen wanneer:
+- de interface bestaat uit een kleine en samenhangende set functies.
+- de interface en de implementatie ervan losgekoppeld moeten zijn (bijvoorbeeld omdat gebruikers kunnen kiezen uit meerdere implementaties of omdat ze een externe afhankelijkheid moeten simuleren).
 
-#### Think about the types of test doubles you use
+#### Denk na over de soorten testdoubles die je gebruikt
 
-- Mocks are sometimes helpful, but they're extremely powerful and therefore easy to misuse. Try giving yourself the constraint of using stubs instead.
-- Verifying implementation detail with spies is sometimes helpful, but try to avoid it. Remember your implementation detail is usually not important, and you don't want your tests coupled to them if possible. Look to couple your tests to **useful behaviour rather than incidental details**.
-- [Read my posts on naming test doubles](https://quii.dev/Start_naming_your_test_doubles_correctly) if the taxonomy of test doubles is a little unclear
+- Mocks zijn soms nuttig, maar ze zijn extreem krachtig en daardoor gemakkelijk te misbruiken. Probeer jezelf de beperking op te leggen om in plaats daarvan stubs te gebruiken.
+- Het verifiëren van implementatiedetails met spionnen is soms nuttig, maar probeer dit te vermijden. Onthoud dat je implementatiedetails meestal niet belangrijk zijn en dat je je tests er indien mogelijk niet aan wilt koppelen. Probeer je tests te koppelen aan **nuttig gedrag in plaats van incidentele details**.
+- [Lees mijn berichten over het benoemen van testdoubles](https://quii.dev/Start_naming_your_test_doubles_correctly) als de taxonomie van testdoubles wat onduidelijk is
 
-#### Consolidate dependencies
+#### Consolideer afhankelijkheden
 
-Here is some code for a `http.HandlerFunc` to handle new user registrations for a website.
+Hier is wat code voor een `http.HandlerFunc` om nieuwe gebruikersregistraties voor een website af te handelen.
 
 ```go
 type User struct {
@@ -150,26 +151,26 @@ func NewRegistrationHandler(userStore UserStore, emailer Emailer) http.HandlerFu
 }
 ```
 
-At first pass it's reasonable to say the design isn't so bad. It only has 2 dependencies!
+Bij de eerste poging is het redelijk om te zeggen dat het ontwerp niet zo slecht is. Het heeft maar twee afhankelijkheden!
 
-Re-evaluate the design by considering the handler's responsibilities:
+Evalueer het ontwerp opnieuw door rekening te houden met de verantwoordelijkheden van de handler:
 
-- Parse the request body into a `User` :white_check_mark:
-- Use `UserStore` to check if the user exists :question:
-- Use `UserStore` to store the user :question:
-- Compose an email :question:
-- Use `Emailer` to send the email :question:
-- Return an appropriate http response, depending on success, errors, etc :white_check_mark:
+- Parseer de aanvraagbody naar een `User` :white_check_mark:
+- Gebruik `UserStore` om te controleren of de gebruiker bestaat :question:
+- Gebruik `UserStore` om de gebruiker op te slaan :question:
+- Stel een e-mail op :question:
+- Gebruik `Emailer` om de e-mail te verzenden :question:
+- Retourneer een passend http-antwoord, afhankelijk van succes, fouten, enz. :white_check_mark:
 
-To exercise this code, you're going to have to write many tests with varying degrees of test double setups, spies, etc
+Om deze code te gebruiken, moet je veel tests schrijven met verschillende niveaus van testdubbelconfiguraties, spionnen, enz.
 
-- What if the requirements expand? Translations for the emails? Sending an SMS confirmation too? Does it make sense to you that you have to change a HTTP handler to accommodate this change?
-- Does it feel right that the important rule of "we should send an email" resides within a HTTP handler?
-    - Why do you have to go through the ceremony of creating HTTP requests and reading responses to verify that rule?
+- Wat als de vereisten worden uitgebreid? Vertalingen voor de e-mails? Ook een sms-bevestiging versturen? Lijkt het je logisch dat je een HTTP-handler moet aanpassen om deze wijziging mogelijk te maken?
+- Voelt het goed dat de belangrijke regel "we moeten een e-mail sturen" zich in een HTTP-handler bevindt?
+- Waarom moet je de hele ceremonie van het aanmaken van HTTP-verzoeken en het lezen van reacties doorlopen om die regel te verifiëren?
 
-**Listen to your tests**. Writing tests for this code in a TDD fashion should quickly make you feel uncomfortable (or at least, make the lazy developer in you be annoyed). If it feels painful, stop and think.
+**Luister naar je tests**. Het schrijven van tests voor deze code op een TDD-manier zou je al snel een ongemakkelijk gevoel moeten geven (of in ieder geval de luie ontwikkelaar in jou geïrriteerd moeten maken). Als het pijnlijk aanvoelt, stop dan even en denk na.
 
-What if the design was like this instead?
+Wat als het ontwerp er in plaats daarvan zo uitzag?
 
 ```go
 type UserService interface {
@@ -185,24 +186,24 @@ func NewRegistrationHandler(userService UserService) http.HandlerFunc {
 }
 ```
 
-- Simple to test the handler ✅
-- Changes to the rules around registration are isolated away from HTTP, so they are also simpler to test ✅
+- Eenvoudig om de handler te testen ✅
+- Wijzigingen in de regels rondom registratie zijn geïsoleerd van HTTP, waardoor ze ook eenvoudiger te testen zijn ✅
 
-## Violating encapsulation
+## Inkapseling schenden
 
-Encapsulation is very important. There's a reason we don't make everything in a package exported (or public). We want coherent APIs with a small surface area to avoid tight coupling.
+Inkapseling is erg belangrijk. Er is een reden waarom we niet alles in een pakket exporteren (of openbaar maken). We willen coherente API's met een klein oppervlak om nauwe koppeling te voorkomen.
 
-People will sometimes be tempted to make a function or method public in order to test something. By doing this you make your design worse and send confusing messages to maintainers and users of your code.
+Mensen komen soms in de verleiding om een functie of methode openbaar te maken om iets te testen. Door dit te doen, verslechter je je ontwerp en stuur je verwarrende berichten naar beheerders en gebruikers van je code.
 
-A result of this can be developers trying to debug a test and then eventually realising the function being tested is _only called from tests_. Which is obviously **a terrible outcome, and a waste of time**.
+Een gevolg hiervan kan zijn dat ontwikkelaars een test proberen te debuggen en er uiteindelijk achter komen dat de geteste functie _alleen vanuit tests_ wordt aangeroepen. Wat natuurlijk **een vreselijke uitkomst en tijdverspilling** is.
 
-In Go, consider your default position for writing tests as _from the perspective of a consumer of your package_. You can make this a compile-time constraint by having your tests live in a test package e.g `package gocoin_test`. If you do this, you'll only have access to the exported members of the package so it won't be possible to couple yourself to implementation detail.
+Beschouw in Go je standaardpositie voor het schrijven van tests als _vanuit het perspectief van een gebruiker van je pakket_. Je kunt dit een compile-time beperking maken door je tests in een testpakket te plaatsen, bijvoorbeeld `package gocoin_test`. Als je dit doet, heb je alleen toegang tot de geëxporteerde leden van het pakket, waardoor het niet mogelijk is om jezelf te koppelen aan implementatiedetails.
 
-## Complicated table tests
+## Gecompliceerde tabeltests
 
-Table tests are a great way of exercising a number of different scenarios when the test setup is the same, and you only wish to vary the inputs.
+Tabeltests zijn een geweldige manier om een aantal verschillende scenario's te oefenen wanneer de testopstelling hetzelfde is en je alleen de invoer wilt variëren.
 
-_But_ they can be messy to read and understand when you try to shoehorn other kinds of tests under the name of having one, glorious table.
+_Maar_ ze kunnen lastig te lezen en te begrijpen zijn wanneer je andere soorten tests probeert te combineren onder de noemer van één fantastische tabel.
 
 ```go
 cases := []struct {
@@ -216,25 +217,25 @@ cases := []struct {
 }{}
 ```
 
-**Don't be afraid to break out of your table and write new tests** rather than adding new fields and booleans to the table `struct`.
+**Wees niet bang om je tabel te verlaten en nieuwe tests te schrijven** in plaats van nieuwe velden en booleans toe te voegen aan de tabel `struct`.
 
-A thing to bear in mind when writing software is,
+Een ding om in gedachten te houden bij het schrijven van software is:
 
-> [Simple is not easy](https://www.infoq.com/presentations/Simple-Made-Easy/)
+> [Eenvoudig is niet makkelijk](https://www.infoq.com/presentations/Simple-Made-Easy/)
 
-"Just" adding a field to a table might be easy, but it can make things far from simple.
+"Gewoon" een veld toevoegen aan een tabel is misschien makkelijk, maar het kan de zaken verre van eenvoudig maken.
 
-## Summary
+## Samenvatting
 
-Most problems with unit tests can normally be traced to:
+De meeste problemen met unit tests zijn normaal gesproken te wijten aan:
 
-- Developers not following the TDD process
-- Poor design
+- Ontwikkelaars die het TDD-proces niet volgen
+- Slecht ontwerp
 
-So, learn about good software design!
+Dus, leer over goed softwareontwerp!
 
-The good news is TDD can help you _improve your design skills_ because as stated in the beginning:
+Het goede nieuws is dat TDD je kan helpen _je ontwerpvaardigheden te verbeteren_, want zoals in het begin al werd gezegd:
 
-**TDD's main purpose is to provide feedback on your design.** For the millionth time, listen to your tests, they are reflecting your design back at you.
+**Het belangrijkste doel van TDD is om feedback te geven op je ontwerp.** Luister voor de miljoenste keer naar je tests, ze reflecteren je ontwerp.
 
-Be honest about the quality of your tests by listening to the feedback they give you, and you'll become a better developer for it.
+Wees eerlijk over de kwaliteit van je tests door te luisteren naar de feedback die ze je geven, en je zult er een betere ontwikkelaar door worden.
