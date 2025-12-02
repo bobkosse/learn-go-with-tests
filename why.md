@@ -1,115 +1,118 @@
-# Why unit tests and how to make them work for you
+# Waarom unittests en hoe je ze voor jou kunt laten werken
 
-[Here's a link to a video of me chatting about this topic](https://www.youtube.com/watch?v=Kwtit8ZEK7U)
+[Hier is een link naar een video waarin ik over dit onderwerp praat](https://www.youtube.com/watch?v=Kwtit8ZEK7U)
 
-If you're not into videos, here's wordy version of it.
+Als je niet van video's houdt, is hier de geschreven versie.
 
-## Software 
+## Software
 
-The promise of software is that it can change. This is why it is called _soft_ ware, it is malleable compared to hardware. A great engineering team should be an amazing asset to a company, writing systems that can evolve with a business to keep delivering value. 
+De belofte van software is dat het kan veranderen. Daarom heet het ook _software_; het is kneedbaar in vergelijking met hardware. Een geweldig engineeringteam zou een geweldige aanwinst voor een bedrijf moeten zijn, door systemen te schrijven die met het bedrijf mee kunnen evolueren om waarde te blijven leveren.
 
-So why are we so bad at it? How many projects do you hear about that outright fail? Or become "legacy" and have to be entirely re-written (and the re-writes often fail too!) 
+Dus waarom zijn we er zo slecht in? Hoeveel projecten hoor je wel eens over projecten die compleet mislukken? Of "legacy" worden en volledig herschreven moeten worden (en die herschrijvingen mislukken vaak ook!)?
 
-How does a software system "fail" anyway? Can't it just be changed until it's correct? That's what we're promised!
+Hoe kan een softwaresysteem überhaupt "falen"? Kan het niet gewoon aangepast worden totdat het correct is? Dat is wat ons beloofd wordt!
 
-A lot of people are choosing Go to build systems because it has made a number of choices which one hopes will make it more legacy-proof. 
+Veel mensen kiezen ervoor om systemen te bouwen omdat Go een aantal keuzes heeft gemaakt waarvan men hoopt dat ze het legacy-bestendiger maken.
 
-- Compared to my previous life of Scala where [I described how it has enough rope to hang yourself](http://www.quii.dev/Scala_-_Just_enough_rope_to_hang_yourself), Go has only 25 keywords and _a lot_ of systems can be built from the standard library and a few other small libraries. The hope is that with Go you can write code and come back to it in 6 months time and it'll still make sense.
-- The tooling in respect to testing, benchmarking, linting & shipping is first class compared to most alternatives.
-- The standard library is brilliant.
-- Very fast compilation speed for tight feedback loops
-- The Go backward compatibility promise. It looks like Go will get generics and other features in the future but the designers have promised that even Go code you wrote 5 years ago will still build. I literally spent weeks upgrading a project from Scala 2.8 to 2.10. 
+- Vergeleken met mijn vorige leven met Scala, waar [ik beschreef hoe het genoeg touw heeft om jezelf aan op te hangen](http://www.quii.dev/Scala_-_Just_enough_rope_to_hang_yourself), heeft Go slechts 25 trefwoorden en kunnen _veel_ systemen worden gebouwd met de standaardbibliotheek en een paar andere kleine bibliotheken. De hoop is dat je met Go code kunt schrijven en er over 6 maanden mee aan de slag kunt gaan en dat het dan nog steeds zinvol is.
+- De tooling met betrekking tot testen, benchmarken, linting en verzending is eersteklas vergeleken met de meeste alternatieven.
+- De standaardbibliotheek is briljant.
+- Zeer snelle compilatiesnelheid voor strakke feedbackloops.
+- De belofte van achterwaartse compatibiliteit met Go. Het lijkt erop dat Go in de toekomst generieke versies en andere functies krijgt, maar de ontwerpers hebben beloofd dat zelfs Go-code die je 5 jaar geleden schreef, nog steeds te compileren en bouwen is. Ik heb letterlijk wekenlang een project geüpgraded van Scala 2.8 naar 2.10.
 
-Even with all these great properties we can still make terrible systems, so we should look to the past and understand lessons in software engineering that apply no matter how shiny (or not) your language is.
+Zelfs met al deze geweldige eigenschappen kunnen we nog steeds vreselijke systemen maken, dus we moeten terugkijken naar het verleden en lessen in software engineering leren die van toepassing zijn, hoe briljant (of niet) je programmeertaal ook is.
 
-In 1974 a clever software engineer called [Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) wrote [Lehman's laws of software evolution](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution).
+In 1974 schreef een slimme software engineer genaamd [Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) [Lehman's laws of software evolution](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution].
 
-> The laws describe a balance between forces driving new developments on one hand, and forces that slow down progress on the other hand.
+> Deze wetten beschrijven een evenwicht tussen enerzijds krachten die nieuwe ontwikkelingen stimuleren en anderzijds krachten die de vooruitgang vertragen.
 
-These forces seem like important things to understand if we have any hope of not being in an endless cycle of shipping systems that turn into legacy and then get re-written over and over again.
+Het lijkt erop dat deze krachten belangrijk zijn om te begrijpen als we niet in een eindeloze cyclus willen belanden van systemen ontwikkelen die verouderd raken en vervolgens steeds opnieuw worden herschreven.
 
-## The Law of Continuous Change
+## De wet van continue verandering
 
-> Any software system used in the real-world must change or become less and less useful in the environment
+> Elk softwaresysteem dat in de praktijk wordt gebruikt, moet veranderen of wordt steeds minder bruikbaar in de omgeving.
 
-It feels obvious that a system _has_ to change or it becomes less useful but how often is this ignored? 
+Het lijkt vanzelfsprekend dat een systeem _moet_ veranderen of minder bruikbaar wordt, maar hoe vaak wordt dit genegeerd?
 
-Many teams are incentivised to deliver a project on a particular date and then move on to the next project. If the software is "lucky" there is at least some kind of hand-off to another set of individuals to maintain it, but they didn't write it of course. 
+Veel teams voelen zich geprikkeld om een project op een bepaalde datum op te leveren en vervolgens door te gaan naar het volgende project. Als de software "geluk" heeft, wordt het tenminste overgedragen aan een andere groep mensen om het te onderhouden, maar zij hebben het natuurlijk niet zelf geschreven.
 
-People often concern themselves with trying to pick a framework which will help them "deliver quickly" but not focusing on the longevity of the system in terms of how it needs to evolve.
+Mensen zijn vaak bezig met het kiezen van een framework dat hen helpt om "snel te leveren", maar richten zich niet op de levensduur van het systeem in termen van hoe het moet evolueren.
 
-Even if you're an incredible software engineer, you will still fall victim to not knowing the future needs of your system. As the business changes some of the brilliant code you wrote is now no longer relevant.
+Zelfs als je een geweldige software engineer bent, zul je nog steeds het slachtoffer worden van het niet kennen van de toekomstige behoeften van je systeem. Naarmate de business verandert, is een deel van de briljante code die je schreef nu niet meer relevant.
 
-Lehman was on a roll in the 70s because he gave us another law to chew on.
+Lehman was in de jaren 70 op dreef omdat hij ons een nieuwe wet gaf om over na te denken.
 
-## The Law of Increasing Complexity
+## De wet van toenemende complexiteit
 
-> As a system evolves, its complexity increases unless work is done to reduce it
+> Naarmate een systeem evolueert, neemt de complexiteit ervan toe, tenzij er wordt gewerkt aan het verminderen ervan.
 
-What he's saying here is we can't have software teams as blind feature factories, piling more and more features on to software in the hope it will survive in the long run. 
+Wat hij hier zegt, is dat we softwareteams niet als blinde functiefabrieken kunnen hebben, die steeds meer functies aan software toevoegen in de hoop dat het op de lange termijn zal overleven.
 
-We **have** to keep managing the complexity of the system as the knowledge of our domain changes. 
+We **moeten** de complexiteit van het systeem blijven beheren naarmate de kennis van ons domein verandert.
 
 ## Refactoring
 
-There are _many_ facets of software engineering that keeps software malleable, such as:
+Er zijn _vele_ facetten van software engineering die software flexibel houden, zoals:
 
-- Developer empowerment
-- Generally "good" code. Sensible separation of concerns, etc etc
-- Communication skills
-- Architecture
-- Observability
-- Deployability
-- Automated tests
-- Feedback loops
+- Empowerment van ontwikkelaars
+- Over het algemeen "goede" code. Verstandige scheiding van belangen, enz. enz.
+- Communicatievaardigheden
+- Architectuur
+- Observeerbaarheid
+- Implementeerbaarheid
+- Geautomatiseerde tests
+- Feedbackloops
 
-I am going to focus on refactoring. It's a phrase that gets thrown around a lot "we need to refactor this" - said to a developer on their first day of programming without a second thought. 
+Ik ga me richten op refactoring. Het is een veelgehoorde uitspraak "we moeten dit refactoren" - gezegd tegen een ontwikkelaar op zijn eerste dag als programmeur, zonder erbij na te denken.
 
-Where does the phrase come from? How is refactoring just different from writing code?
+Waar komt die uitspraak vandaan? Wat is het verschil tussen refactoring en het schrijven van code?
 
-I know that I and many others have _thought_ we were doing refactoring but we were mistaken
+Ik weet dat ik en vele anderen _dachten_ dat we refactoring deden, maar we hadden het mis.
 
-[Martin Fowler describes how people are getting it wrong](https://martinfowler.com/bliki/RefactoringMalapropism.html)
+[Martin Fowler beschrijft hoe mensen het verkeerd aanpakken](https://martinfowler.com/bliki/RefactoringMalapropism.html)
 
-> However the term "refactoring" is often used when it's not appropriate. If somebody talks about a system being broken for a couple of days while they are refactoring, you can be pretty sure they are not refactoring.
+> De term "refactoring" wordt heel vaak gebruikt wanneer deze niet van toepassing is. Als iemand tijdens het refactoren zegt dat een systeem een paar dagen kapot is, kun je er vrij zeker van zijn dat ze niet refactoren.
 
-So what is it?
+Dus wat is het dan?
 
-### Factorisation
+### Factorisatie
 
-When learning maths at school you probably learned about factorisation. Here's a very simple example
+Toen je op school wiskunde leerde, heb je waarschijnlijk al over factorisatie geleerd. Hier is een heel eenvoudig voorbeeld:
 
-Calculate `1/2 + 1/4`
+Bereken `1/2 + 1/4`
 
-To do this you _factorise_ the denominators, turning the expression into 
+Om dit te doen, _ontbind (factorise)_ je de noemers, waardoor de uitdrukking verandert in
 
-`2/4 + 1/4` which you can then turn into `3/4`. 
+`2/4 + 1/4`, wat je vervolgens kunt omzetten in `3/4`.
 
-We can take some important lessons from this. When we _factorise the expression_ we have **not changed the meaning of the expression**. Both of them equal `3/4` but we have made it easier for us to work with; by changing `1/2` to `2/4` it fits into our "domain" easier. 
+We kunnen hieruit een aantal belangrijke lessen trekken. Wanneer we deze expressie _factoriseren_, hebben we **de betekenis van de uitdrukking niet veranderd**. Beide zijn gelijk aan `3/4`, maar we hebben het wel makkelijker gemaakt om ermee te werken; door `1/2` te veranderen in `2/4` past het beter in ons "domein".
 
-When you refactor your code, you are trying to find ways of making your code easier to understand and "fit" into your current understanding of what the system needs to do. Crucially **you should not be changing behaviour**. 
+Wanneer je je code refactored, probeer je manieren te vinden om je code begrijpelijker te maken en te "passen" bij je huidige begrip van wat het systeem moet doen. Cruciaal is **dat je het gedrag niet moet veranderen**.
 
-#### An example in Go
+#### Een voorbeeld in Go
 
-Here is a function which greets `name` in a particular `language`
+Hier is een functie die `naam` in een bepaalde `taal` begroet
 
+```go
     func Hello(name, language string) string {
-    
+
       if language == "es" {
          return "Hola, " + name
       }
-    
+
       if language == "fr" {
          return "Bonjour, " + name
       }
-      
+
       // imagine dozens more languages
-    
+
       return "Hello, " + name
     }
+```
 
-Having dozens of `if` statements doesn't feel good and we have a duplication of concatenating a language specific greeting with `, ` and the `name.` So I'll refactor the code.
+Het voelt niet prettig om tientallen `if`-instructies te hebben en we krijgen een duplicatie van het samenvoegen van een taalspecifieke begroeting met `, ` en de `name.` Daarom ga je de code herstructureren.
 
+```go
     func Hello(name, language string) string {
       	return fmt.Sprintf(
       		"%s, %s",
@@ -117,175 +120,179 @@ Having dozens of `if` statements doesn't feel good and we have a duplication of 
       		name,
       	)
     }
-    
+
     var greetings = map[string]string {
       "es": "Hola",
       "fr": "Bonjour",
       //etc..
     }
-    
+
     func greeting(language string) string {
       greeting, exists := greetings[language]
-      
+
       if exists {
          return greeting
       }
-      
+
       return "Hello"
     }
+```
 
-The nature of this refactor isn't actually important, what's important is I haven't changed behaviour. 
+De aard van deze refactoring is eigenlijk niet belangrijk, wat belangrijk is, is dat ik het gedrag niet heb veranderd.
 
-When refactoring you can do whatever you like, add interfaces, new types, functions, methods etc. The only rule is you don't change behaviour
+Bij refactoring kun je doen wat je wilt: interfaces, nieuwe typen, functies, methoden, enz. toevoegen. De enige regel is dat je het gedrag niet verandert.
 
-### When refactoring code you must not be changing behaviour
+### Bij het refactoren van code mag je het gedrag niet veranderen
 
-This is very important. If you are changing behaviour at the same time you are doing _two_ things at once. As software engineers we learn to break systems up into different files/packages/functions/etc because we know trying to understand a big blob of stuff is hard. 
+Dit is erg belangrijk. Als je tegelijkertijd het gedrag verandert, doe je _twee_ dingen tegelijk. Als software engineers leren we systemen op te splitsen in verschillende bestanden/pakketten/functies/enz., omdat we weten dat het moeilijk is om een grote hoeveelheid informatie te begrijpen.
 
-We don't want to have to be thinking about lots of things at once because that's when we make mistakes. I've witnessed so many refactoring endeavours fail because the developers are biting off more than they can chew.  
+We willen niet aan veel dingen tegelijk hoeven te denken, want dan maken we fouten. Ik heb zoveel refactoring-pogingen zien mislukken omdat ontwikkelaars te veel hooi op hun vork nemen.
 
-When I was doing factorisations in maths classes with pen and paper I would have to manually check that I hadn't changed the meaning of the expressions in my head. How do we know we aren't changing behaviour when refactoring when working with code, especially on a system that is non-trivial?
+Toen ik in wiskundelessen factorisaties deed met pen en papier, moest ik handmatig controleren of ik de betekenis van de uitdrukkingen in mijn hoofd niet had veranderd. Hoe weten we dat we het gedrag niet veranderen tijdens het refactoren van code, vooral op een systeem dat niet triviaal is?
 
-Those who choose not to write tests will typically be reliant on manual testing. For anything other than a small project this will be a tremendous time-sink and does not scale in the long run. 
- 
-**In order to safely refactor you need unit tests** because they provide
+Degenen die ervoor kiezen om geen tests te schrijven, zijn doorgaans afhankelijk van handmatige tests. Voor projecten die niet klein zijn, is dit enorm tijdrovend en op de lange termijn is het niet schaalbaar.
 
-- Confidence you can reshape code without worrying about changing behaviour
-- Documentation for humans as to how the system should behave
-- Much faster and more reliable feedback than manual testing
+**Om veilig te kunnen refactoren heb je unittests nodig** omdat ze zorgen voor:
 
-#### An example in Go
+- Het vertrouwen dat je code kunt aanpassen zonder je zorgen te maken over gedragsverandering
+- Documentatie voor mensen over hoe het systeem zich zou moeten gedragen
+- Veel snellere en betrouwbaardere feedback dan handmatig testen
 
-A unit test for our `Hello` function could look like this
+#### Een voorbeeld in Go
+
+Een unittest voor onze `Hello`-functie zou er zo uit kunnen zien
+
+```go
 
     func TestHello(t *testing.T) {
       got := Hello(“Chris”, es)
       want := "Hola, Chris"
-    
+
       if got != want {
          t.Errorf("got %q want %q", got, want)
       }
     }
+```
 
-At the command line I can run `go test` and get immediate feedback as to whether my refactoring efforts have altered behaviour. In practice it's best to learn the magic button to run your tests within your editor/IDE. 
+Op de opdrachtregel kan ik `go test` uitvoeren en direct feedback krijgen of mijn refactoring-inspanningen het gedrag hebben veranderd. In de praktijk is het het beste om de magische knop te leren om je tests binnen je editor/IDE uit te voeren.
 
-You want to get in to a state where you are doing 
+Je wilt in een staat komen waarin je bezig bent met
 
-- Small refactor
-- Run tests
-- Repeat
+- Kleine refactoring
+- Tests uitvoeren
+- Herhalen
 
-All within a very tight feedback loop so you don't go down rabbit holes and make mistakes.
+Alles binnen een zeer strakke feedbacklus, zodat je niet in een valkuil terechtkomt en fouten maakt.
 
-Having a project where all your key behaviours are unit tested and give you feedback well under a second is a very empowering safety net to do bold refactoring when you need to. This helps us manage the incoming force of complexity that Lehman describes.
+Een project waarbij al je belangrijkste gedragingen unit-tests ondergaan en je ruim binnen een seconde feedback krijgt, is een zeer krachtig vangnet om gedurfde refactoring uit te voeren wanneer dat nodig is. Dit helpt ons de binnenkomende complexiteit, zoals Lehman het beschrijft, te beheersen.
 
-## If unit tests are so great, why is there sometimes resistance to writing them?
+## Als unit tests zo geweldig zijn, waarom is er dan soms weerstand tegen het schrijven ervan?
 
-On the one hand you have people (like me) saying that unit tests are important for the long term health of your system because they ensure you can keep refactoring with confidence. 
+Aan de ene kant heb je mensen (zoals ik) die zeggen dat unit tests belangrijk zijn voor de gezondheid van je systeem op de lange termijn, omdat ze ervoor zorgen dat je met vertrouwen kunt blijven refactoren.
 
-On the other you have people describing experiences of unit tests actually _hindering_ refactoring.
+Aan de andere kant heb je mensen die ervaringen beschrijven waarin unit tests refactoring juist _belemmerden_.
 
-Ask yourself, how often do you have to change your tests when refactoring? Over the years I have been on many projects with very good test coverage and yet the engineers are reluctant to refactor because of the perceived effort of changing tests.
+Vraag jezelf af: hoe vaak moet je je tests aanpassen tijdens het refactoren? In de loop der jaren heb ik aan veel projecten gewerkt met een zeer goede testdekking, maar toch aarzelen de engineers om te refactoren vanwege de vermeende inspanning die het aanpassen van tests met zich meebrengt.
 
-This is the opposite of what we are promised!
+Dit is het tegenovergestelde van wat ons beloofd is!
 
-### Why is this happening?
+### Waarom gebeurt dit?
 
-Imagine you were asked to develop a square and we thought the best way to accomplish that would be stick two triangles together. 
+Stel je voor dat je gevraagd wordt een vierkant te ontwerpen en wij denken dat de beste manier om dat te bereiken is door twee driehoeken aan elkaar te plakken.
 
-![Two right-angled triangles to form a square](https://i.imgur.com/ela7SVf.jpg)
+![Twee rechthoekige driehoeken om een ​​vierkant te vormen](https://i.imgur.com/ela7SVf.jpg)
 
-We write our unit tests around our square to make sure the sides are equal and then we write some tests around our triangles. We want to make sure our triangles render correctly so we assert that the angles sum up to 180 degrees, perhaps check we make 2 of them, etc etc. Test coverage is really important and writing these tests is pretty easy so why not? 
+We schrijven onze unit tests rond ons vierkant om er zeker van te zijn dat de zijden gelijk zijn en vervolgens schrijven we een aantal tests rond onze driehoeken. We willen er zeker van zijn dat onze driehoeken correct worden weergegeven, dus we stellen dat de hoeken samen 180 graden zijn, controleren misschien of we er 2 maken, enz. enz. Testdekking is erg belangrijk en het schrijven van deze tests is vrij eenvoudig, dus waarom niet?
 
-A few weeks later The Law of Continuous Change strikes our system and a new developer makes some changes. She now believes it would be better if squares were formed with 2 rectangles instead of 2 triangles. 
+Een paar weken later slaat de Wet van Continue Verandering toe in ons systeem en een nieuwe ontwikkelaar brengt een aantal wijzigingen aan. Ze gelooft nu dat het beter zou zijn als vierkanten worden gevormd met 2 rechthoeken in plaats van 2 driehoeken.
 
-![Two rectangles to form a square](https://i.imgur.com/1G6rYqD.jpg)
+![Twee rechthoeken vormen een vierkant](https://i.imgur.com/1G6rYqD.jpg)
 
-She tries to do this refactor and gets mixed signals from a number of failing tests. Has she actually broken important behaviours here? She now has to dig through these triangle tests and try and understand what's going on. 
+Ze probeert deze refactoring uit te voeren en krijgt gemengde signalen van een aantal mislukte tests. Heeft ze hier daadwerkelijk belangrijke gedragingen overtreden? Ze moet nu deze driehoektests doorspitten en proberen te begrijpen wat er aan de hand is.
 
-_It's not actually important that the square was formed out of triangles_ but **our tests have falsely elevated the importance of our implementation details**. 
+_Het is niet echt belangrijk dat het vierkant uit driehoeken is gevormd_, maar **onze tests hebben het belang van onze implementatiedetails ten onrechte vergroot**.
 
-## Favour testing behaviour rather than implementation detail
+## Geef de voorkeur aan testgedrag boven implementatiedetails
 
-When I hear people complaining about unit tests it is often because the tests are at the wrong abstraction level. They're testing implementation details, overly spying on collaborators and mocking too much. 
+Als ik mensen hoor klagen over unittests, komt dat vaak doordat de tests zich op het verkeerde abstractieniveau bevinden. Ze testen implementatiedetails, bespioneren te veel en gebruiken teveel mocks.
 
-I believe it stems from a misunderstanding of what unit tests are and chasing vanity metrics (test coverage). 
+Ik denk dat dit voortkomt uit een verkeerd begrip van wat unittests zijn en het najagen van ijdele metrics (testdekking).
 
-If I am saying just test behaviour, should we not just only write system/black-box tests? These kind of tests do have lots of value in terms of verifying key user journeys but they are typically expensive to write and slow to run. For that reason they're not too helpful for _refactoring_ because the feedback loop is slow. In addition black box tests don't tend to help you very much with root causes compared to unit tests. 
+Als ik zeg dat het alleen om testgedrag gaat, moeten we dan niet gewoon alleen systeem-/black-boxtests schrijven? Dit soort tests zijn zeer waardevol voor het verifiëren van de belangrijkste gebruikerservaringen, maar ze zijn meestal duur om te schrijven en traag in uitvoering. Daarom zijn ze niet erg nuttig voor _refactoring_, omdat de feedbacklus traag is. Bovendien helpen black-boxtests je over het algemeen niet veel met het vinden van root causes in vergelijking met unittests.
 
-So what _is_ the right abstraction level?
+Dus wat _is_ het juiste abstractieniveau?
 
-## Writing effective unit tests is a design problem
+## Het schrijven van effectieve unittests is een ontwerpprobleem
 
-Forgetting about tests for a moment, it is desirable to have within your system self-contained, decoupled "units" centered around key concepts in your domain. 
+Laat ik de tests even buiten beschouwing: het is wenselijk om binnen je systeem zelfstandige, losgekoppelde "units" te hebben die gecentreerd zijn rond sleutelconcepten in je domein.
 
-I like to imagine these units as simple Lego bricks which have coherent APIs that I can combine with other bricks to make bigger systems. Underneath these APIs there could be dozens of things (types, functions et al) collaborating to make them work how they need to.
+Ik stel me deze units graag voor als simpele Legoblokjes met coherente API's die ik kan combineren met andere blokjes om grotere systemen te maken. Onder deze API's kunnen tientallen dingen (typen, functies, enzovoort) samenwerken om ze te laten werken zoals ze moeten.
 
-For instance if you were writing a bank in Go, you might have an "account" package. It will present an API that does not leak implementation detail and is easy to integrate with.
+Als je bijvoorbeeld een bank in Go schrijft, zou je een "account"-pakket kunnen hebben. Dit presenteert een API die geen implementatiedetails lekt en eenvoudig te integreren is.
 
-If you have these units that follow these properties you can write unit tests against their public APIs. _By definition_ these tests can only be testing useful behaviour. Underneath these units I am free to refactor the implementation as much as I need to and the tests for the most part should not get in the way.
+Als je deze units hebt die aan deze eigenschappen voldoen, kun je unittests schrijven tegen hun publieke API's. _Per definitie_ kunnen deze tests alleen nuttig gedrag testen. Onder deze units ben ik vrij om de implementatie zo vaak te refactoren als nodig is en de tests zouden over het algemeen niet in de weg moeten zitten.
 
-### Are these unit tests?
+### Zijn dit unittests?
 
-**YES**. Unit tests are against "units" like I described. They were _never_ about only being against a single class/function/whatever.
+**JA**. Unittests zijn gericht tegen "units" zoals ik al zei. Ze gingen _nooit_ alleen over het testen tegen één klasse/functie/wat dan ook.
 
-## Bringing these concepts together
+## Deze concepten samenbrengen
 
-We've covered
+We hebben het gehad over
 
 - Refactoring
-- Unit tests
-- Unit design
+- Unittests
+- Unitontwerp
 
-What we can start to see is that these facets of software design reinforce each other. 
+Wat we beginnen te zien, is dat deze facetten van softwareontwerp elkaar versterken.
 
 ### Refactoring
 
-- Gives us signals about our unit tests. If we have to do manual checks, we need more tests. If tests are wrongly failing then our tests are at the wrong abstraction level (or have no value and should be deleted).
-- Helps us handle the complexities within and between our units.
+- Geeft ons signalen over onze unittests. Als we handmatige controles moeten uitvoeren, hebben we meer tests nodig. Als tests ten onrechte falen, bevinden onze tests zich op het verkeerde abstractieniveau (of hebben ze geen waarde en moeten ze worden verwijderd).
+- Helpt ons de complexiteit binnen en tussen onze units te beheersen.
 
 ### Unit tests
 
-- Give a safety net to refactor.
-- Verify and document the behaviour of our units.
+- Bieden een vangnet voor refactoren.
+- Verifieren en documenteren het gedrag van onze units.
 
-### (Well designed) units
+### (Goed ontworpen) units
 
-- Easy to write _meaningful_ unit tests.
-- Easy to refactor.
+- Gemakkelijk om zinvolle unit tests voor te schrijven.
+- Gemakkelijk te refactoren.
 
-Is there a process to help us arrive at a point where we can constantly refactor our code to manage complexity and keep our systems malleable?
+Bestaat er een proces dat ons helpt om onze code continu te refactoren om de complexiteit te beheersen en onze systemen flexibel te houden?
 
-## Why Test Driven Development (TDD)
+## Waarom Test Driven Development (TDD)
 
-Some people might take Lehman's quotes about how software has to change and overthink elaborate designs, wasting lots of time upfront trying to create the "perfect" extensible system and end up getting it wrong and going nowhere. 
+Sommige mensen nemen Lehmans citaten over hoe software moet veranderen en denken te veel na over uitgebreide ontwerpen, waardoor ze veel tijd verspillen aan het proberen te creëren van het "perfecte" uitbreidbare systeem, maar uiteindelijk de fout ingaan en nergens komen.
 
-This is the bad old days of software where an analyst team would spend 6 months writing a requirements document and an architect team would spend another 6 months coming up with a design and a few years later the whole project fails.
+Dit zijn de slechte oude tijden van software, waarin een analistenteam 6 maanden besteedde aan het schrijven van een requirementsdocument en een architectenteam nog eens 6 maanden aan het bedenken van een ontwerp, en een paar jaar later het hele project mislukte.
 
-I say bad old days but this still happens! 
+Ik zeg slechte oude tijden, maar dit gebeurt nog steeds!
 
-Agile teaches us that we need to work iteratively, starting small and evolving the software so that we get fast feedback on the design of our software and how it works with real users;  TDD enforces this approach.
+Agile leert ons dat we iteratief moeten werken, klein moeten beginnen en de software moeten doorontwikkelen, zodat we snel feedback krijgen op het ontwerp van onze software en hoe deze werkt met echte gebruikers; TDD dwingt deze aanpak af.
 
-TDD addresses the laws that Lehman talks about and other lessons hard learned through history by encouraging a methodology of constantly refactoring and delivering iteratively.
+TDD pakt de wetten aan waar Lehman het over heeft en andere lessen die we door de geschiedenis heen hebben geleerd, door een methodologie aan te moedigen van constant refactoren en iteratief leveren.
 
-### Small steps
+### Kleine stapjes
 
-- Write a small test for a small amount of desired behaviour
-- Check the test fails with a clear error (red)
-- Write the minimal amount of code to make the test pass (green)
+- Schrijf een kleine test voor een kleine hoeveelheid gewenst gedrag
+- Controleer of de test mislukt met een duidelijke fout (rood)
+- Schrijf de minimale hoeveelheid code om de test te laten slagen (groen)
 - Refactor
-- Repeat
+- Herhaal
 
-As you become proficient, this way of working will become natural and fast.
+Naarmate je bedrevener wordt, zal deze manier van werken natuurlijk en snel worden.
 
-You'll come to expect this feedback loop to not take very long and feel uneasy if you're in a state where the system isn't "green" because it indicates you may be down a rabbit hole. 
+Je zult verwachten dat deze feedbacklus niet erg lang duurt en je zult je ongemakkelijk voelen als je in een staat verkeert waarin het systeem niet "groen" is, omdat dit aangeeft dat je mogelijk in een konijnenhol terecht bent gekomen.
 
-You'll always be driving small & useful functionality comfortably backed by the feedback from your tests.
+Je zult altijd kleine en nuttige functionaliteit ontwikkelen, ondersteund door de feedback van je tests.
 
-## Wrapping up 
+## Samenvattend
 
-- The strength of software is that we can change it. _Most_ software will require change over time in unpredictable ways; but don't try and over-engineer because it's too hard to predict the future.
-- Instead we need to make it so we can keep our software malleable. In order to change software we have to refactor it as it evolves or it will turn into a mess
-- A good test suite can help you refactor quicker and in a less stressful manner
-- Writing good unit tests is a design problem so think about structuring your code so you have meaningful units that you can integrate together like Lego bricks.
-- TDD can help and force you to design well factored software iteratively, backed by tests to help future work as it arrives.
+- De kracht van software is dat we het kunnen veranderen. _De meeste_ software zal in de loop der tijd op onvoorspelbare manieren moeten worden aangepast; maar probeer niet te over-engineeren, want het is te moeilijk om de toekomst te voorspellen.
+- In plaats daarvan moeten we het zo maken dat we onze software kneedbaar kunnen houden. Om software te veranderen, moeten we deze refactoren naarmate deze evolueert, anders wordt het een puinhoop.
+- Een goede testsuite kan je helpen om sneller en minder stressvol te refactoren.
+- Het schrijven van goede unit tests is een ontwerpprobleem, dus denk na over het structureren van je code zodat je zinvolle units hebt die je als legoblokjes kunt integreren.
+- TDD kan je helpen en dwingen om goed gefactoreerde software iteratief te ontwerpen, ondersteund door tests om toekomstig werk te ondersteunen zodra het beschikbaar is.
