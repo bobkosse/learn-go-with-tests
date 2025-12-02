@@ -48,7 +48,7 @@
 * [OS Exec](vragen-en-antwoorden/os-exec.md)
 * [Fout types](vragen-en-antwoorden/error-types.md)
 * [Context-aware Reader](vragen-en-antwoorden/context-aware-reader.md)
-* [Revisiting HTTP Handlers](vragen-en-antwoorden/http-handlers-revisited.md)
+* [HTTP Handlers Herzien](vragen-en-antwoorden/http-handlers-revisited.md)
 
 ## Meta
 
