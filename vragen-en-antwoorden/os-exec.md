@@ -1,23 +1,23 @@
 # OS Exec
 
-[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/os-exec)
+[**Je kunt alle code voor dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/os-exec)
 
-[keith6014](https://www.reddit.com/user/keith6014) asks on [reddit](https://www.reddit.com/r/golang/comments/aaz8ji/testdata_and_function_setup_help/)
+[keith6014](https://www.reddit.com/user/keith6014) vraagt op [reddit](https://www.reddit.com/r/golang/comments/aaz8ji/testdata_and_function_setup_help/)
 
-> I am executing a command using os/exec.Command() which generated XML data. The command will be executed in a function called GetData().
+> Ik voer een opdracht uit met os/exec.Command() die XML-gegevens genereert. De opdracht wordt uitgevoerd in een functie genaamd GetData().
 
-> In order to test GetData(), I have some testdata which I created.
+> Om GetData() te testen, heb ik wat testgegevens aangemaakt.
 
-> In my \_test.go I have a TestGetData which calls GetData() but that will use os.exec, instead I would like for it to use my testdata.
+> In mijn \_test.go heb ik een TestGetData die GetData() aanroept, maar die os.exec gebruikt. Ik wil in plaats daarvan mijn testgegevens gebruiken.
 
-> What is a good way to achieve this? When calling GetData should I have a "test" flag mode so it will read a file ie GetData(mode string)?
+> Wat is een goede manier om dit te bereiken? Moet ik bij het aanroepen van GetData een "test"-vlagmodus gebruiken, zodat het een bestand leest, bijvoorbeeld GetData(mode string)?
 
-A few things
+Een paar dingen
 
-* When something is difficult to test, it's often due to the separation of concerns not being quite right
-* Don't add "test modes" into your code, instead use [Dependency Injection](../basisbeginselen-go/dependency-injection.md) so that you can model your dependencies and separate concerns.
+* Als iets moeilijk te testen is, komt dat vaak doordat de scheiding van aandachtspunten niet helemaal klopt.
+* Voeg geen "testmodi" toe aan je code, maar gebruik in plaats daarvan [Dependency Injection](../basisbeginselen-go/dependency-injection.md) zodat je je afhankelijkheden kunt modelleren en aandachtspunten kunt scheiden.
 
-I have taken the liberty of guessing what the code might look like
+Ik heb de vrijheid genomen om te raden hoe de code eruit zou kunnen zien.
 
 ```go
 type Payload struct {
@@ -40,12 +40,12 @@ func GetData() string {
 }
 ```
 
-* It uses `exec.Command` which allows you to execute an external command to the process
-* We capture the output in `cmd.StdoutPipe` which returns us a `io.ReadCloser` (this will become important)
-* The rest of the code is more or less copy and pasted from the [excellent documentation](https://golang.org/pkg/os/exec/#example_Cmd_StdoutPipe).
-  * We capture any output from stdout into an `io.ReadCloser` and then we `Start` the command and then wait for all the data to be read by calling `Wait`. In between those two calls we decode the data into our `Payload` struct.
+* Het gebruikt `exec.Command`, waarmee je een externe opdracht aan het proces kunt uitvoeren.
+* We vangen de uitvoer op in `cmd.StdoutPipe`, wat ons een `io.ReadCloser` retourneert (dit wordt belangrijk).
+* De rest van de code is min of meer gekopieerd en geplakt uit de [uitstekende documentatie](https://golang.org/pkg/os/exec/#example_Cmd_StdoutPipe).
+* We vangen alle uitvoer van stdout op in een `io.ReadCloser`, waarna we de opdracht `Starten` en wachten tot alle gegevens zijn gelezen door `Wait` aan te roepen. Tussen deze twee aanroepen decoderen we de gegevens in onze `Payload`-struct.
 
-Here is what is contained inside `msg.xml`
+Dit is wat er in `msg.xml` staat.
 
 ```xml
 <payload>
@@ -53,7 +53,7 @@ Here is what is contained inside `msg.xml`
 </payload>
 ```
 
-I wrote a simple test to show it in action
+Ik heb een eenvoudige test geschreven om het in de praktijk te laten zien
 
 ```go
 func TestGetData(t *testing.T) {
@@ -66,22 +66,22 @@ func TestGetData(t *testing.T) {
 }
 ```
 
-## Testable code
+## Testbare code
 
-Testable code is decoupled and single purpose. To me it feels like there are two main concerns for this code
+Testbare code is ontkoppeld en heeft één doel. Het voelt alsof er twee hoofddoelen zijn voor deze code:
 
-1. Retrieving the raw XML data
-2. Decoding the XML data and applying our business logic (in this case `strings.ToUpper` on the `<message>`)
+1. Het ophalen van de ruwe XML-gegevens
+2. Het decoderen van de XML-gegevens en het toepassen van onze bedrijfslogica (in dit geval `strings.ToUpper` op `<bericht>`)
 
-The first part is just copying the example from the standard lib.
+Het eerste deel is gewoon het kopiëren van het voorbeeld uit de standaardbibliotheek.
 
-The second part is where we have our business logic and by looking at the code we can see where the "seam" in our logic starts; it's where we get our `io.ReadCloser`. We can use this existing abstraction to separate concerns and make our code testable.
+Het tweede deel is waar onze bedrijfslogica staat en door naar de code te kijken, kunnen we zien waar de "naad" in onze logica begint; daar krijgen we onze `io.ReadCloser`. We kunnen deze bestaande abstractie gebruiken om aandachtspunten te scheiden en onze code testbaar te maken.
 
-**The problem with GetData is the business logic is coupled with the means of getting the XML. To make our design better we need to decouple them**
+**Het probleem met GetData is dat de bedrijfslogica gekoppeld is aan de manier waarop de XML wordt opgehaald. Om ons ontwerp te verbeteren, moeten we ze ontkoppelen**
 
-Our `TestGetData` can act as our integration test between our two concerns so we'll keep hold of that to make sure it keeps working.
+Onze `TestGetData` kan dienen als onze integratietest tussen onze twee aandachtspunten, dus we zullen die bewaren om ervoor te zorgen dat hij blijft werken.
 
-Here is what the newly separated code looks like
+Dit is hoe de nieuw gescheiden code eruit ziet
 
 ```go
 type Payload struct {
@@ -115,7 +115,7 @@ func TestGetDataIntegration(t *testing.T) {
 }
 ```
 
-Now that `GetData` takes its input from just an `io.Reader` we have made it testable and it is no longer concerned how the data is retrieved; people can re-use the function with anything that returns an `io.Reader` (which is extremely common). For example we could start fetching the XML from a URL instead of the command line.
+Nu `GetData` zijn invoer alleen van een `io.Reader` haalt, hebben we het testbaar gemaakt en maakt het zich niet langer druk om hoe de gegevens worden opgehaald; mensen kunnen de functie hergebruiken met alles wat een `io.Reader` retourneert (wat heel gebruikelijk is). We zouden bijvoorbeeld de XML kunnen ophalen via een URL in plaats van de opdrachtregel.
 
 ```go
 func TestGetData(t *testing.T) {
@@ -134,6 +134,6 @@ func TestGetData(t *testing.T) {
 
 ```
 
-Here is an example of a unit test for `GetData`.
+Hier is een voorbeeld van een unittest voor `GetData`.
 
-By separating the concerns and using existing abstractions within Go testing our important business logic is a breeze.
+Door de aandachtspunten te scheiden en bestaande abstracties binnen Go te gebruiken, is onze belangrijke bedrijfslogica een fluitje van een cent.
