@@ -53,6 +53,6 @@
 ## Meta
 
 * [Waarom unittests en hoe je ze voor je kunt laten werken](why.md)
-* [Anti-patterns](anti-patterns.md)
+* [Anti-patronen](anti-patterns.md)
 * [Bijdragen](contributing.md)
 * [Hoofdstuk Template](template.md)
