@@ -1,34 +1,34 @@
-# Contributing
+# Bijdragen
 
-Contributions are very welcome. I hope for this to become a great home for guides of how to learn Go by writing tests. Consider submitting a PR or creating an issue which you can do [here](https://github.com/quii/learn-go-with-tests/issues).
+Bijdragen zijn van harte welkom. Ik hoop dat dit een geweldige plek wordt voor handleidingen over hoe je Go kunt leren door tests te schrijven. Overweeg om een PR in te dienen of een issue aan te maken, wat je [hier](https://github.com/quii/learn-go-with-tests/issues) kunt doen.
 
-## What we're looking for
+## Wat we zoeken
 
-* Teaching Go features \(e.g things like `if`, `select`, structs, methods, etc\).
-* Showcase interesting functionality within the standard library. Show off how easy it is to TDD a HTTP server for instance.
-* Show how Go's tooling, like benchmarking, race detectors, etc can help you arrive at great software.
+* Go-functies aanleren (bijv. dingen zoals `if`, `select`, structs, methoden, enz.).
+* Interessante functionaliteit binnen de standaardbibliotheek laten zien. Laat bijvoorbeeld zien hoe gemakkelijk het is om een HTTP-server te TDD'en.
+* Laat zien hoe Go's tooling, zoals benchmarking, racedetectoren, enz. je kunnen helpen bij het ontwikkelen van geweldige software.
 
-If you don't feel confident to submit your own guide, submitting an issue for something you want to learn is still a valuable contribution.
+Als je je niet zeker genoeg voelt om je eigen handleiding in te dienen, is het indienen van een issue voor iets wat je wilt leren nog steeds een waardevolle bijdrage.
 
-### ⚠️ Get feedback quickly for new content ⚠️
+### ⚠️ Krijg snel feedback op nieuwe content ⚠️
 
-- TDD teaches us to work iteratively and get feedback and I strongly suggest you do the same if you wish to contribute
-    - Open a PR with your first test and implementation, discuss your approach so I can offer feedback and course correct
-- This is of course open-source but I do have strong opinions on the content. The sooner you talk to me the better.
+- TDD leert ons om iteratief te werken en feedback te krijgen, en ik raad je ten zeerste aan hetzelfde te doen als je wilt bijdragen.
+- Open een PR met je eerste test en implementatie, bespreek je aanpak zodat ik feedback kan geven en bij kan sturen.
+- Dit is natuurlijk open source, maar ik heb wel een uitgesproken mening over de content. Hoe eerder je met me praat, hoe beter.
 
-## Style guide
+## Stijlgids
 
-* Always be reinforcing the TDD cycle. Take a look at the [Chapter Template](template.md).
-* Emphasis on iterating over functionality driven by tests. The Hello, world example works well because we gradually make it more sophisticated and learning new techniques _driven_ by the tests. For example:
-  * `Hello()` &lt;- how to write functions, return types.
-  * `Hello(name string)` &lt;- arguments, constants.
-  * `Hello(name string)` &lt;- default to "world" using `if`.
-  * `Hello(name, language string)` &lt;- `switch`.
-* Try and minimise the surface area of required knowledge.
-  * Thinking of examples that showcase what you're trying to teach without confusing the reader with other features is important.
-  * For example you can learn about `struct`s without understanding pointers.
-  * Brevity is king.
-* Follow the [Code Review Comments style guide](https://go.dev/wiki/CodeReviewComments). It's important for a consistent style across all the sections.
-* Your section should have a runnable application at the end \(e.g `package main` with a `main` func\) so users can see it in action and play with it.
-* All tests should pass.
-* Run `./build.sh` before raising PR.
+* Blijf de TDD-cyclus benadrukken. Bekijk de [Hoofdstuksjabloon](template.md).
+* De nadruk ligt op iteratie over functionaliteit die door tests wordt aangestuurd. Het Hello, world-voorbeeld werkt goed omdat we het geleidelijk aan geavanceerder maken en nieuwe technieken leren die door de tests worden aangestuurd. Bijvoorbeeld:
+  * `Hello()` &lt;- hoe je functies en retourtypen schrijft.
+  * `Hello(naam string)` &lt;- argumenten, constanten.
+  * `Hello(naam string)` &lt;- standaard "world" met `if`.
+  * `Hello(naam, taal string)` &lt;- `switch`.
+* Probeer de oppervlakte van de vereiste kennis te minimaliseren.
+  * Het is belangrijk om voorbeelden te bedenken die laten zien wat je probeert te onderwijzen zonder de lezer te verwarren met andere functies.
+  * Je kunt bijvoorbeeld `struct`s leren zonder pointers te begrijpen.
+  * Beknoptheid is koning.
+* Volg de [Code Review Comments style guide](https://go.dev/wiki/CodeReviewComments). Dit is belangrijk voor een consistente stijl in alle secties.
+* Je sectie moet een uitvoerbare applicatie aan het einde hebben (bijv. `package main` met een `main`-functie) zodat gebruikers deze in actie kunnen zien en ermee kunnen spelen.
+* Alle tests moeten slagen.
+* Voer `./build.sh` uit voordat je de PR genereert.
