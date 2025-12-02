@@ -39,7 +39,7 @@
 * [HTTP server](bouw-een-applicatie/http-server.md)
 * [JSON, routing en embedding](bouw-een-applicatie/json.md)
 * [IO en sorteren](bouw-een-applicatie/io.md)
-* [Command line & package structure](bouw-een-applicatie/command-line.md)
+* [Command line & pakket structuur](bouw-een-applicatie/command-line.md)
 * [Time](bouw-een-applicatie/time.md)
 * [WebSockets](bouw-een-applicatie/websockets.md)
 
