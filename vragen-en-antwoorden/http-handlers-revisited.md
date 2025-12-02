@@ -1,4 +1,4 @@
-# HTTP-handlers herzien
+# Revisiting HTTP Handlers
 
 [**Je vindt alle code voor dit hoofdstuk hier**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)
 
@@ -6,7 +6,7 @@ Dit boek bevat al een hoofdstuk over [het testen van een HTTP-handler](../bouw-e
 
 We bekijken een praktijkvoorbeeld en hoe we het ontwerp ervan kunnen verbeteren door principes toe te passen zoals het principe van één verantwoordelijkheid en scheiding van belangen. Deze principes kunnen worden gerealiseerd met behulp van [interfaces](../basisbeginselen-go/structs-methods-and-interfaces.md) en [dependency injection](../basisbeginselen-go/dependency-injection.md). Hiermee laten we zien dat het testen van handlers eigenlijk heel triviaal is.
 
-![Veelgestelde vraag in de Go-community geïllustreerd](../amazing-art.png)
+![Veelgestelde vraag in de Go-community geïllustreerd](../.gitbook/assets/amazing-art.png)
 
 Het testen van HTTP-handlers lijkt een terugkerende vraag te zijn in de Go-community, en ik denk dat het wijst op een breder probleem: mensen begrijpen niet hoe ze deze moeten ontwerpen.
 
@@ -143,7 +143,7 @@ Het is gewoon een functie, _en we weten hoe we functies moeten testen_.
 
 Het sluit mooi aan bij het bovenstaande commentaar:
 
-* Het accepteert een [`http.Request`](https://golang.org/pkg/net/http/#Request), wat gewoon een bundel data is die we kunnen inspecteren, parsen en valideren. * > [Een `http.ResponseWriter`-interface wordt door een HTTP-handler gebruikt om een ​​HTTP-respons samen te stellen.](https://golang.org/pkg/net/http/#ResponseWriter)
+* Het accepteert een [`http.Request`](https://golang.org/pkg/net/http/#Request), wat gewoon een bundel data is die we kunnen inspecteren, parsen en valideren. \* > [Een `http.ResponseWriter`-interface wordt door een HTTP-handler gebruikt om een ​​HTTP-respons samen te stellen.](https://golang.org/pkg/net/http/#ResponseWriter)
 
 ### Supereenvoudige voorbeeldtest
 
@@ -195,7 +195,6 @@ Uitgaande van een meer ideale scheiding van belangen, zou ik het meer als volgt 
 Om het kort te houden, zal ik het gebruikelijke TDD-proces niet bespreken; raadpleeg de andere hoofdstukken voor voorbeelden.
 
 ### Nieuw ontwerp
-
 
 ```go
 type UserService interface {

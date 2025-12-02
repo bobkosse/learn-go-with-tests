@@ -1,6 +1,6 @@
 # Leer Go Met Testen
 
-![](red-green-blue-gophers-smaller.png)
+![](.gitbook/assets/red-green-blue-gophers-smaller.png)
 
 [Art by Denise](https://twitter.com/deniseyu21)
 
@@ -21,8 +21,7 @@ Ik ben er trots op dat ik deze bron gratis kan aanbieden, maar als je wilt kun j
 
 ## Over dit boek
 
-Dit geweldige boek is geschreven door Chris James, alias Quii op internet (zie sectie [Ondersteun me](gb-readme.md#ondersteun-me)). Het originele boek van Chris is te lezen in het Engels via:\
-
+Dit geweldige boek is geschreven door Chris James, alias Quii op internet (zie sectie [Ondersteun me](gb-readme.md#ondersteun-me)). Het originele boek van Chris is te lezen in het Engels via:<br>
 
 [Learn Go with Tests (Engels)](https://quii.gitbook.io/learn-go-with-tests)
 

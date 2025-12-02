@@ -10,7 +10,7 @@ Je wilt een SVG maken van een klok. Geen digitale klok, dat zou veel te makkelij
 
 Eerst hebben we een SVG van een klok nodig om mee te spelen. SVG's zijn een fantastisch afbeeldingsformaat om programmatisch te bewerken, omdat ze geschreven zijn als een reeks vormen, beschreven in XML. Dus deze klok:
 
-![een svg van een klok](../math/example_clock.svg)
+![een svg van een klok](../.gitbook/assets/example_clock.svg)
 
 is als volgt beschreven:
 
@@ -56,7 +56,7 @@ Deze tests worden soms 'acceptatietests' of 'feature tests' genoemd. Het idee is
 
 Iets als deze _klassieke_ afbeelding van Nat Pryce en Steve Freeman
 
-![Van buiten naar binnen feedbackloops in TDD](../TDD-outside-in.jpg)
+![Van buiten naar binnen feedbackloops in TDD](../.gitbook/assets/TDD-outside-in.jpg)
 
 Hoe dan ook, laten we proberen die acceptatietest te schrijven, de test die ons laat weten wanneer we klaar zijn.
 
@@ -213,23 +213,23 @@ Maar de hoek is slechts het halve verhaal; we moeten de X- en Y-coördinaat wete
 
 Stel je een cirkel voor met een straal van 1, getekend rond de oorsprong, de coördinaat `0, 0`.
 
-![picture of the unit circle](../math/images/unit_circle.png)
+![picture of the unit circle](../.gitbook/assets/unit_circle.png)
 
 Dit wordt de 'eenheidscirkel' genoemd, omdat... de straal 1 eenheid is!
 
 De omtrek van de cirkel bestaat uit punten op het raster, of coördinaten. De x- en y-componenten van elk van deze coördinaten vormen een driehoek, waarvan de schuine zijde altijd 1 is (d.w.z. de straal van de cirkel).
 
-![picture of the unit circle with a point defined on the circumference](../math/images/unit_circle_coords.png)
+![picture of the unit circle with a point defined on the circumference](../.gitbook/assets/unit_circle_coords.png)
 
 Met trigonometrie kunnen we nu de lengtes van X en Y voor elke driehoek berekenen, mits we de hoek kennen die ze met de oorsprong maken. De X-coördinaat is dan cos(a) en de Y-coördinaat sin(a), waarbij a de hoek is tussen de lijn en de (positieve) x-as.
 
-![afbeelding van de eenheidscirkel met de x- en y-elementen van een straal gedefinieerd als respectievelijk cos(a) en sin(a), waarbij a de hoek is die de straal maakt met de x-as](../math/images/unit_circle_params.png)
+![afbeelding van de eenheidscirkel met de x- en y-elementen van een straal gedefinieerd als respectievelijk cos(a) en sin(a), waarbij a de hoek is die de straal maakt met de x-as](../.gitbook/assets/unit_circle_params.png)
 
 (Als je dit niet gelooft, [neem dan een kijkje op Wikipedia...](https://en.wikipedia.org/wiki/Sine#Unit_circle_definition))
 
 Nog een laatste verandering: omdat we de hoek vanaf 12 uur willen meten in plaats van vanaf de X-as (3 uur), moeten we de assen omdraaien; nu is x = sin(a) en y = cos(a).
 
-![unit circle ray defined from by angle from y axis](../math/images/unit_circle_12_oclock.png)
+![unit circle ray defined from by angle from y axis](../.gitbook/assets/unit_circle_12_oclock.png)
 
 Nu weten we hoe we de hoek van de secondewijzer (1/60e van een cirkel voor elke seconde) en de X- en Y-coördinaten kunnen bepalen. We hebben functies nodig voor zowel `sin` als `cos`.
 
@@ -566,11 +566,11 @@ clockface_test.go:43: Wanted {-1 0} Point, but got {0 -1}
 
 Herinner je zich de afbeelding met de eenheidscirkel nog?
 
-![afbeelding van de eenheidscirkel met de x- en y-elementen van een straal gedefinieerd als respectievelijk cos(a) en sin(a), waarbij a de hoek is die de straal maakt met de x-as](../math/images/unit_circle_params.png)
+![afbeelding van de eenheidscirkel met de x- en y-elementen van een straal gedefinieerd als respectievelijk cos(a) en sin(a), waarbij a de hoek is die de straal maakt met de x-as](../.gitbook/assets/unit_circle_params.png)
 
 Bedenk ook dat we de hoek willen meten vanaf 12 uur, de Y-as, in plaats van vanaf de X-as. We willen de hoek meten tussen de secondewijzer en 3 uur.
 
-![unit circle ray defined from by angle from y axis](../math/images/unit_circle_12_oclock.png)
+![unit circle ray defined from by angle from y axis](../.gitbook/assets/unit_circle_12_oclock.png)
 
 We willen nu de vergelijking die X en Y oplevert. Laten we deze in seconden opschrijven:
 
@@ -786,7 +786,7 @@ en voer het uit, waarbij de uitvoer naar een bestand wordt verzonden
 
 Je zou iets moeten zien als hieronder:
 
-![een klok met alleen een secondewijzer](../math/v6/clockface/clockface/clock.svg)
+![een klok met alleen een secondewijzer](../.gitbook/assets/clock.svg)
 
 En dit is [hoe de code eruit ziet](https://github.com/quii/learn-go-with-tests/tree/main/math/v6/clockface).
 
@@ -1434,7 +1434,7 @@ ok  	clockface	0.006s
 
 Maar het bewijs van de pudding zit in het eten. Als we nu ons `clockface` programma compileren en uitvoeren, zouden we iets moeten zien als
 
-![een klok met seconde- en minutenwijzers](../math/v9/clockface/clockface/clock.svg)
+![een klok met seconde- en minutenwijzers](<../.gitbook/assets/clock (1).svg>)
 
 ### Refactor
 
@@ -1857,7 +1857,7 @@ ok  	clockface	0.007s
 
 Laten we dit controleren door ons `clockface` programma te compileren en uit te voeren.
 
-![een klok](../math/v12/clockface/clockface/clock.svg)
+![een klok](<../.gitbook/assets/clock (2).svg>)
 
 ### Refactor
 
