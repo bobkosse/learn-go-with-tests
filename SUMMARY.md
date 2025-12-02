@@ -30,7 +30,7 @@
 
 * [Introductie acceptatie testen](basisbeginselen-testen/intro-to-acceptance-tests.md)
 * [Schalen van acceptatie testen](basisbeginselen-testen/scaling-acceptance-tests.md)
-* [Working without mocks](basisbeginselen-testen/working-without-mocks.md)
+* [Werken zonder mocks](basisbeginselen-testen/working-without-mocks.md)
 * [Refactoring Checklist](basisbeginselen-testen/refactoring-checklist.md)
 
 ## Bouw een applicatie
