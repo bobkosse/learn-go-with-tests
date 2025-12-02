@@ -1,40 +1,14 @@
 # Context-aware Reader
 
-[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/context-aware-reader)
+[**Je kunt alle code uit dit hoofdstuk hier vinden**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/context-aware-reader)
 
-This chapter demonstrates how to test-drive a context aware `io.Reader` as written by Mat Ryer and David Hernandez in [The Pace Dev Blog](https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer).
+In dit hoofdstuk wordt gedemonstreerd hoe je een contextbewuste `io.Reader` kunt testen, zoals geschreven door Mat Ryer en David Hernandez in [The Pace Dev Blog](https://pace.dev/blog/2020/02/03/context-aware-ioreader-for-golang-by-mat-ryer).
 
-## Context aware reader?
+## Contextbewuste lezer?
 
-First of all, a quick primer on `io.Reader`.
+Allereerst een korte introductie tot `io.Reader`.
 
-If you've read other chapters in this book you will have ran into `io.Reader` when we've opened files, encoded JSON and various other common tasks. It's a simple abstraction over reading data from _something_
-
-```go
-type Reader interface {
-	Read(p []byte) (n int, err error)
-}
-```
-
-By using `io.Reader` you can gain a lot of re-use from the standard library, it's a very commonly used abstraction (along with its counterpart `io.Writer`)
-
-### Context aware?
-
-[In a previous chapter](../basisbeginselen-go/context.md) we discussed how we can use `context` to provide cancellation. This is especially useful if you're performing tasks which may be computationally expensive and you want to be able to stop them.
-
-When you're using an `io.Reader` you have no guarantees over speed, it could take 1 nanosecond or hundreds of hours. You might find it useful to be able to cancel these kind of tasks in your own application and that's what Mat and David wrote about.
-
-They combined two simple abstractions (`context.Context` and `io.Reader`) to solve this problem.
-
-Let's try and TDD some functionality so that we can wrap an `io.Reader` so it can be cancelled.
-
-Testing this poses an interesting challenge. Normally when using an `io.Reader` you're usually supplying it to some other function and you don't really concern yourself with the details; such as `json.NewDecoder` or `io.ReadAll`.
-
-What we want to demonstrate is something like
-
-> Given an `io.Reader` with "ABCDEF", when I send a cancel signal half-way through I when I try to continue to read I get nothing else so all I get is "ABC"
-
-Let's look at the interface again.
+Als je andere hoofdstukken in dit boek hebt gelezen, ben je `io.Reader` vast wel eens tegengekomen bij het openen van bestanden, het coderen van JSON en diverse andere veelvoorkomende taken. Het is een simpele abstractie van het lezen van data uit _iets_
 
 ```go
 type Reader interface {
@@ -42,15 +16,42 @@ type Reader interface {
 }
 ```
 
-The `Reader`'s `Read` method will read the contents it has into a `[]byte` that we supply.
+Door `io.Reader` te gebruiken, kun je veel hergebruik uit de standaardbibliotheek halen; het is een veelgebruikte abstractie (samen met zijn tegenhanger `io.Writer`).
 
-So rather than reading everything, we could:
+### Contextbewust?
 
-* Supply a fixed-size byte array that doesn't fit all the contents
-* Send a cancel signal
-* Try and read again and this should return an error with 0 bytes read
+[In een eerder hoofdstuk](../basisbeginselen-go/context.md) hebben we besproken hoe we `context` kunnen gebruiken om te annuleren. Dit is vooral handig als je taken uitvoert die rekenintensief kunnen zijn en je ze wilt kunnen stoppen.
 
-For now, let's just write a "happy path" test where there is no cancellation, just so we can get familiar with the problem without having to write any production code yet.
+Als je een `io.Reader` gebruikt, heb je geen garanties over de snelheid; het kan 1 nanoseconde of honderden uren duren. Het kan handig zijn om dit soort taken in je eigen applicatie te kunnen annuleren, en dat is waar Mat en David over schreven.
+
+Ze combineerden twee eenvoudige abstracties (`context.Context` en `io.Reader`) om dit probleem op te lossen.
+
+Laten we proberen wat functionaliteit te TDD'en, zodat we een `io.Reader` zo kunnen inpakken dat deze geannuleerd kan worden.
+
+Het testen hiervan vormt een interessante uitdaging. Normaal gesproken geef je bij het gebruik van een `io.Reader` deze meestal door aan een andere functie en houd je je niet echt bezig met de details, zoals `json.NewDecoder` of `io.ReadAll`.
+
+Wat we willen demonstreren is zoiets als:
+
+> Gegeven een `io.Reader` met "ABCDEF", wanneer ik halverwege een annulatiesignaal stuur, wanneer ik probeer verder te lezen, krijg ik niets anders, dus krijg ik alleen "ABC".
+
+Laten we de interface nog eens bekijken.
+
+
+```go
+type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+```
+
+De `Read`-methode van de `Reader` leest de inhoud ervan in een `[]byte` die we opgeven.
+
+In plaats van alles te lezen, kunnen we dus:
+
+* Een byte-array met vaste grootte opgeven die niet alle inhoud bevat
+* Een annulatiesignaal verzenden
+* Probeer het opnieuw te lezen. Dit zou een foutmelding moeten opleveren met 0 gelezen bytes
+
+Laten we nu gewoon een "happy path"-test schrijven zonder annulering, zodat we vertrouwd kunnen raken met het probleem zonder dat we al productiecode hoeven te schrijven.
 
 ```go
 func TestContextAwareReader(t *testing.T) {
@@ -84,21 +85,21 @@ func assertBufferHas(t testing.TB, buf []byte, want string) {
 }
 ```
 
-* Make an `io.Reader` from a string with some data
-* A byte array to read into which is smaller than the contents of the reader
-* Call read, check the contents, repeat.
+* Maak een `io.Reader` van een string met wat data.
+* Een byte-array om in te lezen die kleiner is dan de inhoud van de reader.
+* Roep read aan, controleer de inhoud en herhaal.
 
-From this we can imagine sending some kind of cancel signal before the second read to change behaviour.
+Hieruit kunnen we ons voorstellen dat er vóór de tweede leesbewerking een soort annulatiesignaal wordt verzonden om het gedrag te veranderen.
 
-Now we've seen how it works we'll TDD the rest of the functionality.
+Nu we hebben gezien hoe het werkt, zullen we de rest van de functionaliteit TDD'en.
 
-## Write the test first
+## Schrijf eerst de test
 
-We want to be able to compose an `io.Reader` with a `context.Context`.
+We willen een `io.Reader` kunnen samenstellen met een `context.Context`.
 
-With TDD it's best to start with imagining your desired API and write a test for it.
+Met TDD is het het beste om te beginnen met het bedenken van de gewenste API en er een test voor te schrijven.
 
-From there let the compiler and failing test output can guide us to a solution
+Laat de compiler en de mislukte testuitvoer ons vervolgens naar een oplossing leiden
 
 ```go
 t.Run("behaves like a normal reader", func(t *testing.T) {
@@ -122,15 +123,15 @@ t.Run("behaves like a normal reader", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./cancel_readers_test.go:12:10: undefined: NewCancellableReader
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test om uit te voeren en controleer de uitvoer van de mislukte test.
 
-We'll need to define this function and it should return an `io.Reader`
+We moeten deze functie definiëren en deze moet een `io.Reader` retourneren.
 
 ```go
 func NewCancellableReader(rdr io.Reader) io.Reader {
@@ -138,7 +139,7 @@ func NewCancellableReader(rdr io.Reader) io.Reader {
 }
 ```
 
-If you try and run it
+Wanneer je dit probeert uit te voeren
 
 ```
 === RUN   TestCancelReaders
@@ -148,11 +149,11 @@ panic: runtime error: invalid memory address or nil pointer dereference [recover
 [signal SIGSEGV: segmentation violation code=0x1 addr=0x0 pc=0x10f8fb5]
 ```
 
-As expected
+Zoals verwacht
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-For now, we'll just return the `io.Reader` we pass in
+Voorlopig retourneren we gewoon de `io.Reader` die we doorgeven
 
 ```go
 func NewCancellableReader(rdr io.Reader) io.Reader {
@@ -160,13 +161,13 @@ func NewCancellableReader(rdr io.Reader) io.Reader {
 }
 ```
 
-The test should now pass.
+De test zou nu moeten slagen.
 
-I know, I know, this seems silly and pedantic but before charging in to the fancy work it is important that we have _some_ verification that we haven't broken the "normal" behaviour of an `io.Reader` and this test will give us confidence as we move forward.
+Ik weet het, ik weet het, dit klinkt misschien gek en pedant, maar voordat we aan de slag gaan, is het belangrijk dat we _enige_ verificatie hebben dat we het "normale" gedrag van een `io.Reader` niet hebben verstoord. Deze test geeft ons vertrouwen voor de toekomst.
 
-## Write the test first
+## Schrijf eerst de test
 
-Next we need to try and cancel.
+Vervolgens moeten we proberen te annuleren.
 
 ```go
 t.Run("stops reading when cancelled", func(t *testing.T) {
@@ -195,13 +196,13 @@ t.Run("stops reading when cancelled", func(t *testing.T) {
 })
 ```
 
-We can more or less copy the first test but now we're:
+We kunnen de eerste test min of meer kopiëren, maar nu:
 
-* Creating a `context.Context` with cancellation so we can `cancel` after the first read
-* For our code to work we'll need to pass `ctx` to our function
-* We then assert that post-`cancel` nothing was read
+* We maken een `context.Context` met annulering, zodat we na de eerste keer lezen kunnen `cancel`.
+* Om onze code te laten werken, moeten we `ctx` aan onze functie doorgeven.
+* Vervolgens bevestigen we dat er na `cancel` niets is gelezen.
 
-## Try to run the test
+## Probeer de test uit te voeren
 
 ```
 ./cancel_readers_test.go:33:30: too many arguments in call to NewCancellableReader
@@ -209,9 +210,9 @@ We can more or less copy the first test but now we're:
 	want (io.Reader)
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## Schrijf de minimale hoeveelheid code voor de test om uit te voeren en controleer de mislukte testuitvoer.
 
-The compiler is telling us what to do; update our signature to accept a context
+De compiler vertelt ons wat we moeten doen: onze handtekening bijwerken om een context te accepteren.
 
 ```go
 func NewCancellableReader(ctx context.Context, rdr io.Reader) io.Reader {
@@ -219,9 +220,9 @@ func NewCancellableReader(ctx context.Context, rdr io.Reader) io.Reader {
 }
 ```
 
-(You'll need to update the first test to pass in `context.Background` too)
+(Je moet de eerste test ook bijwerken om te slagen in `context.Background`)
 
-You should now see a very clear failing test output
+Je zou nu een zeer duidelijke uitvoer van de mislukte test moeten zien
 
 ```
 === RUN   TestCancelReaders
@@ -232,11 +233,11 @@ You should now see a very clear failing test output
         cancel_readers_test.go:52: expected 0 bytes to be read after cancellation but 3 were read
 ```
 
-## Write enough code to make it pass
+## Schrijf voldoende code om het te laten slagen
 
-At this point, it's copy and paste from the original post by Mat and David but we'll still take it slowly and iteratively.
+Op dit punt is het kopiëren en plakken van het originele bericht van Mat en David, maar we gaan het rustig en iteratief aanpakken.
 
-We know we need to have a type that encapsulates the `io.Reader` that we read from and the `context.Context` so let's create that and try and return it from our function instead of the original `io.Reader`
+We weten dat we een type nodig hebben dat de `io.Reader` waaruit we lezen en de `context.Context` omvat, dus laten we dat aanmaken en proberen het vanuit onze functie te retourneren in plaats van de originele `io.Reader`
 
 ```go
 func NewCancellableReader(ctx context.Context, rdr io.Reader) io.Reader {
@@ -252,14 +253,14 @@ type readerCtx struct {
 }
 ```
 
-As I have stressed many times in this book, go slowly and let the compiler help you
+Zoals ik al vaker in dit boek heb benadrukt: ga langzaam te werk en laat de compiler je helpen
 
 ```
 ./cancel_readers_test.go:60:3: cannot use &readerCtx literal (type *readerCtx) as type io.Reader in return argument:
 	*readerCtx does not implement io.Reader (missing Read method)
 ```
 
-The abstraction feels right, but it doesn't implement the interface we need (`io.Reader`) so let's add the method.
+De abstractie voelt goed, maar implementeert niet de interface die we nodig hebben (`io.Reader`). Daarom voegen we de methode toe.
 
 ```go
 func (r *readerCtx) Read(p []byte) (n int, err error) {
@@ -267,9 +268,9 @@ func (r *readerCtx) Read(p []byte) (n int, err error) {
 }
 ```
 
-Run the tests and they should _compile_ but panic. This is still progress.
+Voer de tests uit en ze zouden moeten _compileren_, maar paniek. Dit is nog steeds een stap in de goede richting.
 
-Let's make the first test pass by just _delegating_ the call to our underlying `io.Reader`
+Laten we de eerste test laten slagen door de aanroep te _delegeren_ naar onze onderliggende `io.Reader`.
 
 ```go
 func (r readerCtx) Read(p []byte) (n int, err error) {
@@ -277,9 +278,9 @@ func (r readerCtx) Read(p []byte) (n int, err error) {
 }
 ```
 
-At this point we have our happy path test passing again and it feels like we have our stuff abstracted nicely
+Op dit punt is onze 'happy path'-test opnieuw geslaagd en het voelt alsof we alles goed hebben geabstraheerd.
 
-To make our second test pass we need to check the `context.Context` to see if it has been cancelled.
+Om onze tweede test te laten slagen, moeten we de `context.Context` controleren om te zien of deze is geannuleerd.
 
 ```go
 func (r readerCtx) Read(p []byte) (n int, err error) {
@@ -290,13 +291,13 @@ func (r readerCtx) Read(p []byte) (n int, err error) {
 }
 ```
 
-All tests should now pass. You'll notice how we return the error from the `context.Context`. This allows callers of the code to inspect the various reasons cancellation has occurred and this is covered more in the original post.
+Alle tests zouden nu moeten slagen. Je zult zien hoe we de fout van `context.Context` retourneren. Dit stelt aanroepers van de code in staat om de verschillende redenen voor de annulering te onderzoeken. Dit wordt uitgebreider behandeld in het oorspronkelijke bericht.
 
-## Wrapping up
+## Samenvattend
 
-* Small interfaces are good and are easily composed
-* When you're trying to augment one thing (e.g `io.Reader`) with another you usually want to reach for the [delegation pattern](https://en.wikipedia.org/wiki/Delegation_pattern)
+* Kleine interfaces zijn goed en zijn eenvoudig samen te stellen.
+* Wanneer je één ding (bijv. `io.Reader`) met een ander probeert uit te breiden, kun je meestal het [delegatiepatroon](https://en.wikipedia.org/wiki/Delegation_pattern) gebruiken.
 
-> In software engineering, the delegation pattern is an object-oriented design pattern that allows object composition to achieve the same code reuse as inheritance.
+> In software engineering is het delegatiepatroon een objectgeoriënteerd ontwerppatroon waarmee objectcompositie hetzelfde codehergebruik als overerving mogelijk maakt.
 
-* An easy way to start this kind of work is to wrap your delegate and write a test that asserts it behaves how the delegate normally does before you start composing other parts to change behaviour. This will help you to keep things working correctly as you code toward your goal
+* Een eenvoudige manier om met dit soort werk te beginnen, is door je gedelegeerde te omhullen en een test te schrijven die beweert dat deze zich gedraagt ​​zoals de gedelegeerde zich normaal gedraagt, voordat je andere onderdelen gaat samenstellen om het gedrag te wijzigen. Dit helpt je om ervoor te zorgen dat alles correct blijft werken terwijl je codeert naar je doel.
