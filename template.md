@@ -1,12 +1,12 @@
-# Chapter template
+# Hoofdstuksjabloon
 
-Some intro
+Een korte introductie
 
-## Write the test first
-## Try to run the test
-## Write the minimal amount of code for the test to run and check the failing test output
-## Write enough code to make it pass
+## Schrijf eerst de test
+## Probeer de test uit te voeren
+## Schrijf de minimale hoeveelheid code om de test uit te voeren en controleer de mislukte testuitvoer
+## Schrijf voldoende code om de test te laten slagen
 ## Refactor
 
-## Repeat for new requirements
-## Wrapping up
+## Herhaal voor nieuwe vereisten
+## Samenvattend
