@@ -55,4 +55,4 @@
 * [Waarom unittests en hoe je ze voor je kunt laten werken](why.md)
 * [Anti-patterns](anti-patterns.md)
 * [Bijdragen](contributing.md)
-* [Chapter Template](template.md)
+* [Hoofdstuk Template](template.md)
