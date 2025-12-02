@@ -1,26 +1,26 @@
-# Revisiting HTTP Handlers
+# HTTP-handlers herzien
 
-[**You can find all the code here**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)
+[**Je vindt alle code voor dit hoofdstuk hier**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)
 
-This book already has a chapter on [testing a HTTP handler](../bouw-een-applicatie/http-server.md) but this will feature a broader discussion on designing them, so they are simple to test.
+Dit boek bevat al een hoofdstuk over [het testen van een HTTP-handler](../bouw-een-applicatie/http-server.md), maar dit zal een bredere bespreking van het ontwerp ervan bevatten, zodat ze eenvoudig te testen zijn.
 
-We'll take a look at a real example and how we can improve how it's designed by applying principles such as single responsibility principle and separation of concerns. These principles can be realised by using [interfaces](../basisbeginselen-go/structs-methods-and-interfaces.md) and [dependency injection](../basisbeginselen-go/dependency-injection.md). By doing this we'll show how testing handlers is actually quite trivial.
+We bekijken een praktijkvoorbeeld en hoe we het ontwerp ervan kunnen verbeteren door principes toe te passen zoals het principe van één verantwoordelijkheid en scheiding van belangen. Deze principes kunnen worden gerealiseerd met behulp van [interfaces](../basisbeginselen-go/structs-methods-and-interfaces.md) en [dependency injection](../basisbeginselen-go/dependency-injection.md). Hiermee laten we zien dat het testen van handlers eigenlijk heel triviaal is.
 
-![Common question in Go community illustrated](../amazing-art.png)
+![Veelgestelde vraag in de Go-community geïllustreerd](../amazing-art.png)
 
-Testing HTTP handlers seems to be a recurring question in the Go community, and I think it points to a wider problem of people misunderstanding how to design them.
+Het testen van HTTP-handlers lijkt een terugkerende vraag te zijn in de Go-community, en ik denk dat het wijst op een breder probleem: mensen begrijpen niet hoe ze deze moeten ontwerpen.
 
-So often people's difficulties with testing stems from the design of their code rather than the actual writing of tests. As I stress so often in this book:
+De problemen die mensen met testen ondervinden, komen vaak voort uit het ontwerp van hun code in plaats van het daadwerkelijk schrijven van de tests. Zoals ik zo vaak in dit boek benadruk:
 
-> If your tests are causing you pain, listen to that signal and think about the design of your code.
+> Als je tests je problemen bezorgen, luister dan naar dat signaal en denk na over het ontwerp van je code.
 
-## An example
+## Een voorbeeld
 
 [Santosh Kumar tweeted me](https://twitter.com/sntshk/status/1255559003339284481)
 
-> How do I test a http handler which has mongodb dependency?
+> Hoe test ik een http-handler die afhankelijk is van Mongodb?
 
-Here is the code
+Hier is de code
 
 ```go
 func Registration(w http.ResponseWriter, r *http.Request) {
@@ -91,62 +91,61 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Let's just list all the things this one function has to do:
+Laten we eens kijken wat deze ene functie allemaal moet doen:
 
-1. Write HTTP responses, send headers, status codes, etc.
-2. Decode the request's body into a `User`
-3. Connect to a database (and all the details around that)
-4. Query the database and applying some business logic depending on the result
-5. Generate a password
-6. Insert a record
+1. HTTP-reacties schrijven, headers, statuscodes, enz. versturen.
+2. De body van het verzoek decoderen naar een 'Gebruiker'.
+3. Verbinding maken met een database (en alle details daaromheen).
+4. De database bevragen en afhankelijk van het resultaat business logic toepassen.
+5. Een wachtwoord genereren.
+6. Een record invoegen.
 
-This is too much.
+Dit is te veel.
 
-## What is a HTTP Handler and what should it do ?
+## Wat is een HTTP-handler en wat moet hij doen?
 
-Forgetting specific Go details for a moment, no matter what language I've worked in what has always served me well is thinking about the [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) and the [single responsibility principle](https://en.wikipedia.org/wiki/Single-responsibility_principle).
+Ik vergeet even de specifieke details van Go, maar ongeacht de taal waarin ik heb gewerkt, heeft het me altijd goed van pas gekomen om na te denken over de [scheiding van belangen](https://en.wikipedia.org/wiki/Separation_of_concerns) en het [principe van individuele verantwoordelijkheid](https://en.wikipedia.org/wiki/Single-responsibility_principle).
 
-This can be quite tricky to apply depending on the problem you're solving. What exactly _is_ a responsibility?
+Dit kan best lastig zijn om toe te passen, afhankelijk van het probleem dat je oplost. Wat _is_ precies een verantwoordelijkheid?
 
-The lines can blur depending on how abstractly you're thinking and sometimes your first guess might not be right.
+De grenzen kunnen vervagen, afhankelijk van hoe abstract je denkt en soms klopt je eerste gok niet.
 
-Thankfully with HTTP handlers I feel like I have a pretty good idea what they should do, no matter what project I've worked on:
+Gelukkig heb ik met HTTP-handlers een redelijk goed idee wat ze moeten doen, ongeacht aan welk project ik heb gewerkt:
 
-1. Accept a HTTP request, parse and validate it.
-2. Call some `ServiceThing` to do `ImportantBusinessLogic` with the data I got from step 1.
-3. Send an appropriate `HTTP` response depending on what `ServiceThing` returns.
+1. Een HTTP-verzoek accepteren, parsen en valideren.
+2. Roep `ServiceThing` aan om `ImportantBusinessLogic` uit te voeren met de gegevens die ik uit stap 1 heb gehaald.
+3. Stuur een passend `HTTP`-antwoord, afhankelijk van wat `ServiceThing` retourneert.
 
-I'm not saying every HTTP handler _ever_ should have roughly this shape, but 99 times out of 100 that seems to be the case for me.
+Ik zeg niet dat elke HTTP-handler ooit ongeveer deze vorm zou moeten hebben, maar 99 van de 100 keer lijkt dat voor mij het geval te zijn.
 
-When you separate these concerns:
+Wanneer je deze aandachtspunten scheidt:
 
-* Testing handlers becomes a breeze and is focused a small number of concerns.
-* Importantly testing `ImportantBusinessLogic` no longer has to concern itself with `HTTP`, you can test the business logic cleanly.
-* You can use `ImportantBusinessLogic` in other contexts without having to modify it.
-* If `ImportantBusinessLogic` changes what it does, so long as the interface remains the same you don't have to change your handlers.
+* Het testen van handlers wordt een fluitje van een cent en richt zich op een klein aantal aandachtspunten.
+* Belangrijk: het testen van `ImportantBusinessLogic` hoeft zich niet langer bezig te houden met `HTTP`; je kunt de bedrijfslogica schoon testen.
+* Je kunt `ImportantBusinessLogic` in andere contexten gebruiken zonder het te hoeven aanpassen.
+* Als `ImportantBusinessLogic` verandert wat het doet, hoef je je handlers niet te wijzigen, zolang de interface hetzelfde blijft.
 
 ## Go's Handlers
 
 [`http.HandlerFunc`](https://golang.org/pkg/net/http/#HandlerFunc)
 
-> The HandlerFunc type is an adapter to allow the use of ordinary functions as HTTP handlers.
+> Het type HandlerFunc is een adapter die het gebruik van gewone functies als HTTP-handlers mogelijk maakt.
 
 `type HandlerFunc func(ResponseWriter, *Request)`
 
-Reader, take a breath and look at the code above. What do you notice?
+Lezer, haal even adem en bekijk de bovenstaande code. Wat valt je op?
 
-**It is a function that takes some arguments**
+**Het is een functie die argumenten accepteert**
 
-There's no framework magic, no annotations, no magic beans, nothing.
+Er zit geen frameworkmagie in, geen annotaties, geen magic beans, niets.
 
-It's just a function, _and we know how to test functions_.
+Het is gewoon een functie, _en we weten hoe we functies moeten testen_.
 
-It fits in nicely with the commentary above:
+Het sluit mooi aan bij het bovenstaande commentaar:
 
-* It takes a [`http.Request`](https://golang.org/pkg/net/http/#Request) which is just a bundle of data for us to inspect, parse and validate.
-* > [A `http.ResponseWriter` interface is used by an HTTP handler to construct an HTTP response.](https://golang.org/pkg/net/http/#ResponseWriter)
+* Het accepteert een [`http.Request`](https://golang.org/pkg/net/http/#Request), wat gewoon een bundel data is die we kunnen inspecteren, parsen en valideren. * > [Een `http.ResponseWriter`-interface wordt door een HTTP-handler gebruikt om een ​​HTTP-respons samen te stellen.](https://golang.org/pkg/net/http/#ResponseWriter)
 
-### Super basic example test
+### Supereenvoudige voorbeeldtest
 
 ```go
 func Teapot(res http.ResponseWriter, req *http.Request) {
@@ -165,37 +164,38 @@ func TestTeapotHandler(t *testing.T) {
 }
 ```
 
-To test our function, we _call_ it.
+Om onze functie te testen, _roepen_ we deze aan.
 
-For our test we pass a `httptest.ResponseRecorder` as our `http.ResponseWriter` argument, and our function will use it to write the `HTTP` response. The recorder will record (or _spy_ on) what was sent, and then we can make our assertions.
+Voor onze test geven we een `httptest.ResponseRecorder` mee als ons `http.ResponseWriter`-argument, en onze functie gebruikt deze om het `HTTP`-antwoord te schrijven. De recorder neemt op (of _bespioneert_) wat er is verzonden, waarna we onze beweringen kunnen doen.
 
-## Calling a `ServiceThing` in our handler
+## Een `ServiceThing` aanroepen in onze handler
 
-A common complaint about TDD tutorials is that they're always "too simple" and not "real world enough". My answer to that is:
+Een veelgehoorde klacht over TDD-tutorials is dat ze altijd "te simpel" en niet "realistisch genoeg" zijn. Mijn antwoord daarop is:
 
-> Wouldn't it be nice if all your code was simple to read and test like the examples you mention?
+> Zou het niet fijn zijn als al je code eenvoudig te lezen en te testen was, zoals de voorbeelden die je noemt?
 
-This is one of the biggest challenges we face but need to keep striving for. It _is possible_ (although not necessarily easy) to design code, so it can be simple to read and test if we practice and apply good software engineering principles.
+Dit is een van de grootste uitdagingen waar we voor staan, maar waar we naar moeten blijven streven. Het _is mogelijk_ (hoewel niet per se gemakkelijk) om code te ontwerpen, dus het kan eenvoudig te lezen en te testen zijn als we goede software engineering-principes oefenen en toepassen.
 
-Recapping what the handler from earlier does:
+Samenvattend wat de handler van eerder doet:
 
-1. Write HTTP responses, send headers, status codes, etc.
-2. Decode the request's body into a `User`
-3. Connect to a database (and all the details around that)
-4. Query the database and applying some business logic depending on the result
-5. Generate a password
-6. Insert a record
+1. HTTP-reacties schrijven, headers, statuscodes, enz. versturen.
+2. De body van het verzoek decoderen naar een 'User'.
+3. Verbinding maken met een database (en alle details daaromheen).
+4. De database bevragen en afhankelijk van het resultaat bedrijfslogica toepassen.
+5. Een wachtwoord genereren.
+6. Een record invoegen.
 
-Taking the idea of a more ideal separation of concerns I'd want it to be more like:
+Uitgaande van een meer ideale scheiding van belangen, zou ik het meer als volgt willen:
 
-1. Decode the request's body into a `User`
-2. Call a `UserService.Register(user)` (this is our `ServiceThing`)
-3. If there's an error act on it (the example always sends a `400 BadRequest` which I don't think is right), I'll just have a catch-all handler of a `500 Internal Server Error` _for now_. I must stress that returning `500` for all errors makes for a terrible API! Later on we can make the error handling more sophisticated, perhaps with [error types](error-types.md).
-4. If there's no error, `201 Created` with the ID as the response body (again for terseness/laziness)
+1. De body van het verzoek decoderen naar een 'User'.
+2. Een 'UserService.Register(user)' aanroepen (dit is onze 'ServiceThing').
+3. Als er een fout optreedt (het voorbeeld stuurt altijd een '400 BadRequest', wat ik niet juist vind), gebruik ik voorlopig gewoon een '500 Internal Server Error'-handler. Ik moet benadrukken dat het retourneren van '500' voor alle fouten een vreselijke API oplevert! Later kunnen we de foutafhandeling geavanceerder maken, bijvoorbeeld met [error types](error-types.md).
+4. Als er geen fout is, `201 Created` met de ID als antwoordbody (wederom vanwege de beknoptheid/luiheid).
 
-For the sake of brevity I won't go over the usual TDD process, check all the other chapters for examples.
+Om het kort te houden, zal ik het gebruikelijke TDD-proces niet bespreken; raadpleeg de andere hoofdstukken voor voorbeelden.
 
-### New design
+### Nieuw ontwerp
+
 
 ```go
 type UserService interface {
@@ -237,17 +237,17 @@ func (u *UserServer) RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Our `RegisterUser` method matches the shape of `http.HandlerFunc` so we're good to go. We've attached it as a method on a new type `UserServer` which contains a dependency on a `UserService` which is captured as an interface.
+Onze `RegisterUser`-methode komt overeen met de vorm van `http.HandlerFunc`, dus we kunnen aan de slag. We hebben het als methode gekoppeld aan een nieuw type `UserServer`, dat een afhankelijkheid bevat van een `UserService`, die wordt vastgelegd als een interface.
 
-Interfaces are a fantastic way to ensure our `HTTP` concerns are decoupled from any specific implementation; we can just call the method on the dependency, and we don't have to care _how_ a user gets registered.
+Interfaces zijn een fantastische manier om ervoor te zorgen dat onze `HTTP`-zorgen losgekoppeld zijn van een specifieke implementatie; we kunnen de methode gewoon aanroepen op de afhankelijkheid en hoeven ons niet druk te maken over _hoe_ een gebruiker wordt geregistreerd.
 
-If you wish to explore this approach in more detail following TDD read the [Dependency Injection](../basisbeginselen-go/dependency-injection.md) chapter and the [HTTP Server chapter of the "Build an application" section](../bouw-een-applicatie/http-server.md).
+Als je deze aanpak na TDD verder wilt verkennen, lees dan het hoofdstuk [Dependency Injection](../basisbeginselen-go/dependency-injection.md) en het hoofdstuk [HTTP Server in de sectie "Een applicatie bouwen"](../bouw-een-applicatie/http-server.md).
 
-Now that we've decoupled ourselves from any specific implementation detail around registration writing the code for our handler is straightforward and follows the responsibilities described earlier.
+Nu we ons hebben losgekoppeld van specifieke implementatiedetails rondom registratie, is het schrijven van de code voor onze handler eenvoudig en volgt het de eerder beschreven verantwoordelijkheden.
 
-### The tests!
+### De tests!
 
-This simplicity is reflected in our tests.
+Deze eenvoud zie je terug in onze tests.
 
 ```go
 type MockUserService struct {
@@ -323,15 +323,15 @@ func TestRegisterUser(t *testing.T) {
 }
 ```
 
-Now our handler isn't coupled to a specific implementation of storage it is trivial for us to write a `MockUserService` to help us write simple, fast unit tests to exercise the specific responsibilities it has.
+Nu onze handler niet meer gekoppeld is aan een specifieke implementatie van storage, is het voor ons triviaal om een `MockUserService` te schrijven waarmee we eenvoudige, snelle unittests kunnen schrijven om de specifieke verantwoordelijkheden uit te voeren.
 
-### What about the database code? You're cheating!
+### Hoe zit het met de databasecode? Je speelt vals!
 
-This is all very deliberate. We don't want HTTP handlers concerned with our business logic, databases, connections, etc.
+Dit is allemaal heel bewust gedaan. We willen niet dat HTTP-handlers zich bezighouden met onze bedrijfslogica, databases, verbindingen, enz.
 
-By doing this we have liberated the handler from messy details, we've _also_ made it easier to test our persistence layer and business logic as it is also no longer coupled to irrelevant HTTP details.
+Door dit te doen, hebben we de handler bevrijd van rommelige details en hebben we het _ook_ gemakkelijker gemaakt om onze persistentielaag en bedrijfslogica te testen, omdat deze ook niet langer gekoppeld is aan irrelevante HTTP-details.
 
-All we need to do is now implement our `UserService` using whatever database we want to use
+Het enige wat we nu nog hoeven te doen, is onze `UserService` implementeren met behulp van de database die we willen gebruiken.
 
 ```go
 type MongoUserService struct {
@@ -349,7 +349,7 @@ func (m MongoUserService) Register(user User) (insertedID string, err error) {
 }
 ```
 
-We can test this separately and once we're happy in `main` we can snap these two units together for our working application.
+We kunnen dit apart testen en zodra we tevreden zijn in `main` kunnen we deze twee units aan elkaar koppelen voor onze werkende applicatie.
 
 ```go
 func main() {
@@ -359,20 +359,20 @@ func main() {
 }
 ```
 
-### A more robust and extensible design with little effort
+### Een robuuster en uitbreidbaarder ontwerp met weinig moeite
 
-These principles not only make our lives easier in the short-term they make the system easier to extend in the future.
+Deze principes maken ons leven niet alleen gemakkelijker op de korte termijn, ze maken het systeem ook gemakkelijker uit te breiden in de toekomst.
 
-It wouldn't be surprising that further iterations of this system we'd want to email the user a confirmation of registration.
+Het zou niet verwonderlijk zijn als we bij verdere iteraties van dit systeem de gebruiker een registratiebevestiging per e-mail zouden willen sturen.
 
-With the old design we'd have to change the handler _and_ the surrounding tests. This is often how parts of code become unmaintainable, more and more functionality creeps in because it's already _designed_ that way; for the "HTTP handler" to handle... everything!
+Met het oude ontwerp zouden we de handler _en_ de omliggende tests moeten aanpassen. Dit is vaak de reden waarom delen van de code niet meer te onderhouden zijn, er sluipt steeds meer functionaliteit in omdat het al zo _ontworpen_ is; zodat de "HTTP-handler"... alles kan afhandelen!
 
-By separating concerns using an interface we don't have to edit the handler _at all_ because it's not concerned with the business logic around registration.
+Door aandachtspunten te scheiden met behulp van een interface hoeven we de handler _helemaal_ niet te bewerken, omdat deze zich niet bezighoudt met de bedrijfslogica rondom registratie.
 
-## Wrapping up
+## Samenvattend
 
-Testing Go's HTTP handlers is not challenging, but designing good software can be!
+Het testen van Go's HTTP-handlers is niet uitdagend, maar het ontwerpen van goede software kan dat wel zijn!
 
-People make the mistake of thinking HTTP handlers are special and throw out good software engineering practices when writing them which then makes testing them challenging.
+Mensen maken de fout te denken dat HTTP-handlers speciaal zijn en gooien goede software engineering practices overboord bij het schrijven ervan, wat het testen ervan vervolgens lastig maakt.
 
-Reiterating again; **Go's http handlers are just functions**. If you write them like you would other functions, with clear responsibilities, and a good separation of concerns you will have no trouble testing them, and your codebase will be healthier for it.
+Nogmaals: **Go's HTTP-handlers zijn gewoon functies**. Als je ze schrijft zoals je andere functies zou schrijven, met duidelijke verantwoordelijkheden en een goede scheiding van taken, zul je geen moeite hebben met het testen ervan en zal je codebase er gezonder door worden.
